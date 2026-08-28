@@ -1,149 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PROVOK — Put your beliefs to the test. Structured debates between humans and AI.">
-    <title>PROVOK — Put your beliefs to the test</title>
-    <link rel="stylesheet" href="/static/css/reset.css">
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/global.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/feed.css">
-    <link rel="stylesheet" href="/static/css/responsive.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="PROVOK — structured debates between humans and AI.">
+<title>Home — PROVOK</title>
+<link rel="stylesheet" href="/static/css/reset.css?v=2">
+<link rel="stylesheet" href="/static/css/variables.css?v=2">
+<link rel="stylesheet" href="/static/css/typography.css?v=2">
+<link rel="stylesheet" href="/static/css/global.css?v=2">
+<link rel="stylesheet" href="/static/css/layout.css?v=2">
+<link rel="stylesheet" href="/static/css/components.css?v=2">
+
+<link rel="stylesheet" href="/static/css/responsive.css?v=2">
 </head>
-<body>
-<div class="page">
-    <!-- ═══ NAVIGATION ═══ -->
-    <nav class="nav" id="main-nav">
-        <div class="nav-inner">
-            <a href="/" class="nav-logo">PROVOK</a>
-            <div class="nav-links">
-                <a href="/" class="nav-link active" id="nav-home">Home</a>
-                <a href="/ask" class="nav-link" id="nav-ask">Ask</a>
-                <a href="/live" class="nav-link" id="nav-live">Live</a>
-                <a href="/explore" class="nav-link" id="nav-explore">Explore</a>
-                <a href="/search" class="nav-link" id="nav-search">Search</a>
-            </div>
-            <div class="nav-actions">
-                <a href="/notifications" class="btn btn-icon btn-ghost" id="nav-notifications" title="Notifications">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                </a>
-                <a href="/login" class="btn btn-secondary btn-sm" id="nav-login">Sign In</a>
-                <a href="/ask" class="btn btn-primary btn-sm" id="nav-cta">Start Debate</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- ═══ MAIN CONTENT ═══ -->
-    <main class="page-content">
-        <!-- Hero -->
-        <section class="section" style="padding-top: var(--space-20);">
-            <div class="container">
-                <div style="max-width: 700px;">
-                    <p class="label-brand" style="margin-bottom: var(--space-3);">PUT YOUR BELIEFS TO THE TEST</p>
-                    <h1 class="text-display" style="margin-bottom: var(--space-5);">
-                        Ask anything.<br>Take a stance.<br><span style="color: var(--brand-400);">Challenge it.</span>
-                    </h1>
-                    <p class="text-secondary" style="font-size: var(--text-lg); margin-bottom: var(--space-8); max-width: 540px;">
-                        Structured debates against humans and AI. Four rounds. Evidence-backed arguments. See what survives.
-                    </p>
-                    <div class="flex gap-3">
-                        <a href="/ask" class="btn btn-primary btn-lg" id="hero-cta">Start a Debate</a>
-                        <a href="/live" class="btn btn-secondary btn-lg" id="hero-live">Watch Live</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Continue Your Debates -->
-        <section class="section-sm" id="section-continue" style="display: none;">
-            <div class="container">
-                <div class="feed-section">
-                    <div class="feed-section-header">
-                        <span class="feed-section-title">Continue Your Debates</span>
-                    </div>
-                    <div id="continue-debates" class="feed"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Live Now -->
-        <section class="section-sm" id="section-live">
-            <div class="container">
-                <div class="feed-section">
-                    <div class="feed-section-header">
-                        <span class="feed-section-title">
-                            <span class="badge badge-live" style="margin-right: var(--space-2);">LIVE</span>
-                            Happening Now
-                        </span>
-                        <a href="/live" class="feed-section-link">View All →</a>
-                    </div>
-                    <div class="live-carousel" id="live-debates">
-                        <!-- Fetched via API -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- For You -->
-        <section class="section-sm" id="section-foryou">
-            <div class="container">
-                <div class="feed-section">
-                    <div class="feed-section-header">
-                        <span class="feed-section-title">For You</span>
-                    </div>
-                    <div class="grid grid-2" id="foryou-debates">
-                        <!-- Fetched via API -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Challenging Your Thinking -->
-        <section class="section-sm" id="section-challenge">
-            <div class="container">
-                <div class="feed-section">
-                    <div class="feed-section-header">
-                        <span class="feed-section-title">🔥 Challenging Your Thinking</span>
-                    </div>
-                    <div id="challenge-debates">
-                        <!-- Fetched via API based on user views -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Topics -->
-        <section class="section-sm" id="section-topics">
-            <div class="container">
-                <div class="feed-section">
-                    <div class="feed-section-header">
-                        <span class="feed-section-title">Topics For You</span>
-                    </div>
-                    <div class="flex flex-wrap gap-2" id="topic-tags">
-                        <span class="tag active">Technology</span>
-                        <span class="tag">Philosophy</span>
-                        <span class="tag">Science</span>
-                        <span class="tag">Gaming</span>
-                        <span class="tag">Economics</span>
-                        <span class="tag">Culture</span>
-                        <span class="tag">AI & ML</span>
-                        <span class="tag">Programming</span>
-                        <span class="tag">Movies</span>
-                        <span class="tag">Everyday Life</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+<body><div class="page"><nav class="nav"><div class="nav-inner">
+<a class="nav-logo" href="/">PROV<span>O</span>K</a>
+<div class="nav-links">
+<a class="nav-link active" href="/">Home</a>
+<a class="nav-link " href="/ask">Ask</a>
+<a class="nav-link " href="/live">Live</a>
+<a class="nav-link " href="/explore">Explore</a>
+<a class="nav-link " href="/search">Search</a>
 </div>
+<div class="nav-actions"><button id="theme-toggle" class="btn btn-ghost btn-sm desktop-only" style="padding:0 8px;font-size:16px;" title="Toggle Theme">◐</button><a class="btn btn-ghost btn-sm desktop-only" href="/notifications">Notifications</a><a class="btn btn-secondary btn-sm desktop-only" href="/login">Sign in</a><a class="btn btn-red btn-sm" href="/ask">Start debate</a><button class="btn btn-ghost btn-sm mobile-toggle" onclick="document.querySelector('.nav-links').style.display='flex'">Menu</button></div>
+</div></nav><main class="page-content">
+<section class="hero"><div class="container hero-grid">
+<div><div class="eyebrow">PROVOK / THE ARGUMENT FLOOR</div>
+<h1>Ask anything.<br>Take a side.<br><span class="accent">Put it under pressure.</span></h1>
+<p class="hero-copy">A social arena for questions that deserve more than a comment section. Debate humans, AI swarms, or both — then watch the room decide what survives.</p>
+<div class="hero-actions"><a class="btn btn-primary btn-lg" href="/ask">Start a debate →</a><a class="btn btn-secondary btn-lg" href="/live">Watch live</a></div></div>
+<div class="hero-aside"><strong>Four rounds. No endless threads.</strong><p>Arguments open, get attacked, face the audience, and end with a verdict. Leave whenever you want. Come back when you're ready.</p></div>
+</div></section>
 
-<div class="toast-container" id="toast-container"></div>
+<section class="section-sm"><div class="container"><div class="section-head"><div><div class="eyebrow">LIVE / RIGHT NOW</div><div class="section-title">The room is moving</div></div><a class="btn btn-ghost btn-sm" href="/live">See all →</a></div>
+<div id="live-debates" class="live-strip"></div></div></section>
 
-<script type="module" src="/static/js/core/app.js"></script>
-<script type="module" src="/static/js/pages/home.js"></script>
-</body>
-</html>
+<section class="section-sm"><div class="container"><div class="section-head"><div><div class="eyebrow">FOR YOU</div><div class="section-title">Arguments worth opening</div></div><a class="btn btn-ghost btn-sm" href="/explore">Explore →</a></div>
+<div class="feed-grid"></div></div></section>
+
+<section class="section-sm"><div class="container"><div class="section-head"><div><div class="eyebrow">TOPICS</div><div class="section-title">Go down a rabbit hole</div></div></div><div class="topic-row"></div></div></section>
+</main><footer class="footer"><div class="container">PROVOK — disagreement, with structure.</div></footer></div>
+<div id="toast-container" class="toast-container"></div>
+<script type="module" src="/static/js/core/app.js"></script><script type="module" src="/static/js/pages/home.js"></script>
+</body></html>

@@ -1,20 +1,6 @@
-/* PROVOK — Profile Styles */
-.profile-header { padding: var(--space-12) 0 var(--space-8); border-bottom: 1px solid var(--border-subtle); }
-.profile-info { display: flex; align-items: flex-start; gap: var(--space-6); }
-.profile-avatar { width: 96px; height: 96px; border-radius: 50%; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--weight-bold); color: var(--brand-400); flex-shrink: 0; }
-.profile-details { flex: 1; }
-.profile-name { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-bold); margin-bottom: var(--space-1); }
-.profile-username { font-size: var(--text-sm); color: var(--text-tertiary); margin-bottom: var(--space-3); }
-.profile-bio { font-size: var(--text-base); color: var(--text-secondary); max-width: 500px; line-height: var(--leading-relaxed); margin-bottom: var(--space-4); }
-.profile-stats { display: flex; gap: var(--space-6); }
-.profile-stat { display: flex; flex-direction: column; }
-.profile-stat-value { font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--weight-bold); }
-.profile-stat-label { font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-.profile-tabs { display: flex; gap: var(--space-1); padding: var(--space-4) 0; border-bottom: 1px solid var(--border-subtle); }
-.profile-tab { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-tertiary); border-radius: var(--radius-md); transition: all var(--duration-fast) var(--ease-out); position: relative; cursor: pointer; }
-.profile-tab:hover { color: var(--text-primary); }
-.profile-tab.active { color: var(--brand-400); }
-.profile-tab.active::after { content: ''; position: absolute; bottom: -17px; left: 0; right: 0; height: 2px; background: var(--brand-500); }
-.debate-history { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-6) 0; }
-.history-item { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); transition: all var(--duration-fast) var(--ease-out); cursor: pointer; }
-.history-item:hover { border-color: var(--border-default); background: var(--bg-tertiary); }
+.profile-hero{padding:70px 0 34px;border-bottom:1px solid var(--line)}
+.profile-main{display:flex;align-items:flex-start;gap:22px}.profile-avatar{width:90px;height:90px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font:700 31px var(--display);flex:none}
+.profile-name{font-size:39px}.profile-username{color:var(--muted);font:500 11px var(--mono);margin-top:5px}.profile-bio{max-width:650px;color:var(--muted);margin-top:13px}
+.profile-stats{display:flex;gap:28px;margin-top:19px}.stat strong{display:block;font:700 21px var(--display)}.stat span{display:block;color:var(--muted);font:500 9px var(--mono);text-transform:uppercase;letter-spacing:.1em}
+.profile-tabs{display:flex;gap:3px;border-bottom:1px solid var(--line);margin-top:24px}.profile-tab{background:transparent;border:none;padding:13px 14px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent}.profile-tab.active{color:var(--ink);border-color:var(--red)}
+.history{padding:5px 0 70px}

@@ -84,7 +84,7 @@ async def google_login(settings: AppSettings):
     """Redirect to Google OAuth."""
     # Minimal implementation for Google OAuth redirect
     client_id = settings.google_client_id
-    redirect_uri = f"{settings.api_base_url}/auth/google/callback"
+    redirect_uri = settings.google_redirect_uri
     url = f"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope=openid%20email%20profile"
     return {"url": url}
 

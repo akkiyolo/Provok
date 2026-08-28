@@ -16,8 +16,17 @@ export const api = {
             credentials: 'include',
             ...options,
         };
+        const token = localStorage.getItem('provok-token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
         if (body && method !== 'GET') {
-            config.body = JSON.stringify(body);
+            if (body instanceof FormData) {
+                delete config.headers['Content-Type'];
+                config.body = body;
+            } else {
+                config.body = JSON.stringify(body);
+            }
         }
         try {
             const res = await fetch(url, config);
@@ -27,8 +36,10 @@ export const api = {
                 if (refreshed) {
                     return this.request(method, path, body, options);
                 }
-                window.location.href = '/login';
-                return null;
+                if (!options.noRedirect) {
+                    window.location.href = '/login';
+                }
+                throw new ApiError('Unauthorized', 401, null);
             }
             const data = await res.json();
             if (!res.ok) {
@@ -119,9 +130,64 @@ function setActiveNav() {
     });
 }
 
+// ── Theme Management ──────────────────────────────────────────
+function initTheme() {
+    const savedTheme = localStorage.getItem('provok-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+}
+
+export function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('provok-theme', isDark ? 'dark' : 'light');
+}
+
+// ── Auth Init ───────────────────────────────────────────────────
+async function initAuth() {
+    try {
+        const user = await api.request('GET', '/auth/me', null, { noRedirect: true });
+        if (user) {
+            store.set('user', user);
+            const loginBtns = document.querySelectorAll('a[href="/login"]');
+            loginBtns.forEach(btn => {
+                if (btn.classList.contains('desktop-only') || btn.closest('.nav-actions')) {
+                    const avatar = document.createElement('a');
+                    avatar.href = '/profile/' + user.username;
+                    avatar.className = 'nav-avatar';
+                    avatar.style.cssText = 'width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-weight: bold; text-decoration: none;';
+                    
+                    if (user.avatar_url) {
+                        avatar.style.backgroundImage = `url(${user.avatar_url})`;
+                        avatar.style.backgroundSize = 'cover';
+                        avatar.style.backgroundPosition = 'center';
+                        avatar.innerHTML = '';
+                    } else {
+                        avatar.innerHTML = (user.username || 'U')[0].toUpperCase();
+                    }
+                    
+                    btn.parentNode.replaceChild(avatar, btn);
+                }
+            });
+        }
+    } catch (e) {
+        // Not logged in
+    }
+}
+
 // ── Init ──────────────────────────────────────────────────────
+initTheme();
 document.addEventListener('DOMContentLoaded', () => {
     setActiveNav();
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', toggleTheme);
+    }
+    initAuth();
 });
 
 export { ApiError };

@@ -1,55 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile — PROVOK</title>
-    <link rel="stylesheet" href="/static/css/reset.css">
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/global.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/profile.css">
-    <link rel="stylesheet" href="/static/css/responsive.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="PROVOK — structured debates between humans and AI.">
+<title>Profile — PROVOK</title>
+<link rel="stylesheet" href="/static/css/reset.css?v=3">
+<link rel="stylesheet" href="/static/css/variables.css?v=3">
+<link rel="stylesheet" href="/static/css/typography.css?v=3">
+<link rel="stylesheet" href="/static/css/global.css?v=3">
+<link rel="stylesheet" href="/static/css/layout.css?v=3">
+<link rel="stylesheet" href="/static/css/components.css?v=3">
+<link rel="stylesheet" href="/static/css/profile.css?v=3">
+<link rel="stylesheet" href="/static/css/responsive.css?v=3">
 </head>
-<body>
-<div class="page">
-    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link">Ask</a><a href="/live" class="nav-link">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a></div></div></nav>
-    <main class="page-content">
-        <div class="container container-lg">
-            <div class="profile-header">
-                <div class="profile-info">
-                    <div class="profile-avatar" id="profile-avatar">A</div>
-                    <div class="profile-details">
-                        <h1 class="profile-name" id="profile-name">Akki</h1>
-                        <div class="profile-username" id="profile-username">@akki</div>
-                        <p class="profile-bio" id="profile-bio">Curious about technology, philosophy, and the future of AI. Always ready for a good debate.</p>
-                        <div class="profile-stats">
-                            <div class="profile-stat"><span class="profile-stat-value" id="stat-debates">12</span><span class="profile-stat-label">Debates</span></div>
-                            <div class="profile-stat"><span class="profile-stat-value" id="stat-wins">7</span><span class="profile-stat-label">Round Wins</span></div>
-                            <div class="profile-stat"><span class="profile-stat-value" id="stat-followers">34</span><span class="profile-stat-label">Followers</span></div>
-                            <div class="profile-stat"><span class="profile-stat-value" id="stat-following">18</span><span class="profile-stat-label">Following</span></div>
-                        </div>
-                    </div>
-                    <button class="btn btn-secondary" id="btn-follow">Follow</button>
-                </div>
-            </div>
-            <div class="profile-tabs" id="profile-tabs">
-                <span class="profile-tab active" data-tab="debates">Debates</span>
-                <span class="profile-tab" data-tab="positions">Positions</span>
-                <span class="profile-tab" data-tab="topics">Topics</span>
-            </div>
-            <div class="debate-history" id="profile-content">
-                <div class="empty-state">
-                    <div class="empty-state-icon">⚔️</div>
-                    <div class="empty-state-title">No debates yet</div>
-                    <p class="empty-state-text">This user hasn't participated in any debates yet.</p>
-                </div>
-            </div>
-        </div>
-    </main>
+<body><div class="page"><nav class="nav"><div class="nav-inner">
+<a class="nav-logo" href="/">PROV<span>O</span>K</a>
+<div class="nav-links">
+<a class="nav-link " href="/">Home</a>
+<a class="nav-link " href="/ask">Ask</a>
+<a class="nav-link " href="/live">Live</a>
+<a class="nav-link " href="/explore">Explore</a>
+<a class="nav-link " href="/search">Search</a>
 </div>
+<div class="nav-actions"><button id="theme-toggle" class="btn btn-ghost btn-sm desktop-only" style="padding:0 8px;font-size:16px;" title="Toggle Theme">◐</button><a class="btn btn-ghost btn-sm desktop-only" href="/notifications">Notifications</a><a class="btn btn-secondary btn-sm desktop-only" href="/login">Sign in</a><a class="btn btn-red btn-sm" href="/ask">Start debate</a><button class="btn btn-ghost btn-sm mobile-toggle" onclick="document.querySelector('.nav-links').style.display='flex'">Menu</button></div>
+</div></nav><main class="page-content"><div class="container">
+<section class="profile-hero"><div class="profile-main">
+    <div class="profile-avatar-container" style="position: relative; display: inline-block;">
+        <div id="profile-avatar" class="profile-avatar">U</div>
+        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+        <button id="btn-edit-avatar" class="btn btn-sm" style="display: none; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); background: var(--paper); color: var(--ink); border: 1px solid var(--line);">Edit</button>
+    </div>
+<div style="flex:1"><div id="profile-eyebrow" class="eyebrow">@USERNAME</div><h1 id="profile-name" class="profile-name">Name</h1><div id="profile-username" class="profile-username"></div><p id="profile-bio" class="profile-bio"></p><div id="profile-stats" class="profile-stats">
+    <div class="stat"><strong id="stat-debates">0</strong><span>Debates</span></div>
+    <div class="stat"><strong id="stat-wins">0</strong><span>Wins</span></div>
+    <div class="stat"><strong id="stat-followers">0</strong><span>Followers</span></div>
+    <div class="stat"><strong id="stat-following">0</strong><span>Following</span></div>
+</div></div></div><button class="btn btn-secondary" id="btn-follow">Follow</button></section>
+<div class="profile-tabs"><button class="profile-tab active">Debates</button><button class="profile-tab">Positions</button><button class="profile-tab">Topics</button></div>
+<section class="history"><div id="profile-feed" class="feed-grid"></div></section>
+</div></main></div><div id="toast-container" class="toast-container"></div>
 <script type="module" src="/static/js/core/app.js"></script>
-</body>
-</html>
+<script type="module" src="/static/js/pages/profile.js"></script>
+</body></html>

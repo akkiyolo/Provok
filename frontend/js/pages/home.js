@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Topic tags interactive
-    document.querySelectorAll('#topic-tags .tag').forEach(tag => {
+    document.querySelectorAll('.topic-row .topic').forEach(tag => {
         tag.addEventListener('click', () => {
-            document.querySelectorAll('#topic-tags .tag').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.topic-row .topic').forEach(t => t.classList.remove('active'));
             tag.classList.add('active');
         });
     });

@@ -160,10 +160,11 @@ class Settings(BaseSettings):
         url = self.database_url
         if url.startswith("postgresql://"):
             url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        # asyncpg doesn't support channel_binding param — strip it
-        if "channel_binding=" in url:
+        # asyncpg doesn't support channel_binding or sslmode param in the connection string like psycopg2 does — strip them
+        if "channel_binding=" in url or "sslmode=" in url:
             import re
             url = re.sub(r"[&?]channel_binding=[^&]*", "", url)
+            url = re.sub(r"[&?]sslmode=[^&]*", "", url)
         return url
 
     @property

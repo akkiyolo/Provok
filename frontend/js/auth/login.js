@@ -20,7 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const data = await api.post('/auth/login', { email, password });
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+                
+                const res = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.detail || 'Login failed');
+                }
+                const data = await res.json();
+                localStorage.setItem('provok-token', data.access_token);
                 toast('Welcome back!', 'success');
                 window.location.href = '/';
             } catch (err) {

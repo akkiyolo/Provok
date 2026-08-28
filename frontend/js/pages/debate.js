@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function appendArgumentToStream(argData) {
-        const stream = document.querySelector('.argument-stream');
+        const stream = document.getElementById('argument-stream');
         if (!stream) return;
 
         const isUserSide = argData.is_ai === false; // Simplified logic

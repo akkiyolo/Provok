@@ -5,32 +5,34 @@ import { api, toast } from '../core/app.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Position buttons
-    document.querySelectorAll('#position-btns .position-btn').forEach(btn => {
+    document.querySelectorAll('#position-options .option').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('#position-btns .position-btn').forEach(b => {
-                b.classList.remove('selected-for', 'selected-against');
+            document.querySelectorAll('#position-options .option').forEach(b => {
+                b.classList.remove('selected', 'for', 'against');
             });
-            const pos = btn.dataset.position;
-            if (pos.includes('AGAINST')) {
-                btn.classList.add('selected-against');
+            const pos = btn.dataset.value;
+            btn.classList.add('selected');
+            if (pos === 'AGAINST') {
+                btn.classList.add('against');
             } else {
-                btn.classList.add('selected-for');
+                btn.classList.add('for');
             }
         });
     });
 
     // Opponent buttons
-    document.querySelectorAll('#opponent-btns .opponent-btn').forEach(btn => {
+    document.querySelectorAll('#opponent-options .option').forEach(btn => {
+        if (btn.disabled) return;
         btn.addEventListener('click', () => {
-            document.querySelectorAll('#opponent-btns .opponent-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#opponent-options .option').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
         });
     });
 
     // Mode buttons
-    document.querySelectorAll('#mode-btns .mode-btn').forEach(btn => {
+    document.querySelectorAll('#mode-options .option').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('#mode-btns .mode-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#mode-options .option').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
         });
     });

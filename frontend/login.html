@@ -1,62 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In — PROVOK</title>
-    <link rel="stylesheet" href="/static/css/reset.css">
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/global.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/responsive.css">
-    <style>
-        .auth-page { min-height: calc(100vh - var(--nav-height)); display: flex; align-items: center; justify-content: center; padding: var(--space-8); }
-        .auth-card { width: 100%; max-width: 420px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: var(--space-8); }
-        .auth-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-bold); text-align: center; margin-bottom: var(--space-2); }
-        .auth-subtitle { font-size: var(--text-sm); color: var(--text-tertiary); text-align: center; margin-bottom: var(--space-8); }
-        .auth-form { display: flex; flex-direction: column; gap: var(--space-4); }
-        .auth-divider { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-4) 0; font-size: var(--text-sm); color: var(--text-muted); }
-        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-subtle); }
-        .auth-footer { text-align: center; margin-top: var(--space-6); font-size: var(--text-sm); color: var(--text-tertiary); }
-        .auth-footer a { color: var(--brand-400); font-weight: var(--weight-medium); }
-        .btn-google { background: white; color: #1f1f1f; border: 1px solid #dadce0; display: flex; align-items: center; justify-content: center; gap: var(--space-2); font-weight: var(--weight-medium); }
-        .btn-google:hover { background: #f8f9fa; }
-        .auth-error { padding: var(--space-3); background: var(--error-bg); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-md); color: var(--error); font-size: var(--text-sm); display: none; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="PROVOK — structured debates between humans and AI.">
+<title>Sign in — PROVOK</title>
+<link rel="stylesheet" href="/static/css/reset.css?v=2">
+<link rel="stylesheet" href="/static/css/variables.css?v=2">
+<link rel="stylesheet" href="/static/css/typography.css?v=2">
+<link rel="stylesheet" href="/static/css/global.css?v=2">
+<link rel="stylesheet" href="/static/css/layout.css?v=2">
+<link rel="stylesheet" href="/static/css/components.css?v=2">
+
+<link rel="stylesheet" href="/static/css/responsive.css?v=2">
 </head>
-<body>
-<div class="page">
-    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a></div></nav>
-    <main class="page-content">
-        <div class="auth-page">
-            <div class="auth-card">
-                <h1 class="auth-title">Welcome back</h1>
-                <p class="auth-subtitle">Sign in to continue your debates</p>
-                <div class="auth-error" id="auth-error"></div>
-                <button class="btn btn-google btn-lg" id="btn-google-login" style="width: 100%;">
-                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                    Continue with Google
-                </button>
-                <div class="auth-divider">or</div>
-                <form class="auth-form" id="login-form">
-                    <div class="input-group">
-                        <label class="input-label" for="login-email">Email</label>
-                        <input type="email" class="input" id="login-email" placeholder="you@example.com" required>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label" for="login-password">Password</label>
-                        <input type="password" class="input" id="login-password" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Sign In</button>
-                </form>
-                <div class="auth-footer">Don't have an account? <a href="/signup">Create one</a></div>
-            </div>
-        </div>
-    </main>
+<body><div class="page"><nav class="nav"><div class="nav-inner">
+<a class="nav-logo" href="/">PROV<span>O</span>K</a>
+<div class="nav-links">
+<a class="nav-link " href="/">Home</a>
+<a class="nav-link " href="/ask">Ask</a>
+<a class="nav-link " href="/live">Live</a>
+<a class="nav-link " href="/explore">Explore</a>
+<a class="nav-link " href="/search">Search</a>
 </div>
-<script type="module" src="/static/js/core/app.js"></script>
-<script type="module" src="/static/js/auth/login.js"></script>
-</body>
-</html>
+<div class="nav-actions"><button id="theme-toggle" class="btn btn-ghost btn-sm desktop-only" style="padding:0 8px;font-size:16px;" title="Toggle Theme">◐</button><a class="btn btn-ghost btn-sm desktop-only" href="/notifications">Notifications</a><a class="btn btn-secondary btn-sm desktop-only" href="/login">Sign in</a><a class="btn btn-red btn-sm" href="/ask">Start debate</a><button class="btn btn-ghost btn-sm mobile-toggle" onclick="document.querySelector('.nav-links').style.display='flex'">Menu</button></div>
+</div></nav><main class="page-content"><div class="auth-wrap">
+<section class="auth-brand"><div class="eyebrow">THE ARGUMENT FLOOR</div><h1>Come back<br>to the fight.</h1><p>Pick up unfinished debates, watch the room move, or put another belief under pressure.</p></section>
+<section class="auth-form-wrap"><div class="auth-card"><div class="eyebrow">SIGN IN</div><h2 style="margin-top:8px">Welcome back.</h2><p class="sub">Your debates are waiting.</p><div class="auth-error" id="auth-error"></div>
+<button class="btn btn-google btn-lg" id="btn-google-login">Continue with Google</button><div class="auth-divider">OR</div>
+<form class="auth-form" id="login-form"><div><label class="input-label" for="login-email">Email</label><input class="input" id="login-email" type="email" required autocomplete="email" placeholder="you@example.com"></div><div><label class="input-label" for="login-password">Password</label><input class="input" id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••"></div><button class="btn btn-primary btn-lg" id="login-submit" type="submit">Sign in</button></form>
+<div class="auth-footer">New here? <a href="/signup">Create an account</a></div></div></section></div></main></div><div id="toast-container" class="toast-container"></div>
+<script type="module" src="/static/js/core/app.js"></script><script type="module" src="/static/js/auth/login.js"></script>
+</body></html>

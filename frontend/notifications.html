@@ -1,35 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications — PROVOK</title>
-    <link rel="stylesheet" href="/static/css/reset.css">
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/global.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/responsive.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="PROVOK — structured debates between humans and AI.">
+<title>Notifications — PROVOK</title>
+<link rel="stylesheet" href="/static/css/reset.css?v=2">
+<link rel="stylesheet" href="/static/css/variables.css?v=2">
+<link rel="stylesheet" href="/static/css/typography.css?v=2">
+<link rel="stylesheet" href="/static/css/global.css?v=2">
+<link rel="stylesheet" href="/static/css/layout.css?v=2">
+<link rel="stylesheet" href="/static/css/components.css?v=2">
+
+<link rel="stylesheet" href="/static/css/responsive.css?v=2">
 </head>
-<body>
-<div class="page">
-    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link">Ask</a><a href="/live" class="nav-link">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a></div></div></nav>
-    <main class="page-content">
-        <section class="section" style="padding-top: var(--space-16);">
-            <div class="container container-md">
-                <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-6);">Notifications</h1>
-                <div id="notifications-list">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔔</div>
-                        <div class="empty-state-title">No notifications</div>
-                        <p class="empty-state-text">You'll be notified when it's your turn, when opponents respond, and when verdicts are ready.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+<body><div class="page"><nav class="nav"><div class="nav-inner">
+<a class="nav-logo" href="/">PROV<span>O</span>K</a>
+<div class="nav-links">
+<a class="nav-link " href="/">Home</a>
+<a class="nav-link " href="/ask">Ask</a>
+<a class="nav-link " href="/live">Live</a>
+<a class="nav-link " href="/explore">Explore</a>
+<a class="nav-link " href="/search">Search</a>
 </div>
+<div class="nav-actions"><button id="theme-toggle" class="btn btn-ghost btn-sm desktop-only" style="padding:0 8px;font-size:16px;" title="Toggle Theme">◐</button><a class="btn btn-ghost btn-sm desktop-only" href="/notifications">Notifications</a><a class="btn btn-secondary btn-sm desktop-only" href="/login">Sign in</a><a class="btn btn-red btn-sm" href="/ask">Start debate</a><button class="btn btn-ghost btn-sm mobile-toggle" onclick="document.querySelector('.nav-links').style.display='flex'">Menu</button></div>
+</div></nav><main class="page-content"><section class="section"><div class="container" style="max-width:900px">
+<div class="eyebrow">INBOX</div><h1 style="font-size:clamp(42px,6vw,70px);margin-top:9px">Things that need you.</h1>
+<div style="margin-top:30px">
+<div class="notification-item"><div><strong>The AI swarm replied to your argument.</strong><p class="muted">Rust vs Python · Round 2</p></div><a class="btn btn-secondary btn-sm" href="/debate/demo">Return →</a></div>
+<div class="notification-item"><div><strong>Someone challenged your claim.</strong><p class="muted">Remote work · 7 audience votes</p></div><a class="btn btn-secondary btn-sm" href="/debate/demo">See it →</a></div>
+<div class="notification-item"><div><strong>Your debate has a final verdict.</strong><p class="muted">Judge confidence · 82%</p></div><a class="btn btn-secondary btn-sm" href="/debate/demo/verdict">Read →</a></div>
+</div></div></section></main></div><div id="toast-container" class="toast-container"></div>
 <script type="module" src="/static/js/core/app.js"></script>
-</body>
-</html>
+</body></html>

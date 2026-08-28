@@ -26,8 +26,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 await api.post('/auth/register', { username, email, password });
+                
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+                
+                const loginRes = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                if (loginRes.ok) {
+                    const loginData = await loginRes.json();
+                    localStorage.setItem('provok-token', loginData.access_token);
+                }
+                
                 toast('Account created! Welcome to PROVOK.', 'success');
-                window.location.href = '/';
+                window.location.href = `/profile/${username}`;
             } catch (err) {
                 showError(err.message || 'Registration failed');
             }

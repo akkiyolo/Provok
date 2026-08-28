@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Debates — PROVOK</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/feed.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body>
+<div class="page">
+    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link">Ask</a><a href="/live" class="nav-link active">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a><a href="/ask" class="btn btn-primary btn-sm">Start Debate</a></div></div></nav>
+    <main class="page-content">
+        <section class="section" style="padding-top: var(--space-16);">
+            <div class="container">
+                <div class="flex-between" style="margin-bottom: var(--space-8);">
+                    <div>
+                        <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">
+                            <span class="badge badge-live" style="font-size: var(--text-sm); margin-right: var(--space-2); vertical-align: middle;">LIVE</span>
+                            Happening Now
+                        </h1>
+                        <p class="text-secondary">Watch and participate in live debates</p>
+                    </div>
+                </div>
+                <div class="grid grid-2" id="live-debates-grid">
+                    <div class="empty-state" style="grid-column: 1 / -1;" id="live-empty">
+                        <div class="empty-state-icon">📡</div>
+                        <div class="empty-state-title">No live debates right now</div>
+                        <p class="empty-state-text">Start one yourself or check back soon.</p>
+                        <a href="/ask" class="btn btn-primary" style="margin-top: var(--space-4);">Start a Debate</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<script type="module" src="/static/js/core/app.js"></script>
+</body>
+</html>

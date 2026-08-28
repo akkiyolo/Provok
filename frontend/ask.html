@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PROVOK — Start a new debate. Ask anything, take a position, challenge it.">
+    <title>Ask — PROVOK</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <style>
+        .ask-page { min-height: calc(100vh - var(--nav-height)); display: flex; align-items: center; justify-content: center; padding: var(--space-8); }
+        .ask-container { width: 100%; max-width: 640px; }
+        .ask-prompt { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--weight-bold); text-align: center; margin-bottom: var(--space-10); line-height: var(--leading-tight); }
+        .ask-prompt span { color: var(--brand-400); }
+        .ask-input-wrapper { position: relative; margin-bottom: var(--space-8); }
+        .ask-input { width: 100%; min-height: 80px; padding: var(--space-5); background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: var(--radius-xl); font-size: var(--text-lg); color: var(--text-primary); resize: none; line-height: var(--leading-relaxed); transition: all var(--duration-normal) var(--ease-out); }
+        .ask-input:focus { outline: none; border-color: var(--brand-500); box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1), var(--shadow-lg); }
+        .ask-input::placeholder { color: var(--text-muted); }
+        .ask-options { display: flex; flex-direction: column; gap: var(--space-4); }
+        .ask-option-row { display: flex; gap: var(--space-3); }
+        .ask-option-group { flex: 1; display: flex; flex-direction: column; gap: var(--space-2); }
+        .ask-position-btns { display: flex; gap: var(--space-2); }
+        .position-btn { flex: 1; padding: var(--space-3); border-radius: var(--radius-md); font-weight: var(--weight-semibold); font-size: var(--text-sm); border: 1px solid var(--border-default); background: var(--bg-tertiary); color: var(--text-secondary); transition: all var(--duration-normal) var(--ease-out); text-align: center; }
+        .position-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+        .position-btn.selected-for { background: var(--side-for-bg); color: var(--side-for); border-color: var(--side-for-border); }
+        .position-btn.selected-against { background: var(--side-against-bg); color: var(--side-against); border-color: var(--side-against-border); }
+        .opponent-btns { display: flex; gap: var(--space-2); }
+        .opponent-btn { flex: 1; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--bg-tertiary); border: 1px solid var(--border-default); color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); transition: all var(--duration-normal) var(--ease-out); text-align: center; }
+        .opponent-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+        .opponent-btn.selected { background: var(--accent-600); color: white; border-color: var(--accent-600); }
+        .mode-btns { display: flex; gap: var(--space-2); }
+        .mode-btn { flex: 1; padding: var(--space-3); border-radius: var(--radius-md); background: var(--bg-tertiary); border: 1px solid var(--border-default); color: var(--text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); transition: all var(--duration-normal) var(--ease-out); text-align: center; }
+        .mode-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+        .mode-btn.selected { background: var(--brand-500); color: white; border-color: var(--brand-500); }
+        .ask-actions { margin-top: var(--space-8); display: flex; justify-content: center; }
+        .ask-extras { display: flex; gap: var(--space-3); margin-top: var(--space-4); justify-content: center; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link active">Ask</a><a href="/live" class="nav-link">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a></div></div></nav>
+    <main class="page-content">
+        <div class="ask-page">
+            <div class="ask-container">
+                <h1 class="ask-prompt">What do you genuinely<br>want to <span>know</span>?</h1>
+                <div class="ask-input-wrapper">
+                    <textarea class="ask-input" id="ask-question" placeholder="Is remote work actually better for productivity?" rows="3"></textarea>
+                </div>
+                <div class="ask-options">
+                    <div class="ask-option-row">
+                        <div class="ask-option-group">
+                            <label class="input-label">Your Position</label>
+                            <div class="ask-position-btns" id="position-btns">
+                                <button class="position-btn" data-position="STRONGLY_FOR">Strongly For</button>
+                                <button class="position-btn selected-for" data-position="FOR">For</button>
+                                <button class="position-btn" data-position="UNDECIDED">Undecided</button>
+                                <button class="position-btn" data-position="AGAINST">Against</button>
+                                <button class="position-btn" data-position="STRONGLY_AGAINST">Strongly Against</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ask-option-row">
+                        <div class="ask-option-group">
+                            <label class="input-label">Opponent</label>
+                            <div class="opponent-btns" id="opponent-btns">
+                                <button class="opponent-btn selected" data-opponent="AI_SWARM">⚡ AI Swarm</button>
+                                <button class="opponent-btn" data-opponent="HUMAN">👤 Human</button>
+                                <button class="opponent-btn" data-opponent="AI_VS_AI">⚡ AI vs AI</button>
+                            </div>
+                        </div>
+                        <div class="ask-option-group">
+                            <label class="input-label">Mode</label>
+                            <div class="mode-btns" id="mode-btns">
+                                <button class="mode-btn selected" data-mode="LIVE">🔴 Live</button>
+                                <button class="mode-btn" data-mode="ASYNC">📝 Async</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ask-option-row">
+                        <div class="ask-option-group">
+                            <label class="input-label">Topic</label>
+                            <select class="input" id="ask-topic">
+                                <option value="">Select a topic...</option>
+                                <option value="technology">Technology</option>
+                                <option value="ai">AI & ML</option>
+                                <option value="science">Science</option>
+                                <option value="philosophy">Philosophy</option>
+                                <option value="gaming">Gaming</option>
+                                <option value="economics">Economics</option>
+                                <option value="culture">Culture</option>
+                                <option value="programming">Programming</option>
+                            </select>
+                        </div>
+                        <div class="ask-option-group">
+                            <label class="input-label">Visibility</label>
+                            <select class="input" id="ask-visibility">
+                                <option value="PUBLIC">Public</option>
+                                <option value="PRIVATE">Private</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="ask-actions">
+                    <button class="btn btn-primary btn-lg" id="ask-submit" style="min-width: 200px;">Start Debate →</button>
+                </div>
+                <div class="ask-extras">
+                    <button class="btn btn-ghost btn-sm" id="ask-attach">📎 Attach File</button>
+                    <button class="btn btn-ghost btn-sm" id="ask-context">＋ Add Context</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script type="module" src="/static/js/core/app.js"></script>
+<script type="module" src="/static/js/pages/ask.js"></script>
+</body>
+</html>

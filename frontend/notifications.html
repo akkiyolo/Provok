@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications — PROVOK</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body>
+<div class="page">
+    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link">Ask</a><a href="/live" class="nav-link">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a></div></div></nav>
+    <main class="page-content">
+        <section class="section" style="padding-top: var(--space-16);">
+            <div class="container container-md">
+                <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-6);">Notifications</h1>
+                <div id="notifications-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔔</div>
+                        <div class="empty-state-title">No notifications</div>
+                        <p class="empty-state-text">You'll be notified when it's your turn, when opponents respond, and when verdicts are ready.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<script type="module" src="/static/js/core/app.js"></script>
+</body>
+</html>

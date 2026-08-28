@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — PROVOK</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/profile.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body>
+<div class="page">
+    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link">Ask</a><a href="/live" class="nav-link">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a></div></div></nav>
+    <main class="page-content">
+        <div class="container container-lg">
+            <div class="profile-header">
+                <div class="profile-info">
+                    <div class="profile-avatar" id="profile-avatar">A</div>
+                    <div class="profile-details">
+                        <h1 class="profile-name" id="profile-name">Akki</h1>
+                        <div class="profile-username" id="profile-username">@akki</div>
+                        <p class="profile-bio" id="profile-bio">Curious about technology, philosophy, and the future of AI. Always ready for a good debate.</p>
+                        <div class="profile-stats">
+                            <div class="profile-stat"><span class="profile-stat-value" id="stat-debates">12</span><span class="profile-stat-label">Debates</span></div>
+                            <div class="profile-stat"><span class="profile-stat-value" id="stat-wins">7</span><span class="profile-stat-label">Round Wins</span></div>
+                            <div class="profile-stat"><span class="profile-stat-value" id="stat-followers">34</span><span class="profile-stat-label">Followers</span></div>
+                            <div class="profile-stat"><span class="profile-stat-value" id="stat-following">18</span><span class="profile-stat-label">Following</span></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" id="btn-follow">Follow</button>
+                </div>
+            </div>
+            <div class="profile-tabs" id="profile-tabs">
+                <span class="profile-tab active" data-tab="debates">Debates</span>
+                <span class="profile-tab" data-tab="positions">Positions</span>
+                <span class="profile-tab" data-tab="topics">Topics</span>
+            </div>
+            <div class="debate-history" id="profile-content">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚔️</div>
+                    <div class="empty-state-title">No debates yet</div>
+                    <p class="empty-state-text">This user hasn't participated in any debates yet.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script type="module" src="/static/js/core/app.js"></script>
+</body>
+</html>

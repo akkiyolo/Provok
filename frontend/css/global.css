@@ -1,0 +1,49 @@
+/* PROVOK — Global Styles */
+
+html {
+    background-color: var(--bg-primary);
+    color-scheme: dark;
+}
+
+body {
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* ── Selection ─────────────────────────────────────────── */
+::selection {
+    background: rgba(249, 115, 22, 0.25);
+    color: var(--text-primary);
+}
+
+/* ── Focus ─────────────────────────────────────────────── */
+:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+}
+
+/* ── Links ─────────────────────────────────────────────── */
+a.link {
+    color: var(--brand-400);
+    transition: color var(--duration-fast) var(--ease-out);
+}
+a.link:hover {
+    color: var(--brand-300);
+}

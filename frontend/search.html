@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search — PROVOK</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body>
+<div class="page">
+    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link">Ask</a><a href="/live" class="nav-link">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a></div></div></nav>
+    <main class="page-content">
+        <section class="section" style="padding-top: var(--space-16);">
+            <div class="container container-md">
+                <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-6);">Search</h1>
+                <div style="position: relative; margin-bottom: var(--space-8);">
+                    <input type="search" class="input" id="search-input" placeholder="Search debates, questions, users, topics..." style="height: 52px; font-size: var(--text-lg); padding-left: var(--space-12);">
+                    <svg style="position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%); color: var(--text-muted);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <div id="search-results">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-title">Search PROVOK</div>
+                        <p class="empty-state-text">Find debates, questions, users, and topics.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<script type="module" src="/static/js/core/app.js"></script>
+</body>
+</html>

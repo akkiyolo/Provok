@@ -1,0 +1,54 @@
+/* PROVOK — Layout */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-content {
+    flex: 1;
+    padding-top: var(--nav-height);
+}
+
+.container {
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+}
+
+.container-sm { max-width: var(--max-width-sm); }
+.container-md { max-width: var(--max-width-md); }
+.container-lg { max-width: var(--max-width-lg); }
+
+/* ── Grid ──────────────────────────────────────────────── */
+.grid { display: grid; gap: var(--space-6); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ── Flex helpers ──────────────────────────────────────── */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-center { align-items: center; justify-content: center; }
+.flex-between { align-items: center; justify-content: space-between; }
+.flex-start { align-items: flex-start; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+.gap-8 { gap: var(--space-8); }
+
+/* ── Section spacing ───────────────────────────────────── */
+.section {
+    padding: var(--space-16) 0;
+}
+.section-sm {
+    padding: var(--space-10) 0;
+}
+.section-header {
+    margin-bottom: var(--space-8);
+}

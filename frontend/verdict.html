@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PROVOK — Verdict and results of a completed debate.">
+    <title>Verdict — PROVOK</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/verdict.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body>
+<div class="page">
+    <nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo">PROVOK</a><div class="nav-links"><a href="/" class="nav-link">Home</a><a href="/ask" class="nav-link">Ask</a><a href="/live" class="nav-link">Live</a><a href="/explore" class="nav-link">Explore</a></div><div class="nav-actions"><a href="/login" class="btn btn-secondary btn-sm">Sign In</a></div></div></nav>
+    <main class="page-content">
+        <div class="verdict-page container container-lg">
+            <div class="verdict-header">
+                <div class="verdict-label">DEBATE COMPLETE</div>
+                <h1 class="verdict-title" id="verdict-title">Verdict</h1>
+                <p class="verdict-question" id="verdict-question">Is Rust worth learning for ML engineers in 2026?</p>
+            </div>
+
+            <!-- Main Results -->
+            <div class="verdict-results" id="verdict-results">
+                <div class="verdict-result-card">
+                    <div class="verdict-result-label">Audience Winner</div>
+                    <div class="verdict-result-value" style="color: var(--side-for);" id="audience-winner">Human</div>
+                    <div class="verdict-result-detail">Based on 89 audience votes</div>
+                </div>
+                <div class="verdict-result-card">
+                    <div class="verdict-result-label">Evidence Advantage</div>
+                    <div class="verdict-result-value" style="color: var(--side-against);" id="evidence-winner">AI Swarm</div>
+                    <div class="verdict-result-detail">Stronger sourced evidence</div>
+                </div>
+                <div class="verdict-result-card">
+                    <div class="verdict-result-label">Judge Conclusion</div>
+                    <div class="verdict-result-value" id="judge-conclusion">Mixed / Unresolved</div>
+                    <div class="verdict-result-detail">Neither side achieved full victory</div>
+                </div>
+                <div class="verdict-result-card">
+                    <div class="verdict-result-label">Judge Confidence</div>
+                    <div class="verdict-result-value" style="color: var(--brand-400);" id="judge-confidence">78%</div>
+                    <div class="verdict-result-detail">In this assessment</div>
+                </div>
+            </div>
+
+            <!-- Position Shift -->
+            <div class="position-shift" id="position-shift">
+                <div class="position-shift-header">
+                    <span class="label-brand">YOUR POSITION SHIFT</span>
+                </div>
+                <div class="position-shift-visual">
+                    <div class="position-block">
+                        <div class="position-label">Before</div>
+                        <div class="position-value">Strongly For</div>
+                        <div class="position-confidence">82%</div>
+                    </div>
+                    <div class="position-arrow">
+                        <span class="position-arrow-icon">→</span>
+                    </div>
+                    <div class="position-block">
+                        <div class="position-label">After</div>
+                        <div class="position-value" style="color: var(--warning);">For</div>
+                        <div class="position-confidence" style="color: var(--warning);">61%</div>
+                    </div>
+                </div>
+                <div class="position-shift-message">You didn't necessarily change your mind. You changed your certainty.</div>
+            </div>
+
+            <!-- Scoring Dimensions -->
+            <div class="verdict-dimensions" id="verdict-dimensions">
+                <div class="dimension-card">
+                    <div class="dimension-label">Evidence Quality</div>
+                    <div class="dimension-bars">
+                        <div class="dimension-bar"><span class="dimension-bar-label">Akki</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-for" style="width: 65%;"></div></div><span class="dimension-bar-value">65</span></div>
+                        <div class="dimension-bar"><span class="dimension-bar-label">AI</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-against" style="width: 82%;"></div></div><span class="dimension-bar-value">82</span></div>
+                    </div>
+                </div>
+                <div class="dimension-card">
+                    <div class="dimension-label">Reasoning</div>
+                    <div class="dimension-bars">
+                        <div class="dimension-bar"><span class="dimension-bar-label">Akki</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-for" style="width: 78%;"></div></div><span class="dimension-bar-value">78</span></div>
+                        <div class="dimension-bar"><span class="dimension-bar-label">AI</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-against" style="width: 74%;"></div></div><span class="dimension-bar-value">74</span></div>
+                    </div>
+                </div>
+                <div class="dimension-card">
+                    <div class="dimension-label">Rebuttal Effectiveness</div>
+                    <div class="dimension-bars">
+                        <div class="dimension-bar"><span class="dimension-bar-label">Akki</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-for" style="width: 71%;"></div></div><span class="dimension-bar-value">71</span></div>
+                        <div class="dimension-bar"><span class="dimension-bar-label">AI</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-against" style="width: 69%;"></div></div><span class="dimension-bar-value">69</span></div>
+                    </div>
+                </div>
+                <div class="dimension-card">
+                    <div class="dimension-label">Consistency</div>
+                    <div class="dimension-bars">
+                        <div class="dimension-bar"><span class="dimension-bar-label">Akki</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-for" style="width: 85%;"></div></div><span class="dimension-bar-value">85</span></div>
+                        <div class="dimension-bar"><span class="dimension-bar-label">AI</span><div class="dimension-bar-track"><div class="dimension-bar-fill dimension-bar-fill-against" style="width: 88%;"></div></div><span class="dimension-bar-value">88</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Claims -->
+            <div class="verdict-claims" id="verdict-claims">
+                <div class="feed-section-header"><span class="feed-section-title">Claims Summary</span></div>
+                <div class="claims-grid">
+                    <div class="claim-stat"><div class="claim-stat-count" style="color: var(--success);">4</div><div class="claim-stat-label">Supported</div></div>
+                    <div class="claim-stat"><div class="claim-stat-count" style="color: var(--warning);">3</div><div class="claim-stat-label">Contested</div></div>
+                    <div class="claim-stat"><div class="claim-stat-count" style="color: var(--error);">1</div><div class="claim-stat-label">Refuted</div></div>
+                    <div class="claim-stat"><div class="claim-stat-count" style="color: var(--text-muted);">2</div><div class="claim-stat-label">Unresolved</div></div>
+                    <div class="claim-stat"><div class="claim-stat-count" style="color: var(--accent-400);">1</div><div class="claim-stat-label">Conceded</div></div>
+                </div>
+            </div>
+
+            <!-- Next Debate -->
+            <div class="verdict-next" id="verdict-next">
+                <div class="verdict-next-label">PROVOK RECOMMENDS</div>
+                <h3 class="verdict-next-question" id="next-question">Is C++ still worth learning for ML infrastructure?</h3>
+                <a href="/ask" class="btn btn-primary btn-lg" id="btn-next-debate">Start This Debate →</a>
+            </div>
+        </div>
+    </main>
+</div>
+<script type="module" src="/static/js/core/app.js"></script>
+<script type="module" src="/static/js/pages/verdict.js"></script>
+</body>
+</html>

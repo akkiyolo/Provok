@@ -162,6 +162,14 @@ async def serve_frontend(path: str):
         if html_file.exists():
             return HTMLResponse(html_file.read_text(encoding="utf-8"))
 
+    # Favicon
+    if route in ["/favicon.ico", "/favicon.png"]:
+        from fastapi.responses import FileResponse
+        favicon_file = FRONTEND_DIR / route.lstrip("/")
+        if favicon_file.exists():
+            return FileResponse(favicon_file)
+        return HTMLResponse("", status_code=404)
+
     # Dynamic routes
     if route.startswith("/debate/") and route.endswith("/verdict"):
         html_file = FRONTEND_DIR / "verdict.html"

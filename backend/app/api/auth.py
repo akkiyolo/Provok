@@ -27,7 +27,7 @@ async def register(user_in: UserCreate, db: DbSession) -> Any:
     user = User(
         email=user_in.email,
         username=user_in.username,
-        hashed_password=get_password_hash(user_in.password),
+        password_hash=get_password_hash(user_in.password),
     )
     db.add(user)
     await db.commit()
@@ -43,9 +43,9 @@ async def login(
     """User login."""
     stmt = select(User).where(User.email == form_data.username)
     user = await db.scalar(stmt)
-    if not user or not user.hashed_password:
+    if not user or not user.password_hash:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    if not verify_password(form_data.password, user.hashed_password):
+    if not verify_password(form_data.password, user.password_hash):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")

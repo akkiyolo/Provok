@@ -25,12 +25,17 @@ async def get_user_profile(username: str, db: AsyncSession = Depends(get_db)):
     # Debates participated
     debates_count = await db.scalar(select(func.count()).select_from(Participant).where(Participant.user_id == user.id))
     
+    avatar_url = user.avatar_url
+    if avatar_url and not avatar_url.startswith('http'):
+        from backend.app.storage.s3 import storage_manager
+        avatar_url = storage_manager.generate_presigned_url(avatar_url)
+
     return {
         "id": user.id,
         "username": user.username,
         "display_name": user.display_name or user.username,
         "bio": user.bio or "No bio provided.",
-        "avatar_url": user.avatar_url,
+        "avatar_url": avatar_url,
         "stats": {
             "followers": followers_count or 0,
             "following": following_count or 0,
@@ -96,4 +101,6 @@ async def upload_avatar(
     db.add(current_user)
     await db.commit()
     
-    return {"message": "Avatar updated successfully", "avatar_url": url}
+    presigned_url = storage_manager.generate_presigned_url(url)
+    
+    return {"message": "Avatar updated successfully", "avatar_url": presigned_url}

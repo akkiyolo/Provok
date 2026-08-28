@@ -45,12 +45,11 @@ class S3StorageManager:
                 file_obj,
                 self.bucket_name,
                 object_name,
-                ExtraArgs={'ContentType': content_type, 'ACL': 'public-read'}
+                ExtraArgs={'ContentType': content_type}
             )
             
-            # Construct the public URL
-            url = f"https://{self.bucket_name}.s3.{settings.aws_region}.amazonaws.com/{object_name}"
-            return url
+            # Return the object name (key) so presigned URLs can be generated later
+            return object_name
             
         except ClientError as e:
             logger.error(f"S3 Upload failed: {e}")

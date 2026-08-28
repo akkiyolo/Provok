@@ -76,7 +76,20 @@ async def refresh(
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)) -> Any:
     """Get current user."""
-    return current_user
+    user_data = {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "created_at": current_user.created_at,
+        "is_active": current_user.is_active,
+        "avatar_url": current_user.avatar_url,
+    }
+    
+    if user_data["avatar_url"] and not user_data["avatar_url"].startswith('http'):
+        from backend.app.storage.s3 import storage_manager
+        user_data["avatar_url"] = storage_manager.generate_presigned_url(user_data["avatar_url"])
+
+    return user_data
 
 
 @router.get("/google")

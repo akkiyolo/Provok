@@ -80,7 +80,8 @@ async def create_debate(
         question_id=question.id,
         debate_type=dt,
         mode=debate_in.mode,
-        visibility="PUBLIC" if debate_in.is_public else "PRIVATE"
+        visibility="PUBLIC" if debate_in.is_public else "PRIVATE",
+        status=DebateStatus.DRAFT
     )
     db.add(debate)
 

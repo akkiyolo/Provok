@@ -156,6 +156,10 @@ async def serve_frontend(path: str):
     # Normalize path
     route = f"/{path}" if path else "/"
 
+    # Explicitly fail API routes so they don't return HTML
+    if route.startswith(settings.api_v1_prefix) or route.startswith("/api/"):
+        return JSONResponse({"detail": "Not Found"}, status_code=404)
+
     # Direct route match
     if route in FRONTEND_ROUTES:
         html_file = FRONTEND_DIR / FRONTEND_ROUTES[route]

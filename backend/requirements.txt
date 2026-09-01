@@ -24,6 +24,7 @@ celery[redis]>=5.4
 
 # --- Auth ---
 argon2-cffi>=23.1
+passlib[bcrypt]>=1.7
 python-jose[cryptography]>=3.3
 httpx>=0.27
 python-multipart>=0.0.9

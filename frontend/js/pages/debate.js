@@ -113,6 +113,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         composeInput.placeholder = 'Write your rebuttal…';
     }
 
+    // Handle Participant vs Spectator view
+    let currentUser = null;
+    try {
+        currentUser = await api.request('GET', '/auth/me', null, { noRedirect: true });
+    } catch (e) {
+        // Not logged in
+    }
+
+    const composeSection = document.querySelector('.compose');
+    if (composeSection) {
+        if (!currentUser || currentUser.id !== debate.creator_id) {
+            composeSection.style.display = 'none';
+        } else {
+            composeSection.style.display = 'block';
+        }
+    }
+
     // ── Render existing arguments ────────────────────────────────
     const loadingState = document.getElementById('loading-state');
     if (loadingState) loadingState.remove();
@@ -133,7 +150,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const placeholder = document.createElement('div');
         placeholder.id = 'empty-placeholder';
         placeholder.style.cssText = 'color:var(--muted);padding:40px 28px;font-size:14px;line-height:1.7';
-        placeholder.textContent = 'The debate floor is open. Make your opening argument below.';
+        
+        if (currentUser && currentUser.id === debate.creator_id) {
+            placeholder.textContent = 'The debate floor is open. Make your opening argument below.';
+        } else {
+            placeholder.textContent = 'Waiting for the debate to begin...';
+        }
+        
         stream.appendChild(placeholder);
     }
 

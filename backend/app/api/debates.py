@@ -1,6 +1,6 @@
 """PROVOK — Debates API routes."""
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Any, List
+from typing import Any, List, Optional
 from sqlalchemy import select
 from uuid import UUID
 
@@ -16,6 +16,42 @@ from backend.app.debate.state_machine import DebateStateMachine
 router = APIRouter()
 
 from fastapi import BackgroundTasks
+
+@router.get("/", response_model=List[DebateResponse])
+async def list_debates(db: DbSession, status: Optional[str] = None, limit: int = 10) -> Any:
+    """Get a list of recent public debates."""
+    from sqlalchemy.orm import selectinload
+    
+    query = select(Debate).options(
+        selectinload(Debate.question),
+        selectinload(Debate.participants)
+    ).where(Debate.visibility == "PUBLIC")
+    if status:
+        query = query.where(Debate.status == status)
+        
+    debates = await db.scalars(query.order_by(Debate.created_at.desc()).limit(limit))
+    
+    res = []
+    from backend.app.models.debate import ParticipantType, DebateType
+    for d in debates:
+        # Map DebateType to ParticipantType for the frontend listing
+        opp_type = ParticipantType.AI_SWARM
+        if d.debate_type == DebateType.HUMAN_VS_HUMAN:
+            opp_type = ParticipantType.HUMAN
+            
+        res.append(DebateResponse(
+            id=d.id,
+            title=d.question.text if d.question else "Unknown Topic",
+            mode=d.mode,
+            opponent_type=opp_type, 
+            is_public=True,
+            status=d.status,
+            creator_id=d.creator_id or UUID(int=0), 
+            created_at=d.created_at,
+            current_round=d.current_round,
+            rounds=[]
+        ))
+    return res
 
 @router.post("/", response_model=DebateResponse)
 async def create_debate(

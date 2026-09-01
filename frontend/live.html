@@ -26,11 +26,8 @@
 <div class="nav-actions"><button id="theme-toggle" class="btn btn-ghost btn-sm desktop-only" style="padding:0 8px;font-size:16px;" title="Toggle Theme">◐</button><a class="btn btn-ghost btn-sm desktop-only" href="/notifications">Notifications</a><a class="btn btn-secondary btn-sm desktop-only" href="/login">Sign in</a><a class="btn btn-red btn-sm" href="/ask">Start debate</a><button class="btn btn-ghost btn-sm mobile-toggle" onclick="document.querySelector('.nav-links').style.display='flex'">Menu</button></div>
 </div></nav><main class="page-content">
 <section class="page-heading"><div class="container"><div class="eyebrow">LIVE FLOOR</div><h1>Watch the argument<br>while it is happening.</h1><p>Vote when a round closes. Challenge a claim. Follow the debate without needing to enter it.</p></div></section>
-<section class="section"><div class="container"><div class="feed-grid"></div><div class="debate-card-question">Will AI replace most software engineers within ten years?</div><div class="debate-card-footer"><span>184 watching</span><span>Watch →</span></div></a>
-<a class="debate-card" href="/debate/demo"><div class="debate-card-meta"><span class="badge badge-live">LIVE · R3</span><span class="tag">Philosophy</span></div><div class="debate-card-question">Can a machine ever become conscious?</div><div class="debate-card-footer"><span>342 watching</span><span>Watch →</span></div></a>
-<a class="debate-card" href="/debate/demo"><div class="debate-card-meta"><span class="badge badge-live">LIVE · R1</span><span class="tag">Gaming</span></div><div class="debate-card-question">Is GTA IV actually better than GTA V?</div><div class="debate-card-footer"><span>89 watching</span><span>Watch →</span></div></a>
-<a class="debate-card" href="/debate/demo"><div class="debate-card-meta"><span class="badge badge-live">LIVE · R2</span><span class="tag">Science</span></div><div class="debate-card-question">Should nuclear power expand faster than renewables?</div><div class="debate-card-footer"><span>73 watching</span><span>Watch →</span></div></a>
-</div></div></section></main></div>
+<section class="section"><div class="container"><div class="feed-grid" id="live-feed-grid"></div></div></section></main></div>
 <div id="toast-container" class="toast-container"></div>
 <script type="module" src="/static/js/core/app.js"></script>
+<script type="module" src="/static/js/pages/live.js"></script>
 </body></html>

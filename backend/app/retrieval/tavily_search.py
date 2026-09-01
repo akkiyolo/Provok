@@ -1,20 +1,20 @@
 """Tavily search integration for RAG tools."""
 import os
 import logging
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from backend.app.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-def get_search_tool() -> TavilySearchResults:
+def get_search_tool() -> TavilySearch:
     """Initialize and return the Tavily Search tool."""
     # Ensure environment variable is set for LangChain
     if not os.environ.get("TAVILY_API_KEY") and settings.search_api_key:
         os.environ["TAVILY_API_KEY"] = settings.search_api_key
         
     try:
-        tool = TavilySearchResults(
+        tool = TavilySearch(
             max_results=settings.max_search_results,
             search_depth="advanced",
             include_answer=True,

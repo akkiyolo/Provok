@@ -83,27 +83,20 @@ async def _generate_response_async(debate_id: str):
         await session.refresh(new_arg)
         logger.info(f"AI response generated for debate {debate_id}")
 
-        # Broadcast via Redis PubSub so WebSockets pick it up
-        import json
-        from backend.app.config import get_settings
-        import redis.asyncio as aioredis
-        
-        settings = get_settings()
-        redis_client = aioredis.from_url(settings.redis_url)
+        # Broadcast via WebSocket manager
+        from backend.app.websockets.manager import manager
         payload = {
             "id": str(new_arg.id),
             "content": new_arg.content,
             "side": ai_participant.side_id.hex,
             "is_ai": True,
-            "type": new_arg.argument_type.value,
+            "type": new_arg.argument_type.value if hasattr(new_arg.argument_type, 'value') else new_arg.argument_type,
         }
-        event = {
-            "debate_id": debate_id,
-            "event_type": "argument_submitted",
-            "payload": payload
-        }
-        await redis_client.publish("debate_events", json.dumps(event))
-        await redis_client.close()
+        await manager.publish_event(
+            debate_id=debate_id,
+            event_type="argument_submitted",
+            payload=payload
+        )
 
 @celery_app.task(name="ai.generate_response", bind=True, max_retries=3)
 def generate_ai_response(self, debate_id: str):

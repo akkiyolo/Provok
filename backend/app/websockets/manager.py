@@ -56,14 +56,24 @@ class ConnectionManager:
     async def publish_event(self, debate_id: str, event_type: str, payload: dict):
         """Publish an event to Redis so all workers can broadcast it."""
         if not self.redis:
-            logger.warning("Redis client not initialized on ConnectionManager")
+            # No Redis — broadcast directly to local connections only
+            await self.broadcast_to_room(debate_id, {
+                "debate_id": debate_id,
+                "event_type": event_type,
+                "payload": payload
+            })
             return
-            
+
         message = {
             "debate_id": debate_id,
             "event_type": event_type,
             "payload": payload
         }
-        await self.redis.publish("debate_events", json.dumps(message))
+        try:
+            await self.redis.publish("debate_events", json.dumps(message))
+        except Exception:
+            # Redis is down — fall back to local broadcast
+            logger.debug("Redis unavailable, broadcasting locally")
+            await self.broadcast_to_room(debate_id, message)
 
 manager = ConnectionManager()

@@ -157,6 +157,18 @@ class Debate(Base):
     participants: Mapped[list["Participant"]] = relationship(back_populates="debate", cascade="all, delete-orphan")
     rounds: Mapped[list["Round"]] = relationship(back_populates="debate", cascade="all, delete-orphan", order_by="Round.round_number")
 
+    @property
+    def title(self) -> str:
+        return self.question.text if self.question else "Debate"
+
+    @property
+    def creator_id(self) -> uuid.UUID | None:
+        # Default to first human participant
+        for p in self.participants:
+            if p.participant_type == ParticipantType.HUMAN:
+                return p.user_id
+        return None
+
 
 class DebateSide(Base):
     __tablename__ = "debate_sides"

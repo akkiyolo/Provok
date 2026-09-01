@@ -33,10 +33,9 @@ class ArgumentCreate(ArgumentBase):
 class ArgumentResponse(ArgumentBase):
     id: UUID
     debate_id: UUID
-    user_id: Optional[UUID]
+    participant_id: UUID
     round_id: UUID
-    is_ai: bool
-    side: SideLabel
+    side_id: UUID
     created_at: datetime
     claims: List[ClaimResponse] = []
 
@@ -49,8 +48,9 @@ class RoundResponse(BaseModel):
     debate_id: UUID
     round_number: int
     phase: RoundPhase
-    started_at: datetime
+    started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
+    arguments: List[ArgumentResponse] = []
 
     class Config:
         from_attributes = True

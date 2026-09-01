@@ -38,7 +38,7 @@ class DebateStateMachine:
 
     async def initialize_debate(self, debate: Debate) -> Debate:
         """Starts a debate and creates the first round."""
-        if debate.status != DebateStatus.PENDING:
+        if debate.status != DebateStatus.DRAFT:
             raise ValueError(f"Cannot initialize debate in status {debate.status}")
         
         # Create first round
@@ -52,7 +52,7 @@ class DebateStateMachine:
         await self.db.flush()
 
         # Update debate status
-        debate.status = DebateStatus.ACTIVE
+        debate.status = DebateStatus.LIVE
         debate.current_round = first_round.round_number
         
         await self.db.commit()
@@ -61,7 +61,7 @@ class DebateStateMachine:
 
     async def advance_round(self, debate: Debate) -> Optional[Round]:
         """Advances the debate to the next round, or completes it if 4 rounds are done."""
-        if debate.status != DebateStatus.ACTIVE:
+        if debate.status != DebateStatus.LIVE:
             raise ValueError("Can only advance active debates.")
             
         current_round = await self.db.scalar(
@@ -116,7 +116,7 @@ class DebateStateMachine:
         Returns True if the round was advanced.
         """
         debate = await self.db.scalar(select(Debate).where(Debate.id == debate_id))
-        if not debate or debate.status != DebateStatus.ACTIVE:
+        if not debate or debate.status != DebateStatus.LIVE:
             return False
 
         # In a real implementation, we would check all participants for this round.

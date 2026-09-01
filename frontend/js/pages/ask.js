@@ -46,8 +46,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 toast('Please enter a question', 'error');
                 return;
             }
+
+            // Extract selected options
+            const positionBtn = document.querySelector('#position-options .option.selected');
+            const opponentBtn = document.querySelector('#opponent-options .option.selected');
+            const modeBtn = document.querySelector('#mode-options .option.selected');
+
+            const payload = {
+                title: question,
+                initial_position: positionBtn ? positionBtn.dataset.value : 'FOR',
+                opponent_type: opponentBtn ? opponentBtn.dataset.value : 'AI_SWARM',
+                mode: modeBtn ? modeBtn.dataset.value : 'ASYNC',
+                is_public: true
+            };
+
             toast('Creating debate...', 'info');
-            // Will call API in Phase 3
+            
+            try {
+                const res = await api.post('/debates/', payload);
+                if (res.id) {
+                    toast('Debate created!', 'success');
+                    window.location.href = `/debate/${res.id}`;
+                }
+            } catch (err) {
+                toast(err.message || 'Failed to create debate', 'error');
+            }
         });
     }
 

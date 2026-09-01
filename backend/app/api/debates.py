@@ -1,9 +1,4 @@
 """PROVOK — Debates API routes."""
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Any, List
 from sqlalchemy import select
@@ -11,15 +6,21 @@ from uuid import UUID
 
 from backend.app.dependencies import DbSession, get_current_user
 from backend.app.models.user import User
-from backend.app.models.debate import Debate, Participant, PositionHistory, SideLabel, DebateStatus, Argument, DebateType, DebateSide
+from backend.app.models.debate import (
+    Debate, Participant, PositionHistory, SideLabel, DebateStatus,
+    Argument, DebateType, DebateSide, Round
+)
 from backend.app.schemas.debate import DebateCreate, DebateResponse, ArgumentCreate, ArgumentResponse
 from backend.app.debate.state_machine import DebateStateMachine
 
 router = APIRouter()
 
+from fastapi import BackgroundTasks
+
 @router.post("/", response_model=DebateResponse)
 async def create_debate(
     debate_in: DebateCreate,
+    background_tasks: BackgroundTasks,
     db: DbSession,
     current_user: User = Depends(get_current_user)
 ) -> Any:
@@ -31,8 +32,17 @@ async def create_debate(
     elif debate_in.opponent_type.value == "AI_VS_AI":
         dt = DebateType.AI_VS_AI
 
+    # Create the underlying question record
+    from backend.app.models.debate import Question
+    question = Question(
+        text=debate_in.title,
+        author_id=current_user.id
+    )
+    db.add(question)
+    await db.flush()
+
     debate = Debate(
-        question_id=debate_in.topic_id, # Simplified for demo
+        question_id=question.id,
         debate_type=dt,
         mode=debate_in.mode,
         visibility="PUBLIC" if debate_in.is_public else "PRIVATE"
@@ -74,31 +84,104 @@ async def create_debate(
     fsm = DebateStateMachine(db)
     debate = await fsm.initialize_debate(debate)
     
-    # Trigger Celery task for AI opponent if applicable
+    # Trigger AI opponent to respond if applicable
     if dt in [DebateType.HUMAN_VS_AI, DebateType.AI_VS_AI]:
-        from backend.app.workers.ai_tasks import generate_ai_response
-        generate_ai_response.delay(str(debate.id))
+        from backend.app.workers.ai_tasks import _generate_response_async
+        background_tasks.add_task(_generate_response_async, str(debate.id))
 
-    return debate
+    # Return explicit response to avoid async lazy load errors
+    from datetime import datetime, timezone
+    return DebateResponse(
+        id=debate.id,
+        title=debate_in.title,
+        mode=debate.mode,
+        opponent_type=debate_in.opponent_type,
+        topic_id=debate_in.topic_id,
+        is_public=debate_in.is_public,
+        status=debate.status,
+        creator_id=current_user.id,
+        created_at=debate.created_at or datetime.now(timezone.utc),
+        current_round=debate.current_round,
+        rounds=[]
+    )
 
 @router.get("/{debate_id}", response_model=DebateResponse)
 async def get_debate(debate_id: UUID, db: DbSession) -> Any:
     """Get debate details."""
-    debate = await db.scalar(select(Debate).where(Debate.id == debate_id))
+    from sqlalchemy.orm import selectinload
+    debate = await db.scalar(
+        select(Debate)
+        .options(
+            selectinload(Debate.question),
+            selectinload(Debate.participants),
+            selectinload(Debate.rounds).selectinload(Round.arguments),
+        )
+        .where(Debate.id == debate_id)
+    )
     if not debate:
         raise HTTPException(status_code=404, detail="Debate not found")
-    return debate
+
+    from datetime import datetime, timezone
+    # Build explicit response to avoid lazy-load issues with @property fields
+    rounds_data = []
+    for r in debate.rounds:
+        args_data = []
+        for a in r.arguments:
+            args_data.append({
+                "id": a.id,
+                "debate_id": a.debate_id,
+                "participant_id": a.participant_id,
+                "round_id": a.round_id,
+                "side_id": a.side_id,
+                "content": a.content,
+                "argument_type": a.argument_type.value if hasattr(a.argument_type, 'value') else a.argument_type,
+                "created_at": a.created_at,
+                "claims": [],
+            })
+        rounds_data.append({
+            "id": r.id,
+            "debate_id": r.debate_id,
+            "round_number": r.round_number,
+            "phase": r.phase,
+            "started_at": r.started_at,
+            "ended_at": r.completed_at,
+            "arguments": args_data,
+        })
+
+    creator_id = None
+    for p in debate.participants:
+        if str(p.participant_type) in ("HUMAN", "ParticipantType.HUMAN"):
+            creator_id = p.user_id
+            break
+
+    from backend.app.schemas.debate import DebateResponse, ParticipantType as PT, DebateMode
+    return DebateResponse(
+        id=debate.id,
+        title=debate.question.text if debate.question else "Debate",
+        mode=debate.mode,
+        opponent_type=PT.AI_SWARM,
+        topic_id=None,
+        is_public=(str(debate.visibility) in ("PUBLIC", "DebateVisibility.PUBLIC")),
+        status=debate.status,
+        creator_id=creator_id or debate.id,
+        created_at=debate.created_at or datetime.now(timezone.utc),
+        current_round=debate.current_round,
+        rounds=rounds_data,
+    )
+
+from fastapi import BackgroundTasks
 
 @router.post("/{debate_id}/turn", response_model=ArgumentResponse)
 async def submit_turn(
     debate_id: UUID,
     arg_in: ArgumentCreate,
+    background_tasks: BackgroundTasks,
     db: DbSession,
     current_user: User = Depends(get_current_user)
 ) -> Any:
     """Submit an argument for the current turn."""
     debate = await db.scalar(select(Debate).where(Debate.id == debate_id))
-    if not debate or debate.status != DebateStatus.ACTIVE:
+    if not debate or debate.status != DebateStatus.LIVE:
         raise HTTPException(status_code=400, detail="Debate is not active")
 
     # Get participant side
@@ -151,10 +234,22 @@ async def submit_turn(
     
     # Check if we should trigger AI response
     if debate.debate_type in [DebateType.HUMAN_VS_AI, DebateType.AI_VS_AI]:
-        from backend.app.workers.ai_tasks import generate_ai_response
-        generate_ai_response.delay(str(debate.id))
+        from backend.app.workers.ai_tasks import _generate_response_async
+        # Use FastAPI BackgroundTasks instead of Celery so it runs locally without Redis
+        background_tasks.add_task(_generate_response_async, str(debate.id))
 
-    return argument
+    from datetime import datetime, timezone
+    return {
+        "id": argument.id,
+        "debate_id": argument.debate_id,
+        "participant_id": argument.participant_id,
+        "round_id": argument.round_id,
+        "side_id": argument.side_id,
+        "content": argument.content,
+        "argument_type": argument.argument_type.value if hasattr(argument.argument_type, 'value') else argument.argument_type,
+        "created_at": argument.created_at or datetime.now(timezone.utc),
+        "claims": [],
+    }
 
 @router.post("/{debate_id}/done")
 async def finish_turn(debate_id: UUID, db: DbSession, current_user: User = Depends(get_current_user)):
@@ -215,12 +310,23 @@ async def submit_challenge(
     """Audience submits a real-time challenge or question."""
     from backend.app.models.debate import AudienceChallenge
     debate = await db.scalar(select(Debate).where(Debate.id == debate_id))
-    if not debate or debate.status != DebateStatus.ACTIVE:
+    if not debate or debate.status != DebateStatus.LIVE:
         raise HTTPException(status_code=400, detail="Debate not active")
+
+    # Get the actual Round object for this debate's current round
+    from backend.app.models.debate import Round as RoundModel
+    current_round_obj = await db.scalar(
+        select(RoundModel).where(
+            RoundModel.debate_id == debate_id,
+            RoundModel.round_number == debate.current_round
+        )
+    )
+    if not current_round_obj:
+        raise HTTPException(status_code=400, detail="No active round found")
 
     challenge = AudienceChallenge(
         debate_id=debate_id,
-        round_id=debate.current_round,
+        round_id=current_round_obj.id,
         user_id=current_user.id,
         content=challenge_in.content
     )

@@ -1,7 +1,8 @@
 import operator
 from typing import Annotated, Sequence, TypedDict
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
-from langchain_mistralai import ChatMistralAI
+
+from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from backend.app.config import get_settings
 
@@ -16,8 +17,9 @@ class DebateState(TypedDict):
     research_points: str
 
 def get_llm():
-    return ChatMistralAI(
+    return ChatOpenAI(
         api_key=settings.mistral_api_key,
+        base_url="https://api.mistral.ai/v1",
         model="mistral-large-latest",
         temperature=0.7
     )

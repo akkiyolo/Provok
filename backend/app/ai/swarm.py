@@ -20,21 +20,9 @@ def get_llm():
     from langchain_google_genai import ChatGoogleGenerativeAI
     return ChatGoogleGenerativeAI(
         api_key=settings.google_api_key,
-        model="gemini-3.5-flash",
+        model="gemini-1.5-flash",
         temperature=0.7
     )
-
-def supervisor_node(state: DebateState):
-    """
-    Supervisor determines the next step. 
-    Flow: Researcher -> Debater -> FactChecker -> END
-    """
-    if not state.get("research_points"):
-        return {"next_node": "researcher"}
-    elif not state.get("draft_argument"):
-        return {"next_node": "debater"}
-    else:
-        return {"next_node": "fact_checker"}
 
 def researcher_node(state: DebateState):
     """
@@ -104,51 +92,18 @@ def debater_node(state: DebateState):
     messages_to_send.append(HumanMessage(content=prompt))
     
     response = llm.invoke(messages_to_send)
-    return {"draft_argument": response.content}
-
-def fact_checker_node(state: DebateState):
-    """
-    FactChecker reviews the draft argument before final submission.
-    """
-    llm = get_llm()
-    draft = state.get("draft_argument", "")
-    
-    prompt = f"""You are the Fact Checker for an AI debate swarm.
-    Review the following draft argument and make it punchier, removing any hallucinated facts.
-    Draft: {draft}
-    
-    Output ONLY the final, polished argument. 
-    CRITICAL: DO NOT use any markdown formatting whatsoever. Do not use asterisks (*), hashtags (#), or any other formatting characters. Output plain text only."""
-    
-    response = llm.invoke([HumanMessage(content=prompt)])
     return {"messages": [AIMessage(content=response.content)]}
 
 def create_swarm_graph():
     """Builds and compiles the LangGraph state machine for the AI Swarm."""
     workflow = StateGraph(DebateState)
     
-    workflow.add_node("supervisor", supervisor_node)
     workflow.add_node("researcher", researcher_node)
     workflow.add_node("debater", debater_node)
-    workflow.add_node("fact_checker", fact_checker_node)
     
-    # Edges
-    workflow.set_entry_point("supervisor")
-    
-    # Conditional edge from supervisor
-    workflow.add_conditional_edges(
-        "supervisor",
-        lambda x: x["next_node"],
-        {
-            "researcher": "researcher",
-            "debater": "debater",
-            "fact_checker": "fact_checker"
-        }
-    )
-    
-    # After each worker, route back to supervisor
-    workflow.add_edge("researcher", "supervisor")
-    workflow.add_edge("debater", "supervisor")
-    workflow.add_edge("fact_checker", END)
+    # Linear progression: START -> researcher -> debater -> END
+    workflow.set_entry_point("researcher")
+    workflow.add_edge("researcher", "debater")
+    workflow.add_edge("debater", END)
     
     return workflow.compile()

@@ -75,7 +75,6 @@ async def create_debate(
         author_id=current_user.id
     )
     db.add(question)
-    await db.flush()
 
     debate = Debate(
         question_id=question.id,
@@ -84,13 +83,11 @@ async def create_debate(
         visibility="PUBLIC" if debate_in.is_public else "PRIVATE"
     )
     db.add(debate)
-    await db.flush()
 
     # Create sides
     side_for = DebateSide(debate_id=debate.id, label=SideLabel.FOR, position="For")
     side_against = DebateSide(debate_id=debate.id, label=SideLabel.AGAINST, position="Against")
     db.add_all([side_for, side_against])
-    await db.flush()
 
     user_side_id = side_for.id if debate_in.initial_position == SideLabel.FOR else side_against.id
 
@@ -104,7 +101,6 @@ async def create_debate(
         initial_confidence=1.0
     )
     db.add(participant)
-    await db.flush()
 
     # Add initial position history
     pos_history = PositionHistory(
@@ -128,8 +124,6 @@ async def create_debate(
             initial_confidence=1.0
         )
         db.add(ai_participant)
-
-    await db.flush()
     
     # Initialize FSM and first round
     fsm = DebateStateMachine(db)

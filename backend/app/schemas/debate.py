@@ -36,6 +36,7 @@ class ArgumentResponse(ArgumentBase):
     participant_id: UUID
     round_id: UUID
     side_id: UUID
+    side: Optional[str] = None
     created_at: datetime
     claims: List[ClaimResponse] = []
 

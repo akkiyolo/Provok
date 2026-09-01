@@ -18,8 +18,13 @@ from langchain_core.messages import HumanMessage, AIMessage
 logger = logging.getLogger(__name__)
 
 async def _generate_response_async(debate_id: str):
+    from sqlalchemy.orm import selectinload
     async with async_session_factory() as session:
-        debate = await session.scalar(select(Debate).where(Debate.id == uuid.UUID(debate_id)))
+        debate = await session.scalar(
+            select(Debate)
+            .options(selectinload(Debate.question))
+            .where(Debate.id == uuid.UUID(debate_id))
+        )
         if not debate:
             logger.error(f"Debate {debate_id} not found")
             return
@@ -85,10 +90,15 @@ async def _generate_response_async(debate_id: str):
 
         # Broadcast via WebSocket manager
         from backend.app.websockets.manager import manager
+        
+        # Get side label from participant's initial position
+        side_label = getattr(ai_participant.initial_position, 'value', ai_participant.initial_position)
+        
         payload = {
             "id": str(new_arg.id),
             "content": new_arg.content,
-            "side": ai_participant.side_id.hex,
+            "side_id": ai_participant.side_id.hex,
+            "side": str(side_label),
             "is_ai": True,
             "type": new_arg.argument_type.value if hasattr(new_arg.argument_type, 'value') else new_arg.argument_type,
         }

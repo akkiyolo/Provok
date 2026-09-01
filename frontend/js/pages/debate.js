@@ -50,7 +50,7 @@ function renderArgument(arg) {
                 </div>
                 <div>
                     <div class="speaker-name">${speakerName}</div>
-                    <div class="side">${side}</div>
+                    <div class="side">${sideLabel}</div>
                 </div>
             </div>
             <div class="argument-type">${argType}</div>
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const ph = document.getElementById('empty-placeholder');
                 if (ph) ph.remove();
                 // Render the submitted argument immediately
-                renderArgument({ ...arg, side: 'FOR' });
+                renderArgument(arg);
                 composeInput.value = '';
                 composeInput.style.height = 'auto';
                 toast('Argument submitted! Waiting for AI response…', 'success');

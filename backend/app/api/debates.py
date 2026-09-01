@@ -79,6 +79,21 @@ async def create_debate(
         phase="BEFORE"
     )
     db.add(pos_history)
+
+    # Add AI participant if applicable
+    if dt == DebateType.HUMAN_VS_AI:
+        ai_side_id = side_against.id if debate_in.initial_position == SideLabel.FOR else side_for.id
+        ai_participant = Participant(
+            debate_id=debate.id,
+            user_id=None,  # AI has no user_id
+            side_id=ai_side_id,
+            participant_type="AI_SWARM",
+            initial_position=SideLabel.AGAINST.value if debate_in.initial_position == SideLabel.FOR else SideLabel.FOR.value,
+            initial_confidence=1.0
+        )
+        db.add(ai_participant)
+
+    await db.flush()
     
     # Initialize FSM and first round
     fsm = DebateStateMachine(db)
@@ -109,11 +124,13 @@ async def create_debate(
 async def get_debate(debate_id: UUID, db: DbSession) -> Any:
     """Get debate details."""
     from sqlalchemy.orm import selectinload
+    from backend.app.models.debate import Argument as Arg
     debate = await db.scalar(
         select(Debate)
         .options(
             selectinload(Debate.question),
             selectinload(Debate.participants),
+            selectinload(Debate.sides),
             selectinload(Debate.rounds).selectinload(Round.arguments),
         )
         .where(Debate.id == debate_id)
@@ -122,6 +139,10 @@ async def get_debate(debate_id: UUID, db: DbSession) -> Any:
         raise HTTPException(status_code=404, detail="Debate not found")
 
     from datetime import datetime, timezone
+    
+    # Build a lookup for side labels
+    side_lookup = {str(s.id): s.label.value if hasattr(s.label, 'value') else str(s.label) for s in debate.sides}
+
     # Build explicit response to avoid lazy-load issues with @property fields
     rounds_data = []
     for r in debate.rounds:
@@ -133,6 +154,7 @@ async def get_debate(debate_id: UUID, db: DbSession) -> Any:
                 "participant_id": a.participant_id,
                 "round_id": a.round_id,
                 "side_id": a.side_id,
+                "side": side_lookup.get(str(a.side_id), ""),
                 "content": a.content,
                 "argument_type": a.argument_type.value if hasattr(a.argument_type, 'value') else a.argument_type,
                 "created_at": a.created_at,
@@ -238,6 +260,11 @@ async def submit_turn(
         # Use FastAPI BackgroundTasks instead of Celery so it runs locally without Redis
         background_tasks.add_task(_generate_response_async, str(debate.id))
 
+    # Get side label for response
+    from backend.app.models.debate import DebateSide
+    side_obj = await db.scalar(select(DebateSide).where(DebateSide.id == participant.side_id))
+    side_label_str = side_obj.label.value if side_obj and hasattr(side_obj.label, 'value') else (str(side_obj.label) if side_obj else "")
+
     from datetime import datetime, timezone
     return {
         "id": argument.id,
@@ -245,6 +272,7 @@ async def submit_turn(
         "participant_id": argument.participant_id,
         "round_id": argument.round_id,
         "side_id": argument.side_id,
+        "side": side_label_str,
         "content": argument.content,
         "argument_type": argument.argument_type.value if hasattr(argument.argument_type, 'value') else argument.argument_type,
         "created_at": argument.created_at or datetime.now(timezone.utc),

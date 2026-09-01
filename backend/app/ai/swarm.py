@@ -20,7 +20,7 @@ def get_llm():
     return ChatOpenAI(
         api_key=settings.mistral_api_key,
         base_url="https://api.mistral.ai/v1",
-        model="mistral-large-latest",
+        model="open-mistral-nemo",  # Switched to a model available on free/lower tiers
         temperature=0.7
     )
 
@@ -58,20 +58,28 @@ def researcher_node(state: DebateState):
     You must use the search tool to find 3 key strategic facts or recent news we should use in our next argument. 
     After searching, summarize the findings."""
     
-    response = llm_with_tools.invoke([SystemMessage(content=prompt)])
+    # Mistral requires the last message to be a HumanMessage
+    response = llm_with_tools.invoke([HumanMessage(content=prompt)])
     
     # If the LLM decided to call the tool, execute it and get the result
     if response.tool_calls:
-        # For simplicity in this graph, we execute the tool directly here instead of routing to a ToolNode
-        tool_results = []
+        # We must respond with a ToolMessage immediately after an AIMessage with tool_calls
+        messages_to_send = [HumanMessage(content=prompt), response]
+        
         for tool_call in response.tool_calls:
             if tool_call["name"] == search_tool.name:
                 result = search_tool.invoke(tool_call["args"])
-                tool_results.append(str(result))
+                from langchain_core.messages import ToolMessage
+                messages_to_send.append(
+                    ToolMessage(
+                        content=str(result),
+                        tool_call_id=tool_call["id"]
+                    )
+                )
                 
-        # Run LLM again with the tool results to get the final research points
-        follow_up_prompt = f"Here are the search results: {tool_results}\n\nNow summarize the 3 key strategic facts for the Debater."
-        final_response = llm.invoke([SystemMessage(content=prompt), response, HumanMessage(content=follow_up_prompt)])
+        # Ask for the summary as a follow-up human message
+        messages_to_send.append(HumanMessage(content="Now summarize the 3 key strategic facts for the Debater based on the tool results above."))
+        final_response = llm.invoke(messages_to_send)
         return {"research_points": final_response.content}
     
     return {"research_points": response.content}
@@ -90,7 +98,11 @@ def debater_node(state: DebateState):
     
     Craft a compelling, highly persuasive argument. Do not be generic. Be sharp and structured."""
     
-    response = llm.invoke([SystemMessage(content=prompt)] + state['messages'])
+    # If there are no messages, or if the last message is an AIMessage, ensure we end with a HumanMessage
+    messages_to_send = list(state.get('messages', []))
+    messages_to_send.append(HumanMessage(content=prompt))
+    
+    response = llm.invoke(messages_to_send)
     return {"draft_argument": response.content}
 
 def fact_checker_node(state: DebateState):
@@ -106,7 +118,7 @@ def fact_checker_node(state: DebateState):
     
     Output ONLY the final, polished argument."""
     
-    response = llm.invoke([SystemMessage(content=prompt)])
+    response = llm.invoke([HumanMessage(content=prompt)])
     return {"messages": [AIMessage(content=response.content)]}
 
 def create_swarm_graph():

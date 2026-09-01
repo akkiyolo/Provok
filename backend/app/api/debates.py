@@ -68,15 +68,21 @@ async def create_debate(
     elif debate_in.opponent_type.value == "AI_VS_AI":
         dt = DebateType.AI_VS_AI
 
+    import uuid
+    
     # Create the underlying question record
     from backend.app.models.debate import Question
+    question_id = uuid.uuid4()
     question = Question(
+        id=question_id,
         text=debate_in.title,
         author_id=current_user.id
     )
     db.add(question)
 
+    debate_id = uuid.uuid4()
     debate = Debate(
+        id=debate_id,
         question_id=question.id,
         debate_type=dt,
         mode=debate_in.mode,
@@ -86,14 +92,18 @@ async def create_debate(
     db.add(debate)
 
     # Create sides
-    side_for = DebateSide(debate_id=debate.id, label=SideLabel.FOR, position="For")
-    side_against = DebateSide(debate_id=debate.id, label=SideLabel.AGAINST, position="Against")
+    side_for_id = uuid.uuid4()
+    side_against_id = uuid.uuid4()
+    side_for = DebateSide(id=side_for_id, debate_id=debate.id, label=SideLabel.FOR, position="For")
+    side_against = DebateSide(id=side_against_id, debate_id=debate.id, label=SideLabel.AGAINST, position="Against")
     db.add_all([side_for, side_against])
 
     user_side_id = side_for.id if debate_in.initial_position == SideLabel.FOR else side_against.id
 
     # Add creator as participant
+    participant_id = uuid.uuid4()
     participant = Participant(
+        id=participant_id,
         debate_id=debate.id,
         user_id=current_user.id,
         side_id=user_side_id,
@@ -105,6 +115,7 @@ async def create_debate(
 
     # Add initial position history
     pos_history = PositionHistory(
+        id=uuid.uuid4(),
         debate_id=debate.id,
         participant_id=participant.id,
         position=debate_in.initial_position.value,
@@ -117,6 +128,7 @@ async def create_debate(
     if dt == DebateType.HUMAN_VS_AI:
         ai_side_id = side_against.id if debate_in.initial_position == SideLabel.FOR else side_for.id
         ai_participant = Participant(
+            id=uuid.uuid4(),
             debate_id=debate.id,
             user_id=None,  # AI has no user_id
             side_id=ai_side_id,

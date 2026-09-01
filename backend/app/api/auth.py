@@ -40,8 +40,13 @@ async def login(
     db: DbSession,
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Any:
-    """User login."""
-    stmt = select(User).where(User.email == form_data.username)
+    """User login. Note: The OAuth2 `username` field accepts either an email or a username."""
+    stmt = select(User).where(
+        or_(
+            User.email == form_data.username,
+            User.username == form_data.username
+        )
+    )
     user = await db.scalar(stmt)
     if not user or not user.password_hash:
         raise HTTPException(status_code=400, detail="Incorrect email or password")

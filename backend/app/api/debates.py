@@ -279,16 +279,15 @@ async def submit_turn(
         arg_data = {
             "id": str(argument.id),
             "content": argument.content,
-            "side": participant.side_id.hex,
+            "side": participant.initial_position.value if hasattr(participant.initial_position, 'value') else str(participant.initial_position),
             "is_ai": False,
             "type": argument.argument_type.value,
         }
-        import asyncio
-        asyncio.create_task(manager.publish_event(
+        await manager.publish_event(
             debate_id=str(debate_id),
             event_type="argument_submitted",
             payload=arg_data
-        ))
+        )
     
     # Check if we should trigger AI response
     if debate.debate_type in [DebateType.HUMAN_VS_AI, DebateType.AI_VS_AI]:

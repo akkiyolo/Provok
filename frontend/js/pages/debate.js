@@ -136,9 +136,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (debate.rounds && debate.rounds.length > 0) {
         for (const round of debate.rounds) {
-            if (round.turns) {
-                for (const turn of round.turns) {
-                    renderArgument(turn);
+            if (round.arguments) {
+                for (const arg of round.arguments) {
+                    renderArgument(arg);
                 }
             }
         }

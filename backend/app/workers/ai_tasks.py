@@ -73,6 +73,12 @@ async def _generate_response_async(debate_id: str):
         import asyncio
         final_state = await asyncio.to_thread(app.invoke, initial_state)
         final_message = final_state["messages"][-1].content
+        
+        # Gemini sometimes returns a list of blocks instead of a string
+        if isinstance(final_message, list):
+            final_message = "\n".join([item.get("text", "") for item in final_message if isinstance(item, dict) and "text" in item])
+        elif not isinstance(final_message, str):
+            final_message = str(final_message)
 
         # Save AI response
         new_arg = Argument(

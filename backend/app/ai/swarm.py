@@ -17,10 +17,10 @@ class DebateState(TypedDict):
     research_points: str
 
 def get_llm():
-    return ChatOpenAI(
-        api_key=settings.mistral_api_key,
-        base_url="https://api.mistral.ai/v1",
-        model="open-mistral-nemo",  # Switched to a model available on free/lower tiers
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    return ChatGoogleGenerativeAI(
+        api_key=settings.google_api_key,
+        model="gemini-3.5-flash",
         temperature=0.7
     )
 
@@ -96,7 +96,8 @@ def debater_node(state: DebateState):
     Current Phase: {phase}
     Research provided by your team: {research}
     
-    Craft a compelling, highly persuasive argument. Do not be generic. Be sharp and structured."""
+    Craft a compelling, highly persuasive argument. Do not be generic. Be sharp and structured.
+    CRITICAL: DO NOT use any markdown formatting whatsoever. Do not use asterisks (*), hashtags (#), or any other formatting characters. Output plain text only."""
     
     # If there are no messages, or if the last message is an AIMessage, ensure we end with a HumanMessage
     messages_to_send = list(state.get('messages', []))
@@ -116,7 +117,8 @@ def fact_checker_node(state: DebateState):
     Review the following draft argument and make it punchier, removing any hallucinated facts.
     Draft: {draft}
     
-    Output ONLY the final, polished argument."""
+    Output ONLY the final, polished argument. 
+    CRITICAL: DO NOT use any markdown formatting whatsoever. Do not use asterisks (*), hashtags (#), or any other formatting characters. Output plain text only."""
     
     response = llm.invoke([HumanMessage(content=prompt)])
     return {"messages": [AIMessage(content=response.content)]}

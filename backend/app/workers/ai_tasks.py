@@ -69,8 +69,9 @@ async def _generate_response_async(debate_id: str):
             "research_points": ""
         }
 
-        # Run swarm
-        final_state = app.invoke(initial_state)
+        # Run swarm in a threadpool to prevent blocking the FastAPI async event loop
+        import asyncio
+        final_state = await asyncio.to_thread(app.invoke, initial_state)
         final_message = final_state["messages"][-1].content
 
         # Save AI response

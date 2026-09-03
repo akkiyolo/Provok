@@ -234,7 +234,33 @@ async def get_debate(debate_id: UUID, db: DbSession) -> Any:
         rounds=rounds_data,
     )
 
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, Response
+
+@router.delete("/{debate_id}", status_code=204)
+async def delete_debate(debate_id: UUID, db: DbSession, current_user: User = Depends(get_current_user)):
+    """Delete a debate. Only the creator or an admin can delete it."""
+    from sqlalchemy.orm import selectinload
+    debate = await db.scalar(
+        select(Debate)
+        .options(selectinload(Debate.participants))
+        .where(Debate.id == debate_id)
+    )
+    if not debate:
+        raise HTTPException(status_code=404, detail="Debate not found")
+
+    # Check ownership
+    creator_id = None
+    for p in debate.participants:
+        if str(p.participant_type) in ("HUMAN", "ParticipantType.HUMAN"):
+            creator_id = p.user_id
+            break
+            
+    if creator_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this debate")
+
+    await db.delete(debate)
+    await db.commit()
+    return Response(status_code=204)
 
 @router.post("/{debate_id}/turn", response_model=ArgumentResponse)
 async def submit_turn(

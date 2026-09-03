@@ -41,6 +41,9 @@ export const api = {
                 }
                 throw new ApiError('Unauthorized', 401, null);
             }
+            if (res.status === 204) {
+                return null;
+            }
             const data = await res.json();
             if (!res.ok) {
                 throw new ApiError(data.detail || 'Request failed', res.status, data);

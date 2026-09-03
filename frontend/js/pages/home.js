@@ -16,7 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 card.style.cursor = 'pointer';
                 card.style.position = 'relative';
                 
-                const isOwner = store.currentUser && (store.currentUser.id === debate.creator_id || store.currentUser.is_admin);
+                const token = localStorage.getItem('provok-token');
+                let currentUserId = null;
+                try {
+                    if (token) currentUserId = JSON.parse(atob(token.split('.')[1])).sub;
+                } catch(e) {}
+                
+                const currentUser = store.get('user');
+                const isOwner = (currentUserId && currentUserId === debate.creator_id) || (currentUser && currentUser.is_admin);
                 const deleteBtnHtml = isOwner ? `<button class="delete-btn" data-id="${debate.id}" style="position: absolute; right: 16px; top: 16px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 16px; z-index: 10;">&times;</button>` : '';
 
                 card.innerHTML = `

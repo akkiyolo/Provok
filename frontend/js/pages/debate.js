@@ -122,11 +122,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const composeSection = document.querySelector('.compose');
+    const isOwner = currentUser && (currentUser.id === debate.creator_id || currentUser.is_admin);
+
     if (composeSection) {
-        if (!currentUser || currentUser.id !== debate.creator_id) {
+        if (!isOwner) {
             composeSection.style.display = 'none';
         } else {
             composeSection.style.display = 'block';
+        }
+    }
+
+    if (isOwner) {
+        const topmeta = document.querySelector('.debate-topmeta');
+        if (topmeta) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'dark-btn';
+            deleteBtn.style.color = 'var(--red)';
+            deleteBtn.style.borderColor = 'var(--red)';
+            deleteBtn.textContent = 'Delete Debate';
+            deleteBtn.style.marginLeft = '12px';
+            deleteBtn.addEventListener('click', async () => {
+                if (confirm("Are you sure you want to permanently delete this debate?")) {
+                    try {
+                        await api.delete('/debates/' + debateId);
+                        toast('Debate deleted successfully', 'success');
+                        setTimeout(() => window.location.href = '/', 1000);
+                    } catch(err) {
+                        toast('Failed to delete debate', 'error');
+                    }
+                }
+            });
+            topmeta.appendChild(deleteBtn);
         }
     }
 

@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  # ── FastAPI application ──────────────────────────────────────
+  # ── FastAPI Application ──────────────────────────────────────
   api:
     build:
       context: .
@@ -14,10 +14,22 @@ services:
       - ./backend:/app/backend
       - ./frontend:/app/frontend
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  # ── Celery worker ───────────────────────────────────────────
+  # ── Celery Worker ───────────────────────────────────────────
   worker:
     build:
       context: .
@@ -28,8 +40,14 @@ services:
     volumes:
       - ./backend:/app/backend
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ── Redis ───────────────────────────────────────────────────
   redis:
@@ -39,6 +57,16 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   redis_data:

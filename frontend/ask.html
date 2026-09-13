@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="PROVOK — structured debates between humans and AI.">
 <title>Ask — PROVOK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/static/css/reset.css?v=2">
 <link rel="stylesheet" href="/static/css/variables.css?v=2">
 <link rel="stylesheet" href="/static/css/typography.css?v=2">
 <link rel="stylesheet" href="/static/css/global.css?v=2">
 <link rel="stylesheet" href="/static/css/layout.css?v=2">
 <link rel="stylesheet" href="/static/css/components.css?v=2">
-
 <link rel="stylesheet" href="/static/css/responsive.css?v=2">
 </head>
 <body><div class="page"><nav class="nav"><div class="nav-inner">
@@ -27,17 +27,25 @@
 </div></nav><main class="page-content"><div class="container form-shell">
 <div class="form-head"><div class="eyebrow">NEW DEBATE</div><h1>Bring a question<br>worth fighting over.</h1><p class="hero-copy">Choose the proposition, choose who takes the other side, and open the floor.</p></div>
 <div class="panel">
-<div class="field"><label class="input-label" for="ask-question">Question</label><textarea class="input" id="ask-question" rows="3" placeholder="Is Rust worth learning for ML engineers in 2026?"></textarea></div>
-<div class="field"><label class="input-label" for="ask-title">Debate title</label><input class="input" id="ask-title" maxlength="200" placeholder="A short title for the debate"></div>
-<div class="field"><label class="input-label">Your position</label><div id="position-options" class="option-grid">
+<div class="field"><label class="input-label" for="ask-question">Question / Motion</label><textarea class="input" id="ask-question" rows="3" placeholder="e.g. Is Rust worth learning for ML engineers in 2026?"></textarea></div>
+<div class="field"><label class="input-label" for="ask-title">Debate title (optional)</label><input class="input" id="ask-title" maxlength="200" placeholder="A short title for the debate"></div>
+
+<div class="field" id="position-field"><label class="input-label">Your position</label><div id="position-options" class="option-grid">
 <button class="option selected for" data-value="FOR">For</button><button class="option" data-value="AGAINST">Against</button></div></div>
-<div class="field"><label class="input-label">Opponent</label><div id="opponent-options" class="option-grid">
-<button class="option selected" data-value="AI_SWARM">AI swarm</button><button class="option" data-value="HUMAN">Human</button><button class="option" data-value="AI_VS_AI" disabled title="The current backend schema does not accept AI_VS_AI yet">AI vs AI <span class="muted">(soon)</span></button></div></div>
+
+<div class="field"><label class="input-label">Debate Format / Opponent</label><div id="opponent-options" class="option-grid">
+<button class="option selected" data-value="AI_SWARM">AI Swarm</button>
+<button class="option" data-value="HUMAN">Human</button>
+<button class="option" data-value="AI_VS_AI">Agent vs Agent</button>
+</div>
+</div>
+
 <div class="field"><label class="input-label">Mode</label><div id="mode-options" class="option-grid"><button class="option selected" data-value="LIVE">Live arena</button><button class="option" data-value="ASYNC">Async</button></div></div>
-<div class="field"><label class="input-label">Context (optional)</label><div id="context-field"><textarea class="input" rows="3" placeholder="What should the debaters know before they start?"></textarea></div></div>
-<div class="form-bottom"><span class="helper">Four rounds. You can leave and return later.</span><button class="btn btn-red btn-lg" id="ask-submit">Start debate →</button></div>
-<div class="flex gap-3" style="margin-top:15px"><button class="btn btn-ghost btn-sm" id="attach-btn">Attach evidence</button><button class="btn btn-ghost btn-sm" id="context-btn">Toggle context</button><label class="helper" style="display:flex;align-items:center;gap:7px;margin-left:auto"><input id="ask-public" type="checkbox" checked> Public debate</label></div>
+<div class="field"><label class="input-label">Context (optional)</label><div id="context-field"><textarea class="input" id="ask-context" rows="3" placeholder="What should the debaters know before they start?"></textarea></div></div>
+<div class="form-bottom"><span class="helper">Four rounds. Complete progression to final AI verdict.</span><button class="btn btn-red btn-lg" id="ask-submit">Start debate →</button></div>
+<div class="flex gap-3" style="margin-top:15px"><label class="helper" style="display:flex;align-items:center;gap:7px;margin-left:auto"><input id="ask-public" type="checkbox" checked> Public debate</label></div>
 </div></div></main></div>
 <div id="toast-container" class="toast-container"></div>
-<script type="module" src="/static/js/core/app.js?v=4"></script><script type="module" src="/static/js/pages/ask.js?v=4"></script>
+<script type="module" src="/static/js/core/app.js?v=8"></script>
+<script type="module" src="/static/js/pages/ask.js?v=8"></script>
 </body></html>

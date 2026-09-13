@@ -35,3 +35,28 @@ def test_debate_creation():
     assert debate.debate_type == "HUMAN_VS_AI"
     assert debate.status == "DRAFT"
     assert debate.question_id == question.id
+
+
+def test_agent_vs_agent_debate_model():
+    """Test AI_VS_AI debate creation and schema validation."""
+    from backend.app.models.debate import DebateType, SideLabel
+    from backend.app.schemas.debate import DebateCreate
+
+    schema = DebateCreate(
+        title="Will AGI replace software engineers by 2030?",
+        opponent_type="AI_VS_AI",
+        initial_position=SideLabel.FOR,
+        is_public=True
+    )
+    assert schema.opponent_type == "AI_VS_AI"
+    assert schema.title == "Will AGI replace software engineers by 2030?"
+
+    debate = Debate(
+        id=uuid.uuid4(),
+        question_id=uuid.uuid4(),
+        debate_type=DebateType.AI_VS_AI,
+        mode="LIVE",
+        status="LIVE"
+    )
+    assert debate.debate_type == DebateType.AI_VS_AI
+

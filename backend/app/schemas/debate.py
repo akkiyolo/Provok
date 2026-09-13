@@ -1,16 +1,10 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
-from backend.app.models.debate import (
-    DebateMode,
-    DebateStatus,
-    ParticipantType,
-    SideLabel,
-    RoundPhase,
-)
+from backend.app.models.debate import DebateStatus, DebateMode, SideLabel, RoundPhase, ParticipantType
 
-# ── Arguments & Claims ─────────────────────────────────────
+# ── Claims ─────────────────────────────────────────────────
 class ClaimBase(BaseModel):
     content: str
     is_contested: bool = False
@@ -19,9 +13,7 @@ class ClaimResponse(ClaimBase):
     id: UUID
     argument_id: UUID
     debate_id: UUID
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ArgumentBase(BaseModel):
     content: str
@@ -37,11 +29,11 @@ class ArgumentResponse(ArgumentBase):
     round_id: UUID
     side_id: UUID
     side: Optional[str] = None
+    is_ai: Optional[bool] = False
+    agent_name: Optional[str] = None
     created_at: datetime
     claims: List[ClaimResponse] = []
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ── Rounds & Turns ─────────────────────────────────────────
 class RoundResponse(BaseModel):
@@ -52,15 +44,13 @@ class RoundResponse(BaseModel):
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
     arguments: List[ArgumentResponse] = []
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ── Debate ─────────────────────────────────────────────────
 class DebateBase(BaseModel):
     title: str = Field(..., max_length=200)
     mode: DebateMode = DebateMode.ASYNC
-    opponent_type: ParticipantType = ParticipantType.AI_SWARM
+    opponent_type: str = "AI_SWARM"
     topic_id: Optional[UUID] = None
     is_public: bool = True
 
@@ -74,6 +64,4 @@ class DebateResponse(DebateBase):
     created_at: datetime
     current_round: int = 0
     rounds: List[RoundResponse] = []
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

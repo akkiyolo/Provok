@@ -2,10 +2,12 @@
 PROVOK — FastAPI Application Entry Point.
 
 Serves both the API (/api/v1/...) and frontend (HTML/CSS/JS) from a single process.
+Production-grade with structured logging, security headers, and graceful degradation.
 """
 from __future__ import annotations
 
 import uuid
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -19,29 +21,48 @@ settings = get_settings()
 
 
 # ---------------------------------------------------------------------------
-# Lifespan — startup / shutdown
+# Lifespan — startup / shutdown (with graceful Redis degradation)
 # ---------------------------------------------------------------------------
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application-level startup and shutdown."""
-    # Startup
-    import redis.asyncio as aioredis
-    import asyncio
-    from backend.app.websockets.manager import manager
-    app.state.redis = aioredis.from_url(
-        settings.redis_url, decode_responses=True
-    )
-    
-    # Start redis pubsub listener for websockets
-    app.state.ws_listener_task = asyncio.create_task(
-        manager.start_redis_listener(app.state.redis)
-    )
+    from backend.app.logging_config import setup_logging, get_logger
+    setup_logging()
+    logger = get_logger("provok.startup")
+
+    # ── Redis — graceful degradation ──────────────────────────
+    try:
+        import redis.asyncio as aioredis
+        import asyncio
+        from backend.app.websockets.manager import manager
+
+        app.state.redis = aioredis.from_url(
+            settings.redis_url, decode_responses=True
+        )
+        await app.state.redis.ping()  # Verify connection
+        logger.info("redis_connected", url=settings.redis_url)
+
+        # Start redis pubsub listener for websockets
+        app.state.ws_listener_task = asyncio.create_task(
+            manager.start_redis_listener(app.state.redis)
+        )
+    except Exception as e:
+        logger.warning("redis_unavailable", error=str(e),
+                       msg="Running without Redis — WebSockets and caching disabled")
+        app.state.redis = None
+        app.state.ws_listener_task = None
+
+    logger.info("app_started", env=settings.app_env, debug=settings.debug)
     yield
-    # Shutdown
-    if hasattr(app.state, 'ws_listener_task'):
+
+    # ── Shutdown ──────────────────────────────────────────────
+    logger = get_logger("provok.shutdown")
+    if hasattr(app.state, 'ws_listener_task') and app.state.ws_listener_task:
         app.state.ws_listener_task.cancel()
-    await app.state.redis.close()
+    if hasattr(app.state, 'redis') and app.state.redis:
+        await app.state.redis.close()
+    logger.info("app_shutdown")
 
 
 # ---------------------------------------------------------------------------
@@ -51,7 +72,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     description="Put your beliefs to the test.",
-    version="0.1.0",
+    version="1.0.0",
     docs_url="/docs" if settings.enable_swagger else None,
     redoc_url="/redoc" if settings.enable_swagger else None,
     lifespan=lifespan,
@@ -62,9 +83,17 @@ app = FastAPI(
 # Middleware
 # ---------------------------------------------------------------------------
 
+# CORS — configurable origins for production
+if settings.debug:
+    cors_origins = ["*"]
+elif settings.allowed_origins:
+    cors_origins = [o.strip() for o in settings.allowed_origins.split(",") if o.strip()]
+else:
+    cors_origins = []
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.debug else [],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,13 +101,80 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    """Attach a unique request ID for tracing."""
+async def security_and_tracing(request: Request, call_next):
+    """
+    Combined middleware:
+    1. Attach unique request ID for distributed tracing
+    2. Add security headers to every response
+    3. Log request timing
+    """
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
-    response = await call_next(request)
+    start_time = time.perf_counter()
+
+    try:
+        response = await call_next(request)
+    except Exception:
+        from backend.app.logging_config import get_logger
+        logger = get_logger("provok.http")
+        logger.exception("unhandled_exception",
+                         path=str(request.url.path),
+                         method=request.method,
+                         request_id=request_id)
+        response = JSONResponse(
+            {"detail": "Internal server error", "request_id": request_id},
+            status_code=500
+        )
+
+    # Timing
+    duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
+
+    # Tracing
     response.headers["X-Request-ID"] = request_id
+
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    if not settings.debug:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    else:
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+
+    # Log slow requests in production
+    if duration_ms > 1000:
+        from backend.app.logging_config import get_logger
+        get_logger("provok.http").warning("slow_request",
+                                          path=str(request.url.path),
+                                          method=request.method,
+                                          duration_ms=duration_ms)
+
     return response
+
+
+# ---------------------------------------------------------------------------
+# Global exception handler
+# ---------------------------------------------------------------------------
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch any unhandled exception and return clean JSON."""
+    from backend.app.logging_config import get_logger
+    logger = get_logger("provok.error")
+    request_id = getattr(request.state, 'request_id', 'unknown')
+    logger.exception("unhandled_error",
+                     path=str(request.url.path),
+                     method=request.method,
+                     request_id=request_id,
+                     error_type=type(exc).__name__)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "An unexpected error occurred",
+            "request_id": request_id,
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -110,20 +206,44 @@ app.include_router(websockets_router.router, prefix="/ws", tags=["websockets"])
 
 @app.get("/health", tags=["system"])
 async def health_check(request: Request):
-    """Health check endpoint."""
+    """Health check endpoint for load balancers and monitoring."""
     redis_ok = False
+    db_ok = False
+
+    # Check Redis
     try:
-        await request.app.state.redis.ping()
-        redis_ok = True
+        if request.app.state.redis:
+            await request.app.state.redis.ping()
+            redis_ok = True
     except Exception:
         pass
 
-    return JSONResponse({
-        "status": "ok",
-        "app": settings.app_name,
-        "env": settings.app_env,
-        "redis": "connected" if redis_ok else "disconnected",
-    })
+    # Check Database
+    try:
+        from backend.app.database.core import async_session_factory
+        async with async_session_factory() as session:
+            from sqlalchemy import text
+            await session.execute(text("SELECT 1"))
+            db_ok = True
+    except Exception:
+        pass
+
+    status = "healthy" if db_ok else "degraded"
+    status_code = 200 if db_ok else 503
+
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": status,
+            "app": settings.app_name,
+            "version": "1.0.0",
+            "env": settings.app_env,
+            "services": {
+                "database": "connected" if db_ok else "disconnected",
+                "redis": "connected" if redis_ok else "disconnected",
+            }
+        }
+    )
 
 
 # ---------------------------------------------------------------------------

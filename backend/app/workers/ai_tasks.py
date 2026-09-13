@@ -1,7 +1,4 @@
 """PROVOK — AI background tasks."""
-from backend.app.workers.celery_app import celery_app
-
-
 import asyncio
 import uuid
 import logging
@@ -9,7 +6,7 @@ from typing import List
 
 from backend.app.workers.celery_app import celery_app
 from backend.app.database.core import async_session_factory
-from backend.app.models.debate import Debate, Argument, Participant
+from backend.app.models.debate import Debate, Argument, Participant, ParticipantType
 from sqlalchemy import select
 
 from backend.app.ai.swarm import create_swarm_graph, DebateState
@@ -45,18 +42,21 @@ async def _generate_response_async(debate_id: str):
         for arg in arguments:
             # Check participant type to determine if AI
             p = await session.scalar(select(Participant).where(Participant.id == arg.participant_id))
-            if p and p.participant_type == "AI_SWARM":
+            if p and p.participant_type == ParticipantType.AI_SWARM:
                 messages.append(AIMessage(content=arg.content))
             else:
                 messages.append(HumanMessage(content=arg.content))
 
         # Get AI participant side
         ai_participant = await session.scalar(
-            select(Participant).where(Participant.debate_id == debate.id, Participant.participant_type == "AI_SWARM")
+            select(Participant).where(Participant.debate_id == debate.id, Participant.participant_type == ParticipantType.AI_SWARM)
         )
         if not ai_participant:
             logger.error("No AI participant found")
             return
+
+        # Determine round phase
+        phase_str = current_round_obj.phase.value if current_round_obj and hasattr(current_round_obj.phase, 'value') else (str(current_round_obj.phase) if current_round_obj else "OPENING")
 
         # Initialize Swarm
         app = create_swarm_graph()
@@ -64,7 +64,7 @@ async def _generate_response_async(debate_id: str):
             "messages": messages,
             "next_node": "",
             "context": debate.question.text if getattr(debate, 'question', None) else "General Debate",
-            "round_phase": "OPENING",
+            "round_phase": phase_str,
             "draft_argument": "",
             "research_points": ""
         }
@@ -80,6 +80,15 @@ async def _generate_response_async(debate_id: str):
         elif not isinstance(final_message, str):
             final_message = str(final_message)
 
+        # Map phase to argument type
+        arg_type_map = {
+            "OPENING": "OPENING",
+            "REBUTTAL": "REBUTTAL",
+            "CROSS_EXAMINATION": "ANSWER",
+            "CLOSING": "CLOSING",
+        }
+        arg_type = arg_type_map.get(phase_str, "OPENING")
+
         # Save AI response
         new_arg = Argument(
             debate_id=debate.id,
@@ -87,13 +96,13 @@ async def _generate_response_async(debate_id: str):
             participant_id=ai_participant.id,
             side_id=ai_participant.side_id,
             content=final_message,
-            argument_type="OPENING", # Determine properly
+            argument_type=arg_type,
             sequence=len(messages) + 1
         )
         session.add(new_arg)
         await session.commit()
         await session.refresh(new_arg)
-        logger.info(f"AI response generated for debate {debate_id}")
+        logger.info(f"AI response generated for debate {debate_id} in phase {phase_str}")
 
         # Broadcast via WebSocket manager
         from backend.app.websockets.manager import manager
@@ -114,6 +123,30 @@ async def _generate_response_async(debate_id: str):
             event_type="argument_submitted",
             payload=payload
         )
+
+        # ── Check if Round should advance or Debate complete ──────
+        from backend.app.debate.state_machine import DebateStateMachine
+        fsm = DebateStateMachine(session)
+        if await fsm.should_advance_round(debate):
+            next_round = await fsm.advance_round(debate)
+            await session.commit()
+            if next_round:
+                await manager.publish_event(
+                    debate_id=debate_id,
+                    event_type="round_advanced",
+                    payload={
+                        "round_number": next_round.round_number,
+                        "phase": next_round.phase.value if hasattr(next_round.phase, 'value') else str(next_round.phase)
+                    }
+                )
+                logger.info(f"Debate {debate_id} advanced to Round {next_round.round_number}")
+            else:
+                await manager.publish_event(
+                    debate_id=debate_id,
+                    event_type="debate_completed",
+                    payload={"debate_id": debate_id, "status": "COMPLETED"}
+                )
+                logger.info(f"Debate {debate_id} completed all 4 rounds!")
 
 @celery_app.task(name="ai.generate_response", bind=True, max_retries=3)
 def generate_ai_response(self, debate_id: str):

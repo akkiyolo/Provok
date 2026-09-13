@@ -22,7 +22,7 @@ class DebateStateMachine:
     Enforces strict 4-round progression:
     1. OPENING
     2. REBUTTAL
-    3. EVIDENCE_CHALLENGE
+    3. CROSS_EXAMINATION
     4. CLOSING
     """
     
@@ -55,7 +55,7 @@ class DebateStateMachine:
         debate.status = DebateStatus.LIVE
         debate.current_round = first_round.round_number
         
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(debate)
         return debate
 
@@ -74,21 +74,25 @@ class DebateStateMachine:
             raise ValueError("No active round found for debate.")
 
         # Complete current round
-        current_round.ended_at = datetime.now(timezone.utc)
+        current_round.completed_at = datetime.now(timezone.utc)
         
         # Determine next phase
         current_idx = self.PHASE_PROGRESSION.index(current_round.phase)
         
         if current_idx + 1 >= len(self.PHASE_PROGRESSION):
-            # Debate is finished
+            # Debate is finished after 4 rounds
             debate.status = DebateStatus.COMPLETED
-            debate.current_round = 0
             debate.completed_at = datetime.now(timezone.utc)
-            await self.db.commit()
+            await self.db.flush()
             
             # Trigger Verdict Generation
-            from backend.app.workers.verdict_tasks import generate_verdict
-            generate_verdict.delay(str(debate.id))
+            try:
+                import asyncio
+                from backend.app.verdict.generator import generate_verdict_async
+                asyncio.create_task(generate_verdict_async(str(debate.id)))
+                logger.info(f"Verdict generation task triggered for debate {debate.id}")
+            except Exception as e:
+                logger.warning(f"Could not launch verdict task: {e}")
             
             return None
             
@@ -104,26 +108,34 @@ class DebateStateMachine:
         await self.db.flush()
         
         debate.current_round = next_round.round_number
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(next_round)
         
         return next_round
 
-    async def register_turn_completion(self, debate_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+    async def get_current_round(self, debate: Debate) -> Optional[Round]:
+        """Fetch the active round object for the debate."""
+        return await self.db.scalar(
+            select(Round).where(
+                Round.debate_id == debate.id,
+                Round.round_number == debate.current_round
+            )
+        )
+
+    async def should_advance_round(self, debate: Debate) -> bool:
         """
-        Marks a turn as completed. If all participants have completed their turns 
-        for the current round, advance the round.
-        Returns True if the round was advanced.
+        Check if both sides have submitted at least one argument for the current round.
         """
-        debate = await self.db.scalar(select(Debate).where(Debate.id == debate_id))
-        if not debate or debate.status != DebateStatus.LIVE:
+        current_round = await self.get_current_round(debate)
+        if not current_round:
             return False
 
-        # In a real implementation, we would check all participants for this round.
-        # For Phase 3, we simplify: when the AI replies, the round advances, 
-        # or when both have submitted arguments.
-        # This will be orchestrated by Celery tasks for AI and API for humans.
-        
-        # Example naive implementation: Just advance
-        # await self.advance_round(debate)
-        return False
+        from backend.app.models.debate import Argument
+        from sqlalchemy import func
+        args_count = await self.db.scalar(
+            select(func.count()).select_from(Argument).where(
+                Argument.debate_id == debate.id,
+                Argument.round_id == current_round.id
+            )
+        )
+        return (args_count or 0) >= 2

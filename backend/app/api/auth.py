@@ -14,9 +14,14 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse)
 async def register(user_in: UserCreate, db: DbSession) -> Any:
-    """User registration."""
+    """User registration with sanitized inputs."""
+    import bleach
+    clean_username = bleach.clean(user_in.username.strip(), tags=[], strip=True)
+    clean_email = user_in.email.strip().lower()
+    clean_display = bleach.clean(user_in.display_name.strip(), tags=[], strip=True) if user_in.display_name else clean_username
+
     # Check if user exists
-    stmt = select(User).where(or_(User.email == user_in.email, User.username == user_in.username))
+    stmt = select(User).where(or_(User.email == clean_email, User.username == clean_username))
     existing_user = await db.scalar(stmt)
     if existing_user:
         raise HTTPException(
@@ -25,12 +30,13 @@ async def register(user_in: UserCreate, db: DbSession) -> Any:
         )
     
     user = User(
-        email=user_in.email,
-        username=user_in.username,
+        email=clean_email,
+        username=clean_username,
+        display_name=clean_display,
         password_hash=get_password_hash(user_in.password),
     )
     db.add(user)
-    await db.commit()
+    await db.flush()
     await db.refresh(user)
     return user
 

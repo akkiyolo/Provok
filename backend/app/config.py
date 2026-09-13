@@ -67,6 +67,9 @@ class Settings(BaseSettings):
     # ── AI / LLM ──────────────────────────────────────────────
     mistral_api_key: str = ""
     zai_api_key: str = ""
+    groq_api_key: str = ""
+    groq_model: str = "groq/qwen/qwen3.6-27b"
+    gemini_model: str = "gemini/gemini-3.6-flash"
 
     research_provider: str = "mistral"
     expert_provider: str = "zai"
@@ -151,6 +154,7 @@ class Settings(BaseSettings):
     seed_database: bool = True
     enable_swagger: bool = True
     enable_debug_routes: bool = False
+    allowed_origins: str = ""  # Comma-separated origins for CORS in production
 
     # ── Helpers ────────────────────────────────────────────────
 

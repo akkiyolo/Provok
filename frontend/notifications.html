@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="PROVOK — structured debates between humans and AI.">
 <title>Notifications — PROVOK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="/static/css/reset.css?v=2">
 <link rel="stylesheet" href="/static/css/reset.css?v=2">
 <link rel="stylesheet" href="/static/css/variables.css?v=2">
 <link rel="stylesheet" href="/static/css/typography.css?v=2">
@@ -12,6 +14,7 @@
 <link rel="stylesheet" href="/static/css/layout.css?v=2">
 <link rel="stylesheet" href="/static/css/components.css?v=2">
 
+<link rel="stylesheet" href="/static/css/feed.css?v=2">
 <link rel="stylesheet" href="/static/css/responsive.css?v=2">
 </head>
 <body><div class="page"><nav class="nav"><div class="nav-inner">
@@ -25,11 +28,16 @@
 </div>
 <div class="nav-actions"><button id="theme-toggle" class="btn btn-ghost btn-sm desktop-only" style="padding:0 8px;font-size:16px;" title="Toggle Theme">◐</button><a class="btn btn-ghost btn-sm desktop-only" href="/notifications">Notifications</a><a class="btn btn-secondary btn-sm desktop-only" href="/login">Sign in</a><a class="btn btn-red btn-sm" href="/ask">Start debate</a><button class="btn btn-ghost btn-sm mobile-toggle" onclick="document.querySelector('.nav-links').style.display='flex'">Menu</button></div>
 </div></nav><main class="page-content"><section class="section"><div class="container" style="max-width:900px">
-<div class="eyebrow">INBOX</div><h1 style="font-size:clamp(42px,6vw,70px);margin-top:9px">Things that need you.</h1>
-<div style="margin-top:30px">
-<div class="notification-item"><div><strong>The AI swarm replied to your argument.</strong><p class="muted">Rust vs Python · Round 2</p></div><a class="btn btn-secondary btn-sm" href="/debate/demo">Return →</a></div>
-<div class="notification-item"><div><strong>Someone challenged your claim.</strong><p class="muted">Remote work · 7 audience votes</p></div><a class="btn btn-secondary btn-sm" href="/debate/demo">See it →</a></div>
-<div class="notification-item"><div><strong>Your debate has a final verdict.</strong><p class="muted">Judge confidence · 82%</p></div><a class="btn btn-secondary btn-sm" href="/debate/demo/verdict">Read →</a></div>
+<div class="eyebrow">INBOX</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:9px;margin-bottom:30px;flex-wrap:wrap;">
+    <div>
+        <h1 style="font-size:clamp(36px,5vw,64px);margin:0;">Things that need you.</h1>
+        <span id="unread-count-badge" class="badge" style="display:none;background:var(--red);color:#fff;margin-top:8px;font-weight:600;">0 unread</span>
+    </div>
+    <button id="mark-all-read-btn" class="btn btn-secondary btn-sm" style="display:none;">Mark all read</button>
+</div>
+<div id="notifications-list" style="margin-top:20px">
 </div></div></section></main></div><div id="toast-container" class="toast-container"></div>
 <script type="module" src="/static/js/core/app.js"></script>
+<script type="module" src="/static/js/pages/notifications.js"></script>
 </body></html>

@@ -1,76 +1,15 @@
 from sqlalchemy import select, func, or_
-from backend.app.database.core import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from backend.app.database.core import get_db
 from backend.app.models.user import User
 from backend.app.models.social import Follow, FollowType
-from backend.app.models.debate import Participant
-from fastapi import APIRouter, Depends, HTTPException
+from backend.app.models.debate import Participant, Debate
 from backend.app.dependencies import get_current_user
+from backend.app.storage.s3 import storage_manager
 
 router = APIRouter()
 
-@router.get("/{username}")
-async def get_user_profile(username: str, db: AsyncSession = Depends(get_db)):
-    # 1. Fetch user
-    stmt = select(User).where(func.lower(User.username) == username.lower())
-    user = await db.scalar(stmt)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    # 2. Stats
-    # Followers
-    followers_count = await db.scalar(select(func.count()).select_from(Follow).where(Follow.target_user_id == user.id))
-    # Following
-    following_count = await db.scalar(select(func.count()).select_from(Follow).where(Follow.follower_id == user.id, Follow.follow_type == FollowType.USER))
-    # Debates participated
-    debates_count = await db.scalar(select(func.count()).select_from(Participant).where(Participant.user_id == user.id))
-    
-    avatar_url = user.avatar_url
-    if avatar_url and not avatar_url.startswith('http'):
-        from backend.app.storage.s3 import storage_manager
-        avatar_url = storage_manager.generate_presigned_url(avatar_url)
-
-    return {
-        "id": user.id,
-        "username": user.username,
-        "display_name": user.display_name or user.username,
-        "bio": user.bio or "No bio provided.",
-        "avatar_url": avatar_url,
-        "stats": {
-            "followers": followers_count or 0,
-            "following": following_count or 0,
-            "debates_participated": debates_count or 0,
-            "debates_won": 0  # Placeholder, requires complex verdict logic
-        }
-    }
-
-@router.post("/{username}/follow")
-async def follow_user(username: str, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    stmt = select(User).where(func.lower(User.username) == username.lower())
-    target_user = await db.scalar(stmt)
-    if not target_user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    if target_user.id == current_user.id:
-        raise HTTPException(status_code=400, detail="Cannot follow yourself")
-        
-    existing = await db.scalar(select(Follow).where(Follow.follower_id == current_user.id, Follow.target_user_id == target_user.id))
-    if existing:
-        db.delete(existing)
-        await db.commit()
-        return {"status": "unfollowed"}
-    else:
-        new_follow = Follow(follower_id=current_user.id, follow_type=FollowType.USER, target_user_id=target_user.id)
-        db.add(new_follow)
-        await db.commit()
-        return {"status": "followed"}
-
-from fastapi import UploadFile, File, Depends, HTTPException
-from backend.app.dependencies import get_current_user
-from backend.app.models.user import User
-from backend.app.storage.s3 import storage_manager
-from backend.app.database.core import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 
 @router.post("/me/avatar")
 async def upload_avatar(
@@ -99,8 +38,100 @@ async def upload_avatar(
     # Update user in DB
     current_user.avatar_url = url
     db.add(current_user)
-    await db.commit()
     
     presigned_url = storage_manager.generate_presigned_url(url)
     
     return {"message": "Avatar updated successfully", "avatar_url": presigned_url}
+
+
+@router.get("/{username}")
+async def get_user_profile(username: str, db: AsyncSession = Depends(get_db)):
+    # 1. Fetch user
+    stmt = select(User).where(func.lower(User.username) == username.lower())
+    user = await db.scalar(stmt)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    # 2. Stats
+    # Followers
+    followers_count = await db.scalar(select(func.count()).select_from(Follow).where(Follow.target_user_id == user.id))
+    # Following
+    following_count = await db.scalar(select(func.count()).select_from(Follow).where(Follow.follower_id == user.id, Follow.follow_type == FollowType.USER))
+    # Debates participated
+    debates_count = await db.scalar(select(func.count()).select_from(Participant).where(Participant.user_id == user.id))
+    
+    avatar_url = user.avatar_url
+    if avatar_url and not avatar_url.startswith('http'):
+        avatar_url = storage_manager.generate_presigned_url(avatar_url)
+
+    return {
+        "id": user.id,
+        "username": user.username,
+        "display_name": user.display_name or user.username,
+        "bio": user.bio or "No bio provided.",
+        "avatar_url": avatar_url,
+        "stats": {
+            "followers": followers_count or 0,
+            "following": following_count or 0,
+            "debates_participated": debates_count or 0,
+            "debates_won": 0  # Placeholder, requires complex verdict logic
+        }
+    }
+
+@router.post("/{username}/follow")
+async def follow_user(username: str, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    stmt = select(User).where(func.lower(User.username) == username.lower())
+    target_user = await db.scalar(stmt)
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if target_user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot follow yourself")
+        
+    existing = await db.scalar(select(Follow).where(Follow.follower_id == current_user.id, Follow.target_user_id == target_user.id))
+    if existing:
+        await db.delete(existing)
+        return {"status": "unfollowed"}
+    else:
+        new_follow = Follow(follower_id=current_user.id, follow_type=FollowType.USER, target_user_id=target_user.id)
+        db.add(new_follow)
+        return {"status": "followed"}
+
+
+@router.get("/{username}/debates")
+async def get_user_debates(
+    username: str,
+    limit: int = 20,
+    db: AsyncSession = Depends(get_db)
+):
+    """Fetch debates created by or participated in by this user."""
+    from sqlalchemy.orm import selectinload
+    stmt = select(User).where(func.lower(User.username) == username.lower())
+    user = await db.scalar(stmt)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Fetch debates where user is creator or participant
+    query = (
+        select(Debate)
+        .options(selectinload(Debate.question), selectinload(Debate.participants))
+        .outerjoin(Participant, Participant.debate_id == Debate.id)
+        .where(or_(Debate.creator_id == user.id, Participant.user_id == user.id))
+        .distinct()
+        .order_by(Debate.created_at.desc())
+        .limit(limit)
+    )
+    debates = await db.scalars(query)
+
+    results = []
+    for d in debates:
+        results.append({
+            "id": str(d.id),
+            "title": d.question.text if d.question else "Debate",
+            "status": d.status,
+            "mode": d.mode,
+            "current_round": d.current_round,
+            "created_at": d.created_at.isoformat() if d.created_at else None,
+        })
+    return results
+

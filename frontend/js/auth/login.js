@@ -1,10 +1,12 @@
 /**
  * PROVOK — Login Page Module
+ * Form submission with loading states, error handling, and toast feedback.
  */
-import { api, toast } from '../core/app.js';
+import { toast } from '../core/app.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('login-form');
+    const submitBtn = document.getElementById('login-submit');
     const errorEl = document.getElementById('auth-error');
     const googleBtn = document.getElementById('btn-google-login');
 
@@ -19,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            hideError();
+            if (submitBtn) {
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            }
+
             try {
                 const formData = new URLSearchParams();
                 formData.append('username', email);
@@ -29,17 +37,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: formData
                 });
+
                 if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.detail || 'Login failed');
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.detail || 'Incorrect email or password.');
                 }
+
                 const data = await res.json();
                 localStorage.setItem('provok-token', data.access_token);
-                toast('Welcome back!', 'success');
+                toast('Welcome back to the arena!', 'success');
                 window.location.href = '/';
             } catch (err) {
                 showError(err.message || 'Invalid credentials');
+                if (submitBtn) {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                }
             }
+        });
+
+        // Hide error when user types
+        form.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', hideError);
         });
     }
 
@@ -53,6 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (errorEl) {
             errorEl.textContent = msg;
             errorEl.style.display = 'block';
+        }
+    }
+
+    function hideError() {
+        if (errorEl) {
+            errorEl.style.display = 'none';
         }
     }
 });

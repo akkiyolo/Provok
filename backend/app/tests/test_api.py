@@ -19,5 +19,6 @@ async def test_app_imports():
     import backend.app.verdict.generator
     import backend.app.recommendation.engine
     import backend.app.storage.s3
+    import backend.app.ai.agent_debate
     
     assert backend.app.main.app is not None

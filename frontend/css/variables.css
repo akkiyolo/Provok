@@ -1,4 +1,9 @@
+/* ═══════════════════════════════════════════════════════════════
+   PROVOK — Design Tokens
+   ═══════════════════════════════════════════════════════════════ */
+
 :root{
+  /* ── Core palette ───────────────────────────────────────── */
   --ink:#11110f;
   --ink-2:#1b1a17;
   --paper:#f3f0e9;
@@ -9,22 +14,77 @@
   --muted-2:#a09b91;
   --line:#d1ccc1;
   --line-dark:#292824;
+
+  /* ── Accent colors ─────────────────────────────────────── */
   --red:#ed4b35;
   --red-dark:#c83a28;
+  --red-glow:rgba(237,75,53,.15);
   --blue:#5162d8;
+  --blue-glow:rgba(81,98,216,.12);
   --green:#2f795b;
+  --green-glow:rgba(47,121,91,.12);
   --yellow:#c18b22;
+  --yellow-glow:rgba(193,139,34,.12);
   --danger:#d53d35;
+
+  /* ── Semantic colors ───────────────────────────────────── */
+  --success:#2f795b;
+  --warning:#c18b22;
+  --error:#d53d35;
+  --info:#5162d8;
+
+  /* ── Gradients ─────────────────────────────────────────── */
+  --gradient-accent:linear-gradient(135deg,#ed4b35,#d53d35,#c83a28);
+  --gradient-hero:linear-gradient(135deg,rgba(237,75,53,.06) 0%,rgba(81,98,216,.04) 50%,transparent 100%);
+  --gradient-card:linear-gradient(145deg,var(--white),var(--paper));
+  --gradient-glass:linear-gradient(135deg,rgba(255,253,248,.7),rgba(255,253,248,.4));
+
+  /* ── Glassmorphism ─────────────────────────────────────── */
+  --glass-bg:rgba(255,253,248,.72);
+  --glass-border:rgba(209,204,193,.4);
+  --glass-blur:16px;
+  --glass-bg-dark:rgba(17,17,15,.72);
+  --glass-border-dark:rgba(66,64,58,.4);
+
+  /* ── Layout ────────────────────────────────────────────── */
   --nav-height:68px;
   --max:1280px;
   --reading:760px;
+
+  /* ── Typography ────────────────────────────────────────── */
   --sans:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --display:"Space Grotesk",var(--sans);
   --mono:"DM Mono","SFMono-Regular",Consolas,monospace;
+
+  /* ── Animation ─────────────────────────────────────────── */
   --ease:cubic-bezier(.16,1,.3,1);
+  --ease-out:cubic-bezier(.33,1,.68,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --duration-fast:.15s;
+  --duration-normal:.3s;
+  --duration-slow:.5s;
+
+  /* ── Shadows ───────────────────────────────────────────── */
   --shadow:0 24px 70px rgba(17,17,15,.08);
+  --shadow-sm:0 2px 8px rgba(17,17,15,.06);
+  --shadow-lg:0 32px 90px rgba(17,17,15,.12);
+  --shadow-glow:0 0 40px rgba(237,75,53,.08);
+
+  /* ── Nav ────────────────────────────────────────────────── */
   --nav-bg:rgba(243,240,233,.94);
+
+  /* ── Radius ────────────────────────────────────────────── */
+  --radius-sm:6px;
+  --radius-md:10px;
+  --radius-lg:14px;
+  --radius-xl:20px;
+  --radius-full:999px;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Dark Mode
+   ═══════════════════════════════════════════════════════════════ */
 
 html.dark {
   --ink: #f8f6f0;
@@ -37,12 +97,34 @@ html.dark {
   --muted-2: #9a9489;
   --line: #42403a;
   --line-dark: #5c5952;
+
   --red: #f05f4a;
   --red-dark: #ff7460;
+  --red-glow:rgba(240,95,74,.2);
   --blue: #6d7ef3;
+  --blue-glow:rgba(109,126,243,.15);
   --green: #3ab282;
+  --green-glow:rgba(58,178,130,.15);
   --yellow: #e4aa34;
+  --yellow-glow:rgba(228,170,52,.15);
   --danger: #ed554d;
+
+  --success:#3ab282;
+  --warning:#e4aa34;
+  --error:#ed554d;
+  --info:#6d7ef3;
+
+  --gradient-hero:linear-gradient(135deg,rgba(240,95,74,.08) 0%,rgba(109,126,243,.06) 50%,transparent 100%);
+  --gradient-card:linear-gradient(145deg,var(--paper-2),var(--paper));
+  --gradient-glass:linear-gradient(135deg,rgba(17,17,15,.7),rgba(17,17,15,.4));
+
+  --glass-bg:rgba(17,17,15,.72);
+  --glass-border:rgba(66,64,58,.4);
+
   --shadow: 0 24px 70px rgba(0,0,0,0.4);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.3);
+  --shadow-lg:0 32px 90px rgba(0,0,0,.5);
+  --shadow-glow:0 0 40px rgba(240,95,74,.12);
+
   --nav-bg:rgba(17,17,15,.94);
 }

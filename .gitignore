@@ -1,6 +1,7 @@
 # ── Python ──
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
 dist/
 build/
@@ -9,15 +10,31 @@ build/
 
 # ── Environment ──
 .env
-.env.local
+.env.*
+!.env.example
 venv/
 .venv/
+ENV/
+
+# ── Redis / Local DB artifacts ──
+dump.rdb
+*.rdb
+Redis/
+Redis-x64.zip
+
+# ── Temporary / Scratch Scripts ──
+scratch.py
+fix.py
+replace*.py
+bust_cache.py
 
 # ── IDE ──
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
 # ── OS ──
 .DS_Store
@@ -26,14 +43,13 @@ Thumbs.db
 # ── Docker ──
 docker-compose.override.yml
 
-# ── Node (if any future tooling) ──
-node_modules/
-
-# ── Alembic ──
-*.pyc
-
-# ── Coverage ──
+# ── Coverage & Testing ──
 htmlcov/
 .coverage
+.coverage.*
 coverage.xml
+.pytest_cache/
 
+# ── Node ──
+node_modules/
+npm-debug.log*

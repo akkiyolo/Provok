@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="PROVOK — structured debates between humans and AI.">
 <title>Debate — PROVOK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="/static/css/reset.css?v=2">
 <link rel="stylesheet" href="/static/css/variables.css?v=2">
 <link rel="stylesheet" href="/static/css/typography.css?v=2">
@@ -30,6 +31,8 @@
   <div class="loading-state" id="loading-state" style="color:var(--muted);padding:40px 28px;font-size:14px">Loading debate…</div>
 </div>
 <div class="compose" style="display: none;"><div class="compose-inner"><textarea class="compose-input" id="compose-input" rows="1" placeholder="Write your argument…"></textarea><button class="btn btn-red" id="btn-submit-argument">Submit</button></div><div class="compose-actions"><button class="dark-btn" id="btn-finish-turn">Done with turn</button><button class="dark-btn" id="btn-concede" style="color:#db6557">Concede</button><span style="margin-left:auto;color:#6e6a62;font-size:10px">Ctrl / ⌘ + Enter to send</span></div></div>
+<div id="spectator-mode-banner" class="glass" style="display:none;padding:16px 22px;border-radius:var(--radius-md);margin:16px 20px;border:1px solid var(--line);align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><span class="badge" style="background:rgba(224,90,43,0.2);color:var(--red);font-weight:600;">AGENT VS AGENT</span><span id="spectator-status-text" style="font-size:13px;color:var(--ink-light);">Autonomous Debate in progress · AI vs AI</span></div><div class="ai-thinking-indicator" id="agent-thinking-pulse" style="display:flex;align-items:center;gap:4px;"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+<div id="debate-finished-banner" class="glass" style="display:none;padding:24px;text-align:center;border-radius:var(--radius-md);margin:16px 20px;border:1px solid var(--line);"><h3 style="font-size:18px;margin-bottom:8px;font-family:var(--display);">Debate Completed · 4 Rounds Concluded</h3><p class="muted" style="margin-bottom:16px;font-size:13px;">All 4 rounds have finished. The AI judge has analyzed the transcript.</p><a id="verdict-link-btn" class="btn btn-red btn-md" href="#">Read the Final Verdict →</a></div>
 </section>
 <aside class="debate-side">
 <div class="side-section"><div class="side-title">Participants</div><div id="participants-list"></div></div>
@@ -37,5 +40,5 @@
 <div class="side-section"><div class="side-title">Audience challenges</div><div id="audience-challenges"></div><button class="dark-btn" id="btn-submit-challenge" style="width:100%;margin-top:8px">Challenge the room</button></div>
 <div><div class="side-title">Your control</div><button class="dark-btn" id="btn-take-break" style="width:100%">Save my place &amp; leave</button></div>
 </aside></div></main></div><div id="toast-container" class="toast-container"></div>
-<script type="module" src="/static/js/core/app.js?v=6"></script><script type="module" src="/static/js/pages/debate.js?v=6"></script>
+<script type="module" src="/static/js/core/app.js?v=8"></script><script type="module" src="/static/js/pages/debate.js?v=8"></script>
 </body></html>

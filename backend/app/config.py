@@ -150,6 +150,10 @@ class Settings(BaseSettings):
     rate_limit_challenge: str = "30/hour"
     rate_limit_search: str = "120/minute"
 
+    # ── Observability / Sentry ─────────────────────────────────
+    sentry_dsn: str = ""
+    sentry_traces_sample_rate: float = 0.2
+
     # ── Development ────────────────────────────────────────────
     seed_database: bool = True
     enable_swagger: bool = True

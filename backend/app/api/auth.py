@@ -9,11 +9,15 @@ from backend.app.dependencies import DbSession, get_current_user, AppSettings
 from backend.app.schemas.auth import UserCreate, UserResponse, Token
 from backend.app.models.user import User, OAuthAccount
 from backend.app.auth.security import get_password_hash, verify_password, create_access_token
+from backend.app.config import get_settings
+from backend.app.limiter import limiter
 
+settings = get_settings()
 router = APIRouter()
 
 @router.post("/register", response_model=UserResponse)
-async def register(user_in: UserCreate, db: DbSession) -> Any:
+@limiter.limit(settings.rate_limit_register)
+async def register(request: Request, user_in: UserCreate, db: DbSession) -> Any:
     """User registration with sanitized inputs."""
     import bleach
     clean_username = bleach.clean(user_in.username.strip(), tags=[], strip=True)
@@ -42,7 +46,9 @@ async def register(user_in: UserCreate, db: DbSession) -> Any:
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit(settings.rate_limit_login)
 async def login(
+    request: Request,
     db: DbSession,
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Any:

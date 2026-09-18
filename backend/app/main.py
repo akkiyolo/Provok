@@ -66,6 +66,31 @@ async def lifespan(app: FastAPI):
 
 
 # ---------------------------------------------------------------------------
+# Sentry APM & Error Tracking
+# ---------------------------------------------------------------------------
+
+if settings.sentry_dsn:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment=settings.app_env,
+            traces_sample_rate=settings.sentry_traces_sample_rate,
+            integrations=[FastApiIntegration(), SqlalchemyIntegration()],
+        )
+    except Exception:
+        pass
+
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from backend.app.limiter import limiter
+
+
+# ---------------------------------------------------------------------------
 # App factory
 # ---------------------------------------------------------------------------
 
@@ -77,6 +102,11 @@ app = FastAPI(
     redoc_url="/redoc" if settings.enable_swagger else None,
     lifespan=lifespan,
 )
+
+# Attach rate limiter to app state and register exception handler + middleware
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 
 # ---------------------------------------------------------------------------

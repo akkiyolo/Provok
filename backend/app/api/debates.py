@@ -1,5 +1,5 @@
 """PROVOK — Debates API routes."""
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response, Request
 from typing import Any, List, Optional
 from sqlalchemy import select
 from uuid import UUID
@@ -12,7 +12,10 @@ from backend.app.models.debate import (
 )
 from backend.app.schemas.debate import DebateCreate, DebateResponse, ArgumentCreate, ArgumentResponse
 from backend.app.debate.state_machine import DebateStateMachine
+from backend.app.config import get_settings
+from backend.app.limiter import limiter
 
+settings = get_settings()
 router = APIRouter()
 
 
@@ -55,7 +58,9 @@ async def list_debates(db: DbSession, status: Optional[str] = None, limit: int =
 
 @router.post("", response_model=DebateResponse)
 @router.post("/", response_model=DebateResponse)
+@limiter.limit(settings.rate_limit_create_debate)
 async def create_debate(
+    request: Request,
     debate_in: DebateCreate,
     background_tasks: BackgroundTasks,
     db: DbSession,
@@ -143,17 +148,6 @@ async def create_debate(
         )
         db.add(participant)
 
-        # Add initial position history
-        pos_history = PositionHistory(
-            id=uuid.uuid4(),
-            debate_id=debate.id,
-            participant_id=participant.id,
-            position=debate_in.initial_position.value,
-            confidence=1.0,
-            phase="BEFORE"
-        )
-        db.add(pos_history)
-
         # Add AI participant if applicable
         if dt == DebateType.HUMAN_VS_AI:
             ai_side_id = side_against.id if debate_in.initial_position == SideLabel.FOR else side_for.id
@@ -167,19 +161,34 @@ async def create_debate(
                 initial_confidence=1.0
             )
             db.add(ai_participant)
+
+        # Flush participants so participant.id is persisted before position_history references it
+        await db.flush()
+
+        # Add initial position history
+        pos_history = PositionHistory(
+            id=uuid.uuid4(),
+            debate_id=debate.id,
+            participant_id=participant.id,
+            position=debate_in.initial_position.value,
+            confidence=1.0,
+            phase="BEFORE"
+        )
+        db.add(pos_history)
+        await db.flush()
     
     # Initialize FSM and first round
     fsm = DebateStateMachine(db)
     debate = await fsm.initialize_debate(debate)
     
-    # Start tasks
+    # Start tasks with Celery durability / background fallback
     if dt == DebateType.AI_VS_AI:
-        from backend.app.ai.agent_debate import run_agent_vs_agent_debate
-        background_tasks.add_task(run_agent_vs_agent_debate, str(debate.id))
+        from backend.app.workers.ai_tasks import dispatch_agent_debate
+        dispatch_agent_debate(str(debate.id), background_tasks)
     elif dt == DebateType.HUMAN_VS_AI and debate_in.initial_position == SideLabel.AGAINST:
         # If user picked AGAINST, AI takes FOR and delivers opening statement
-        from backend.app.workers.ai_tasks import _generate_response_async
-        background_tasks.add_task(_generate_response_async, str(debate.id))
+        from backend.app.workers.ai_tasks import dispatch_ai_swarm_turn
+        dispatch_ai_swarm_turn(str(debate.id), background_tasks)
 
     # Return explicit response to avoid async lazy load errors
     from datetime import datetime, timezone
@@ -317,7 +326,9 @@ async def delete_debate(debate_id: UUID, db: DbSession, current_user: User = Dep
     return Response(status_code=204)
 
 @router.post("/{debate_id}/turn", response_model=ArgumentResponse)
+@limiter.limit(settings.rate_limit_argument)
 async def submit_turn(
+    request: Request,
     debate_id: UUID,
     arg_in: ArgumentCreate,
     background_tasks: BackgroundTasks,
@@ -399,11 +410,10 @@ async def submit_turn(
         payload=arg_data
     )
     
-    # Check if we should trigger AI response
+    # Check if we should trigger AI response (Celery worker or background fallback)
     if debate.debate_type in [DebateType.HUMAN_VS_AI, DebateType.AI_VS_AI]:
-        from backend.app.workers.ai_tasks import _generate_response_async
-        # Use FastAPI BackgroundTasks instead of Celery so it runs locally without Redis
-        background_tasks.add_task(_generate_response_async, str(debate.id))
+        from backend.app.workers.ai_tasks import dispatch_ai_swarm_turn
+        dispatch_ai_swarm_turn(str(debate.id), background_tasks)
 
     # Get side label for response
     side_obj = await db.scalar(select(DebateSide).where(DebateSide.id == participant.side_id))

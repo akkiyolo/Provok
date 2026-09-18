@@ -319,12 +319,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (composeSection) composeSection.style.display = 'none';
         if (spectatorBanner) spectatorBanner.style.display = 'flex';
     } else {
-        // Human vs AI
-        let currentUser = null;
-        try {
-            currentUser = await api.request('GET', '/auth/me', null, { noRedirect: true });
-        } catch (e) {}
-        const isOwner = currentUser && (currentUser.id === debate.creator_id || currentUser.is_admin);
+        // Human vs AI or Human vs Human
+        let currentUser = store.get('user');
+        if (!currentUser) {
+            try {
+                currentUser = await api.request('GET', '/auth/me', null, { noRedirect: true });
+            } catch (e) {}
+        }
+        const isOwner = !debate.creator_id || !currentUser || (currentUser.id === debate.creator_id || currentUser.is_admin);
         if (composeSection) {
             composeSection.style.display = isOwner ? 'block' : 'none';
         }

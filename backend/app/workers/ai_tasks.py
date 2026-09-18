@@ -154,7 +154,51 @@ def generate_ai_response(self, debate_id: str):
     asyncio.run(_generate_response_async(debate_id))
 
 
+@celery_app.task(name="ai.agent_debate", bind=True, max_retries=3)
+def run_agent_debate_task(self, debate_id: str):
+    """Run 4-round autonomous agent vs agent debate in a durable Celery worker."""
+    from backend.app.ai.agent_debate import run_agent_vs_agent_debate
+    asyncio.run(run_agent_vs_agent_debate(debate_id))
+
+
+def dispatch_agent_debate(debate_id: str, background_tasks) -> None:
+    """
+    Dispatch agent-vs-agent debate task.
+    Attempts Celery queue first for production isolation and durability;
+    gracefully falls back to FastAPI BackgroundTasks if Celery/Redis is unreachable.
+    """
+    try:
+        run_agent_debate_task.delay(debate_id)
+        logger.info(f"Dispatched agent debate {debate_id} to Celery worker queue 'ai'")
+        return
+    except Exception as exc:
+        logger.info(
+            f"Celery queue bypass/offline ({exc}); executing agent debate via FastAPI BackgroundTasks"
+        )
+
+    from backend.app.ai.agent_debate import run_agent_vs_agent_debate
+    background_tasks.add_task(run_agent_vs_agent_debate, debate_id)
+
+
+def dispatch_ai_swarm_turn(debate_id: str, background_tasks) -> None:
+    """
+    Dispatch AI swarm response turn.
+    Attempts Celery first, falls back to FastAPI BackgroundTasks.
+    """
+    try:
+        generate_ai_response.delay(debate_id)
+        logger.info(f"Dispatched AI swarm turn for debate {debate_id} to Celery worker queue 'ai'")
+        return
+    except Exception as exc:
+        logger.info(
+            f"Celery queue bypass/offline ({exc}); executing AI swarm turn via FastAPI BackgroundTasks"
+        )
+
+    background_tasks.add_task(_generate_response_async, debate_id)
+
+
 @celery_app.task(name="ai.stream_response", bind=True, max_retries=3)
 def stream_ai_response(self, debate_id: str, round_id: str):
     """Stream AI response via WebSocket. Phase 5."""
     pass
+

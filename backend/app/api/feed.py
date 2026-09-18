@@ -13,6 +13,7 @@ router = APIRouter()
 
 
 @router.get("/feed")
+@router.get("/feed/feed")
 async def get_feed(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -43,6 +44,7 @@ async def get_feed(
 
 
 @router.get("/live")
+@router.get("/feed/live")
 async def get_live(
     db: AsyncSession = Depends(get_db),
     limit: int = Query(20, le=100)
@@ -72,6 +74,7 @@ async def get_live(
 
 
 @router.get("/explore")
+@router.get("/feed/explore")
 async def get_explore(
     db: AsyncSession = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),

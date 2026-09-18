@@ -68,13 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         try {
-            const res = await api.get('/feed/explore?limit=30');
-            allDebates = res.debates || [];
+            let res = null;
+            try {
+                res = await api.get('/explore?limit=30');
+            } catch (e) {
+                res = await api.get('/feed/explore?limit=30');
+            }
+            allDebates = (res && res.debates) ? res.debates : [];
             
             // If explore feed returns empty, fallback to debates list
             if (allDebates.length === 0) {
                 const fallback = await api.get('/debates/?limit=20');
-                allDebates = fallback.map(d => ({
+                allDebates = (fallback || []).map(d => ({
                     id: d.id,
                     title: d.title,
                     status: d.status,
@@ -87,14 +92,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             filterAndRender();
         } catch (err) {
-            console.error('Explore error:', err);
-            feedGrid.innerHTML = `
-                <div class="empty glass" style="grid-column:1/-1;text-align:center;padding:48px;border-radius:var(--radius-lg);">
-                    <strong style="display:block;font-size:16px;color:var(--red);margin-bottom:6px;">Unable to load feed</strong>
-                    <span class="muted">${err.message || 'Please check your connection and try again.'}</span>
-                    <button class="btn btn-secondary btn-sm" style="margin-top:14px;" onclick="location.reload()">Retry</button>
-                </div>
-            `;
+            console.warn('Explore feed fallback to public debates due to:', err);
+            try {
+                const fallback = await api.get('/debates/?limit=20');
+                allDebates = (fallback || []).map(d => ({
+                    id: d.id,
+                    title: d.title,
+                    status: d.status,
+                    mode: d.mode,
+                    current_round: d.current_round,
+                    viewer_count: 0,
+                    created_at: d.created_at
+                }));
+                filterAndRender();
+            } catch (finalErr) {
+                console.error('Explore fatal error:', finalErr);
+                feedGrid.innerHTML = `
+                    <div class="empty glass" style="grid-column:1/-1;text-align:center;padding:48px;border-radius:var(--radius-lg);">
+                        <strong style="display:block;font-size:16px;color:var(--red);margin-bottom:6px;">Unable to load feed</strong>
+                        <span class="muted">${finalErr.message || 'Please check your connection and try again.'}</span>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:14px;" onclick="location.reload()">Retry</button>
+                    </div>
+                `;
+            }
         }
     }
 

@@ -141,3 +141,102 @@
 /* ── Challenge ────────────────────────────────────────────── */
 .challenge{border-top:1px solid var(--line);padding:12px 0;color:var(--muted);font-size:11px;line-height:1.55}
 .challenge:first-of-type{border-top:0}
+
+/* ── Live Sentiment Swing Bar ──────────────────────────────── */
+.sentiment-container{
+  padding:10px 28px;background:rgba(20,20,24,0.7);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:5px;
+}
+.sentiment-head{
+  display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.sentiment-bar-track{
+  height:6px;width:100%;border-radius:3px;background:rgba(255,255,255,0.06);
+  display:flex;overflow:hidden;
+}
+.sentiment-fill-for{
+  height:100%;background:var(--yellow);transition:width 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.sentiment-fill-against{
+  height:100%;background:var(--blue);transition:width 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ── Dialectical & Fact-Check Badges ───────────────────────── */
+.arg-badges{
+  display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;
+}
+.arg-badge{
+  font-size:10px;font-family:var(--mono);font-weight:600;padding:2px 8px;border-radius:4px;
+  background:rgba(255,255,255,0.05);color:var(--ink-light);border:1px solid var(--line);
+  letter-spacing:.03em;
+}
+.arg-badge.thesis{color:var(--yellow);border-color:rgba(235,178,57,0.3);background:rgba(235,178,57,0.08)}
+.arg-badge.counter{color:var(--blue);border-color:rgba(91,155,245,0.3);background:rgba(91,155,245,0.08)}
+.arg-badge.probe{color:var(--green);border-color:rgba(82,196,125,0.3);background:rgba(82,196,125,0.08)}
+.arg-badge.synthesis{color:var(--red);border-color:rgba(224,90,43,0.3);background:rgba(224,90,43,0.08)}
+
+/* ── Floating Reaction Particles ──────────────────────────── */
+.floating-reaction-container{
+  position:fixed;bottom:100px;right:340px;width:180px;height:350px;
+  pointer-events:none;z-index:90;overflow:hidden;
+}
+.floating-emoji{
+  position:absolute;bottom:0;font-size:30px;
+  animation:floatUpFade 2.4s cubic-bezier(0.25,1,0.5,1) forwards;
+  will-change:transform,opacity;
+}
+@keyframes floatUpFade{
+  0%{transform:translateY(0) scale(0.6) rotate(0deg);opacity:0}
+  15%{opacity:1;transform:translateY(-30px) scale(1.15) rotate(-5deg)}
+  80%{opacity:0.9}
+  100%{transform:translateY(-280px) scale(1.4) rotate(15deg);opacity:0}
+}
+
+/* ── Audience Reaction Dock ───────────────────────────────── */
+.reaction-dock{
+  position:fixed;bottom:24px;right:330px;z-index:80;
+  display:flex;align-items:center;gap:6px;background:rgba(20,20,24,0.85);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  padding:6px 10px;border-radius:30px;border:1px solid rgba(255,255,255,0.12);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.reaction-btn{
+  background:transparent;border:none;font-size:18px;padding:6px 10px;
+  cursor:pointer;border-radius:50%;transition:transform 0.15s ease,background 0.15s ease;
+  line-height:1;
+}
+.reaction-btn:hover{
+  transform:scale(1.3) translateY(-3px);background:rgba(255,255,255,0.1);
+}
+.reaction-btn:active{
+  transform:scale(0.95);
+}
+
+/* ── Post-Debate Audience Poll Card ───────────────────────── */
+.poll-box{
+  background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius-md);
+  padding:20px 24px;margin-top:16px;text-align:left;
+}
+.poll-box h4{font-size:16px;font-family:var(--display);margin-bottom:6px}
+.poll-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.poll-vote-btn{
+  padding:12px;border-radius:var(--radius-sm);font-weight:700;font-size:13px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  border:1px solid var(--line);background:transparent;color:var(--ink);
+  transition:all var(--duration-fast);
+}
+.poll-vote-btn.for:hover, .poll-vote-btn.for.voted{
+  background:rgba(235,178,57,0.15);border-color:var(--yellow);color:var(--yellow);
+}
+.poll-vote-btn.against:hover, .poll-vote-btn.against.voted{
+  background:rgba(91,155,245,0.15);border-color:var(--blue);color:var(--blue);
+}
+.poll-tally-bar{
+  margin-top:14px;display:flex;flex-direction:column;gap:6px;
+}
+.poll-track{
+  height:8px;width:100%;border-radius:4px;background:rgba(255,255,255,0.08);
+  display:flex;overflow:hidden;
+}
+

@@ -72,3 +72,54 @@ async def test_get_live_feed(client: AsyncClient):
     assert response.status_code == 200
     assert "debates" in response.json()
     assert isinstance(response.json()["debates"], list)
+
+@pytest.mark.asyncio
+async def test_poll_endpoints():
+    """Test audience poll calculation logic."""
+    from backend.app.api.debates import _get_poll_tally
+    from backend.app.models.debate import Verdict
+
+    mock_db = AsyncMock()
+
+    # 1. Empty tally
+    mock_db.scalar.return_value = None
+    empty_tally = await _get_poll_tally(uuid.uuid4(), mock_db)
+    assert empty_tally["total_votes"] == 0
+    assert empty_tally["pct_for"] == 50.0
+    assert empty_tally["pct_against"] == 50.0
+    assert empty_tally["winner_side"] == "TIE"
+
+    # 2. Tally with votes
+    mock_verdict = Verdict(details_json={"audience_poll": {"for_votes": 8, "against_votes": 2}})
+    mock_db.scalar.return_value = mock_verdict
+    tally_for = await _get_poll_tally(uuid.uuid4(), mock_db)
+    assert tally_for["total_votes"] == 10
+    assert tally_for["pct_for"] == 80.0
+    assert tally_for["pct_against"] == 20.0
+    assert tally_for["winner_side"] == "FOR"
+
+    mock_verdict_against = Verdict(details_json={"audience_poll": {"for_votes": 1, "against_votes": 3}})
+    mock_db.scalar.return_value = mock_verdict_against
+    tally_against = await _get_poll_tally(uuid.uuid4(), mock_db)
+    assert tally_against["total_votes"] == 4
+    assert tally_against["pct_for"] == 25.0
+    assert tally_against["pct_against"] == 75.0
+    assert tally_against["winner_side"] == "AGAINST"
+
+def test_dialectical_badges_logic():
+    """Verify dialectical badge assignment across phases."""
+    from backend.app.api.debates import _get_dialectical_badges
+
+    badges_r1 = _get_dialectical_badges(1, "OPENING", "FOR")
+    assert "Core Thesis" in badges_r1
+    assert "Empirical Baseline" in badges_r1
+
+    badges_r2 = _get_dialectical_badges(2, "REBUTTAL", "AGAINST")
+    assert "Logical Scrutiny" in badges_r2 or "Fallacy Exposure" in badges_r2
+
+    badges_r3 = _get_dialectical_badges(3, "CROSS_EXAMINATION", "AGAINST")
+    assert "Cross-Defense" in badges_r3 or "Clarification" in badges_r3
+
+    badges_r4 = _get_dialectical_badges(4, "CLOSING", "FOR")
+    assert "Closing Synthesis" in badges_r4
+

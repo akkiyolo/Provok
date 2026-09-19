@@ -90,6 +90,10 @@ function renderArgument(arg, animate = true) {
     const avatarBg = sideClass === 'for' ? 'var(--yellow)' : 'var(--blue)';
     const avatarColor = '#fff';
 
+    const badgesHtml = (arg.badges && Array.isArray(arg.badges) && arg.badges.length > 0)
+        ? `<div class="arg-badges">${arg.badges.map(b => `<span class="arg-badge">${b}</span>`).join('')}</div>`
+        : '';
+
     const el = document.createElement('div');
     el.className = `argument ${sideClass} fade-in`;
     if (animate) el.style.animationDelay = '0.05s';
@@ -107,6 +111,7 @@ function renderArgument(arg, animate = true) {
             </div>
             <div class="argument-type" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;background:var(--paper-2);padding:3px 8px;border-radius:var(--radius-sm);">${argType}</div>
         </div>
+        ${badgesHtml}
         <div class="argument-body" style="margin-top:12px;line-height:1.65;font-size:15px;">${content}</div>
         <div class="argument-foot" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);">
             <span>${time}</span>
@@ -299,6 +304,137 @@ document.addEventListener('DOMContentLoaded', async () => {
         verdictLinkBtn.href = `/debate/${debateId}/verdict`;
     }
 
+    // ── Floating Reactions & Live Sentiment ─────────────────────
+    let currentSentimentFor = 50;
+    let currentSentimentAgainst = 50;
+
+    function spawnFloatingReaction(emoji) {
+        const container = document.getElementById('reaction-particles');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = 'floating-emoji';
+        el.textContent = emoji;
+        const left = 10 + Math.random() * 80;
+        el.style.left = `${left}%`;
+        el.style.fontSize = `${22 + Math.floor(Math.random() * 16)}px`;
+        container.appendChild(el);
+        setTimeout(() => {
+            if (el.parentNode) el.remove();
+        }, 2400);
+    }
+
+    function updateSentimentUI(pctFor, pctAgainst) {
+        currentSentimentFor = Math.max(5, Math.min(95, Math.round(pctFor)));
+        currentSentimentAgainst = 100 - currentSentimentFor;
+
+        const forLabel = document.getElementById('sentiment-for-label');
+        const againstLabel = document.getElementById('sentiment-against-label');
+        const fillFor = document.getElementById('sentiment-fill-for');
+        const fillAgainst = document.getElementById('sentiment-fill-against');
+
+        if (forLabel) forLabel.textContent = `FOR ${currentSentimentFor}%`;
+        if (againstLabel) againstLabel.textContent = `AGAINST ${currentSentimentAgainst}%`;
+        if (fillFor) fillFor.style.width = `${currentSentimentFor}%`;
+        if (fillAgainst) fillAgainst.style.width = `${currentSentimentAgainst}%`;
+    }
+
+    // Reaction Dock click listeners
+    document.querySelectorAll('#reaction-dock .reaction-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const emoji = btn.dataset.emoji || '🔥';
+            spawnFloatingReaction(emoji);
+
+            if (emoji === '🔥' || emoji === '🎯') {
+                updateSentimentUI(currentSentimentFor + 1, currentSentimentAgainst - 1);
+            } else if (emoji === '🚩') {
+                updateSentimentUI(currentSentimentFor - 1, currentSentimentAgainst + 1);
+            }
+
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'reaction',
+                    emoji: emoji,
+                    side: isAgentVsAgent ? 'NEUTRAL' : 'FOR'
+                }));
+            }
+        });
+    });
+
+    // ── Post-Debate Audience Poll ────────────────────────────────
+    function renderPollData(poll) {
+        if (!poll) return;
+        const totalBadge = document.getElementById('poll-total-badge');
+        const tallyFor = document.getElementById('poll-tally-for');
+        const tallyAgainst = document.getElementById('poll-tally-against');
+        const barFor = document.getElementById('poll-bar-for');
+        const barAgainst = document.getElementById('poll-bar-against');
+
+        if (totalBadge) {
+            totalBadge.textContent = `${poll.total_votes || 0} vote${poll.total_votes === 1 ? '' : 's'}`;
+        }
+        const pFor = poll.pct_for ?? 50;
+        const pAgainst = poll.pct_against ?? 50;
+
+        if (tallyFor) tallyFor.textContent = `FOR ${pFor}% (${poll.votes_for || 0})`;
+        if (tallyAgainst) tallyAgainst.textContent = `AGAINST ${pAgainst}% (${poll.votes_against || 0})`;
+        if (barFor) barFor.style.width = `${pFor}%`;
+        if (barAgainst) barAgainst.style.width = `${pAgainst}%`;
+
+        if (poll.total_votes > 0) {
+            updateSentimentUI(pFor, pAgainst);
+        }
+    }
+
+    async function initPostDebatePoll() {
+        const pollTallyBar = document.getElementById('poll-tally-bar');
+        const btnFor = document.getElementById('btn-poll-for');
+        const btnAgainst = document.getElementById('btn-poll-against');
+        const statusNote = document.getElementById('poll-status-note');
+
+        // Fetch initial poll stats
+        try {
+            const pollData = await api.get(`/debates/${debateId}/poll`);
+            renderPollData(pollData);
+        } catch (e) {
+            console.warn('Could not load poll data', e);
+        }
+
+        const votedKey = `provok_poll_voted_${debateId}`;
+        const previousVote = localStorage.getItem(votedKey);
+
+        if (previousVote) {
+            if (pollTallyBar) pollTallyBar.style.display = 'block';
+            if (statusNote) statusNote.textContent = `You voted ${previousVote}. Audience consensus tallied.`;
+            if (btnFor) btnFor.disabled = true;
+            if (btnAgainst) btnAgainst.disabled = true;
+        }
+
+        const castVote = async (side) => {
+            if (localStorage.getItem(votedKey)) {
+                toast('You have already cast your vote for this debate!', 'info');
+                return;
+            }
+            if (btnFor) btnFor.disabled = true;
+            if (btnAgainst) btnAgainst.disabled = true;
+
+            try {
+                const updated = await api.post(`/debates/${debateId}/poll`, { side });
+                localStorage.setItem(votedKey, side);
+                renderPollData(updated);
+                if (pollTallyBar) pollTallyBar.style.display = 'block';
+                if (statusNote) statusNote.textContent = `You voted ${side}. Thank you for shaping the audience verdict!`;
+                toast(`Audience vote recorded for ${side}!`, 'success');
+            } catch (err) {
+                toast(err.message || 'Failed to submit vote', 'error');
+                if (btnFor) btnFor.disabled = false;
+                if (btnAgainst) btnAgainst.disabled = false;
+            }
+        };
+
+        if (btnFor) btnFor.onclick = () => castVote('FOR');
+        if (btnAgainst) btnAgainst.onclick = () => castVote('AGAINST');
+    }
+
     const showCompletedState = () => {
         if (composeSection) composeSection.style.display = 'none';
         if (spectatorBanner) spectatorBanner.style.display = 'none';
@@ -310,6 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderRounds(totalRounds, 4, true);
         const phaseLabel = document.getElementById('round-label');
         if (phaseLabel) phaseLabel.textContent = `DEBATE COMPLETED · ALL 4 ROUNDS CONCLUDED`;
+        initPostDebatePoll();
     };
 
     if (isCompleted) {
@@ -411,6 +548,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (spectatorStatus) {
                         spectatorStatus.textContent = `${agentName} is preparing ${phase}…`;
                     }
+                } else if (eventType === 'audience_reaction') {
+                    const emoji = payload.emoji || '🔥';
+                    spawnFloatingReaction(emoji);
+                    if (payload.side === 'FOR') {
+                        updateSentimentUI(currentSentimentFor + 1, currentSentimentAgainst - 1);
+                    } else if (payload.side === 'AGAINST') {
+                        updateSentimentUI(currentSentimentFor - 1, currentSentimentAgainst + 1);
+                    }
+                } else if (eventType === 'poll_updated') {
+                    renderPollData(payload);
                 } else if (eventType === 'round_advanced') {
                     const nextRnd = payload.round_number || (currentRound + 1);
                     const nextPhase = payload.phase || 'REBUTTAL';
@@ -427,8 +574,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (e) {
                 console.error('Failed to parse WS message', e);
             }
-        };
-
         socket.onclose = () => {
             if (pingInterval) clearInterval(pingInterval);
             console.log('WS closed, reconnecting in 2s…');

@@ -4,16 +4,29 @@ from typing import Any, List, Optional
 from sqlalchemy import select
 from uuid import UUID
 
-from backend.app.dependencies import DbSession, get_current_user
+from backend.app.dependencies import DbSession, get_current_user, get_current_user_optional
 from backend.app.models.user import User
 from backend.app.models.debate import (
     Debate, Participant, PositionHistory, SideLabel, DebateStatus,
-    Argument, DebateType, DebateSide, Round, ParticipantType
+    Argument, DebateType, DebateSide, Round, ParticipantType, Verdict
 )
 from backend.app.schemas.debate import DebateCreate, DebateResponse, ArgumentCreate, ArgumentResponse
 from backend.app.debate.state_machine import DebateStateMachine
 from backend.app.config import get_settings
 from backend.app.limiter import limiter
+
+def _get_dialectical_badges(round_number: int, argument_type: Any, side: str) -> list[str]:
+    arg_type_str = argument_type.value if hasattr(argument_type, 'value') else str(argument_type or "").upper()
+    side_str = str(side).upper()
+    if round_number == 1:
+        return ["Core Thesis", "Empirical Baseline"] if side_str == "FOR" else ["Counter-Thesis", "Empirical Challenge"]
+    elif round_number == 2:
+        return ["Direct Refutation", "Premise Attack"] if side_str == "FOR" else ["Logical Scrutiny", "Fallacy Exposure"]
+    elif round_number == 3:
+        return ["Socratic Probe", "Direct Inquiry"] if "QUESTION" in arg_type_str else ["Cross-Defense", "Clarification"]
+    elif round_number == 4:
+        return ["Closing Synthesis", "Impact Calculus"] if side_str == "FOR" else ["Final Defense", "Ethical Grounding"]
+    return ["Argument Point"]
 
 settings = get_settings()
 router = APIRouter()
@@ -262,6 +275,7 @@ async def get_debate(debate_id: UUID, db: DbSession) -> Any:
                 "argument_type": a.argument_type.value if hasattr(a.argument_type, 'value') else a.argument_type,
                 "created_at": a.created_at,
                 "claims": [],
+                "badges": _get_dialectical_badges(r.round_number, a.argument_type, side_val),
             })
         rounds_data.append({
             "id": r.id,
@@ -397,12 +411,14 @@ async def submit_turn(
     
     # Broadcast argument to websockets via Redis PubSub
     from backend.app.websockets.manager import manager
+    badges = _get_dialectical_badges(debate.current_round, argument.argument_type, participant.initial_position.value if hasattr(participant.initial_position, 'value') else str(participant.initial_position))
     arg_data = {
         "id": str(argument.id),
         "content": argument.content,
         "side": participant.initial_position.value if hasattr(participant.initial_position, 'value') else str(participant.initial_position),
         "is_ai": False,
         "type": argument.argument_type.value if hasattr(argument.argument_type, 'value') else argument.argument_type,
+        "badges": badges,
     }
     await manager.publish_event(
         debate_id=str(debate_id),
@@ -431,6 +447,7 @@ async def submit_turn(
         "argument_type": argument.argument_type.value if hasattr(argument.argument_type, 'value') else argument.argument_type,
         "created_at": argument.created_at or datetime.now(timezone.utc),
         "claims": [],
+        "badges": badges,
     }
 
 @router.post("/{debate_id}/done")
@@ -557,3 +574,125 @@ async def get_debate_verdict(debate_id: UUID, db: DbSession):
         "responsiveness_b": verdict.responsiveness_b,
         "details_json": verdict.details_json,
     }
+
+
+# ── Audience Winner Poll ───────────────────────────────────────
+
+class PollVoteCreate(BaseModel):
+    side: str  # "FOR" or "AGAINST"
+
+
+async def _get_poll_tally(debate_id: UUID, db: Any, voter_key: str = None) -> dict:
+    verdict = await db.scalar(select(Verdict).where(Verdict.debate_id == debate_id))
+    details = (verdict.details_json or {}) if verdict else {}
+    poll = details.get("audience_poll", {"for_votes": 0, "against_votes": 0, "voters": {}})
+
+    for_votes = int(poll.get("for_votes", 0))
+    against_votes = int(poll.get("against_votes", 0))
+    total = for_votes + against_votes
+
+    for_pct = round((for_votes / total * 100), 1) if total > 0 else 50.0
+    against_pct = round((against_votes / total * 100), 1) if total > 0 else 50.0
+
+    winner = "TIE"
+    if for_votes > against_votes:
+        winner = "FOR"
+    elif against_votes > for_votes:
+        winner = "AGAINST"
+
+    voted_side = poll.get("voters", {}).get(voter_key) if voter_key else None
+
+    return {
+        "debate_id": str(debate_id),
+        "votes_for": for_votes,
+        "votes_against": against_votes,
+        "for_votes": for_votes,
+        "against_votes": against_votes,
+        "total_votes": total,
+        "pct_for": for_pct,
+        "pct_against": against_pct,
+        "for_percent": for_pct,
+        "against_percent": against_pct,
+        "winner_side": winner,
+        "community_winner": winner,
+        "user_voted": voted_side
+    }
+
+
+@router.get("/{debate_id}/poll")
+async def get_debate_poll(
+    debate_id: UUID,
+    request: Request,
+    db: DbSession,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """Get current audience community poll tally for who won the debate."""
+    voter_key = str(current_user.id) if current_user else (request.client.host if request.client else "anon")
+    return await _get_poll_tally(debate_id, db, voter_key)
+
+
+@router.post("/{debate_id}/poll")
+async def vote_in_debate_poll(
+    debate_id: UUID,
+    vote_in: PollVoteCreate,
+    request: Request,
+    db: DbSession,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """Cast an audience community vote on who won the debate (FOR vs AGAINST). Works across all 3 modes."""
+    from sqlalchemy.orm.attributes import flag_modified
+    from backend.app.websockets.manager import manager
+
+    side = vote_in.side.strip().upper()
+    if side not in ["FOR", "AGAINST"]:
+        raise HTTPException(status_code=400, detail="Side must be 'FOR' or 'AGAINST'")
+
+    voter_key = str(current_user.id) if current_user else (request.client.host if request.client else "anon")
+
+    verdict = await db.scalar(select(Verdict).where(Verdict.debate_id == debate_id))
+    if not verdict:
+        # Create verdict draft record for ongoing/live poll if judge hasn't run yet
+        verdict = Verdict(
+            debate_id=debate_id,
+            judge_conclusion="Community Poll Active",
+            details_json={"audience_poll": {"for_votes": 0, "against_votes": 0, "voters": {}}}
+        )
+        db.add(verdict)
+        await db.flush()
+
+    details = dict(verdict.details_json or {})
+    poll = dict(details.get("audience_poll", {"for_votes": 0, "against_votes": 0, "voters": {}}))
+    voters = dict(poll.get("voters", {}))
+
+    prev_vote = voters.get(voter_key)
+    if prev_vote:
+        if prev_vote == side:
+            return await _get_poll_tally(debate_id, db, voter_key)
+        # Switching vote
+        if prev_vote == "FOR":
+            poll["for_votes"] = max(0, poll.get("for_votes", 1) - 1)
+        else:
+            poll["against_votes"] = max(0, poll.get("against_votes", 1) - 1)
+
+    if side == "FOR":
+        poll["for_votes"] = poll.get("for_votes", 0) + 1
+    else:
+        poll["against_votes"] = poll.get("against_votes", 0) + 1
+
+    voters[voter_key] = side
+    poll["voters"] = voters
+    details["audience_poll"] = poll
+    verdict.details_json = details
+
+    flag_modified(verdict, "details_json")
+    await db.commit()
+
+    tally = await _get_poll_tally(debate_id, db, voter_key)
+
+    # Broadcast real-time poll update to all connected spectators
+    await manager.publish_event(
+        debate_id=str(debate_id),
+        event_type="poll_updated",
+        payload=tally
+    )
+    return tally

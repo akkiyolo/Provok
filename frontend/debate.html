@@ -26,19 +26,76 @@
 </div></div>
 <div class="rounds" id="rounds-track"></div>
 <div class="round-label" id="round-label">Loading…</div>
+<div class="sentiment-container" id="sentiment-container">
+  <div class="sentiment-head">
+    <span style="color:var(--yellow);" id="sentiment-for-label">FOR 50%</span>
+    <span style="color:var(--muted);font-size:10px;">AUDIENCE LIVE SENTIMENT</span>
+    <span style="color:var(--blue);" id="sentiment-against-label">AGAINST 50%</span>
+  </div>
+  <div class="sentiment-bar-track">
+    <div class="sentiment-fill-for" id="sentiment-fill-for" style="width:50%;"></div>
+    <div class="sentiment-fill-against" id="sentiment-fill-against" style="width:50%;"></div>
+  </div>
+</div>
 </header>
 <div class="debate-shell"><section class="debate-main"><div class="stream" id="argument-stream">
   <div class="loading-state" id="loading-state" style="color:var(--muted);padding:40px 28px;font-size:14px">Loading debate…</div>
 </div>
 <div class="compose" style="display: none;"><div class="compose-inner"><textarea class="compose-input" id="compose-input" rows="1" placeholder="Write your argument…"></textarea><button class="btn btn-red" id="btn-submit-argument">Submit</button></div><div class="compose-actions"><button class="dark-btn" id="btn-finish-turn">Done with turn</button><button class="dark-btn" id="btn-concede" style="color:#db6557">Concede</button><span style="margin-left:auto;color:#6e6a62;font-size:10px">Ctrl / ⌘ + Enter to send</span></div></div>
 <div id="spectator-mode-banner" class="glass" style="display:none;padding:16px 22px;border-radius:var(--radius-md);margin:16px 20px;border:1px solid var(--line);align-items:center;justify-content:space-between;"><div style="display:flex;align-items:center;gap:10px;"><span class="badge" style="background:rgba(224,90,43,0.2);color:var(--red);font-weight:600;">AGENT VS AGENT</span><span id="spectator-status-text" style="font-size:13px;color:var(--ink-light);">Autonomous Debate in progress · AI vs AI</span></div><div class="ai-thinking-indicator" id="agent-thinking-pulse" style="display:flex;align-items:center;gap:4px;"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
-<div id="debate-finished-banner" class="glass" style="display:none;padding:24px;text-align:center;border-radius:var(--radius-md);margin:16px 20px;border:1px solid var(--line);"><h3 style="font-size:18px;margin-bottom:8px;font-family:var(--display);">Debate Completed · 4 Rounds Concluded</h3><p class="muted" style="margin-bottom:16px;font-size:13px;">All 4 rounds have finished. The AI judge has analyzed the transcript.</p><a id="verdict-link-btn" class="btn btn-red btn-md" href="#">Read the Final Verdict →</a></div>
+<div id="debate-finished-banner" class="glass" style="display:none;padding:24px;text-align:center;border-radius:var(--radius-md);margin:16px 20px;border:1px solid var(--line);">
+  <h3 style="font-size:18px;margin-bottom:8px;font-family:var(--display);">Debate Completed · 4 Rounds Concluded</h3>
+  <p class="muted" style="margin-bottom:16px;font-size:13px;">All 4 rounds have finished. The AI judge has analyzed the transcript.</p>
+  <div style="margin-bottom:20px;">
+    <a id="verdict-link-btn" class="btn btn-red btn-md" href="#">Read the Final Verdict →</a>
+  </div>
+  
+  <!-- Post-Debate Audience Poll -->
+  <div class="poll-box" id="post-debate-poll">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div style="text-align:left;">
+        <div class="eyebrow" style="color:var(--red);font-size:10px;">COMMUNITY AUDIENCE POLL</div>
+        <h4>Who won this debate in your opinion?</h4>
+        <p class="muted" style="font-size:12px;margin:0;">Cast your vote to shape the audience verdict across all 3 modes.</p>
+      </div>
+      <div id="poll-total-badge" class="badge" style="background:var(--paper-3);color:var(--ink-light);font-size:11px;">0 votes</div>
+    </div>
+    <div class="poll-actions" id="poll-actions">
+      <button class="poll-vote-btn for" id="btn-poll-for" data-side="FOR">
+        <span>⚡</span> Vote Side FOR
+      </button>
+      <button class="poll-vote-btn against" id="btn-poll-against" data-side="AGAINST">
+        <span>🛡️</span> Vote Side AGAINST
+      </button>
+    </div>
+    <div class="poll-tally-bar" id="poll-tally-bar" style="display:none;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-family:var(--mono);margin-bottom:4px;">
+        <span style="color:var(--yellow);font-weight:700;" id="poll-tally-for">FOR 50%</span>
+        <span style="color:var(--blue);font-weight:700;" id="poll-tally-against">AGAINST 50%</span>
+      </div>
+      <div class="poll-track">
+        <div id="poll-bar-for" style="width:50%;background:var(--yellow);transition:width 0.4s ease;"></div>
+        <div id="poll-bar-against" style="width:50%;background:var(--blue);transition:width 0.4s ease;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px;" id="poll-status-note">Your vote has been counted</div>
+    </div>
+  </div>
+</div>
 </section>
 <aside class="debate-side">
 <div class="side-section"><div class="side-title">Participants</div><div id="participants-list"></div></div>
 <div class="side-section"><div class="vote-box"><div class="side-title">ROUND VOTE</div><h3>Who won this round?</h3><div class="vote-buttons" id="vote-buttons"></div></div></div>
 <div class="side-section"><div class="side-title">Audience challenges</div><div id="audience-challenges"></div><button class="dark-btn" id="btn-submit-challenge" style="width:100%;margin-top:8px">Challenge the room</button></div>
 <div><div class="side-title">Your control</div><button class="dark-btn" id="btn-take-break" style="width:100%">Save my place &amp; leave</button></div>
-</aside></div></main></div><div id="toast-container" class="toast-container"></div>
+</aside></div>
+<div class="floating-reaction-container" id="reaction-particles"></div>
+<div class="reaction-dock" id="reaction-dock">
+  <span style="font-size:10px;font-family:var(--mono);color:var(--muted);margin-right:2px;font-weight:600;">REACT</span>
+  <button class="reaction-btn" data-emoji="🔥" title="Brilliant argument">🔥</button>
+  <button class="reaction-btn" data-emoji="🎯" title="Direct hit">🎯</button>
+  <button class="reaction-btn" data-emoji="🚩" title="Fallacy alert">🚩</button>
+  <button class="reaction-btn" data-emoji="🤯" title="Mind blown">🤯</button>
+</div>
+</main></div><div id="toast-container" class="toast-container"></div>
 <script type="module" src="/static/js/core/app.js?v=8"></script><script type="module" src="/static/js/pages/debate.js?v=8"></script>
 </body></html>

@@ -26,11 +26,76 @@
 </div>
 <div class="nav-actions"><button id="theme-toggle" class="btn btn-ghost btn-sm desktop-only" style="padding:0 8px;font-size:16px;" title="Toggle Theme">◐</button><a class="btn btn-ghost btn-sm desktop-only" href="/notifications">Notifications</a><a class="btn btn-secondary btn-sm desktop-only" href="/login">Sign in</a><a class="btn btn-red btn-sm" href="/ask">Start debate</a><button class="btn btn-ghost btn-sm mobile-toggle" onclick="document.querySelector('.nav-links').style.display='flex'">Menu</button></div>
 </div></nav><main class="page-content"><div class="container verdict">
+<div class="trophy-export-bar">
+  <div>
+    <h3 style="font-size:16px;margin:0 0 4px;font-family:var(--display);">Official Verdict Trophy Card</h3>
+    <p class="muted" style="font-size:12px;margin:0;">Export a branded 1200×630 share card with consensus scores and community poll stats.</p>
+  </div>
+  <button id="btn-open-trophy" class="trophy-export-btn">
+    <span>🏆</span> Export Share Card
+  </button>
+</div>
 <header class="verdict-head"><div class="eyebrow">DEBATE COMPLETE / 4 ROUNDS</div><h1 id="verdict-title">Evaluating Verdict…</h1><p class="verdict-question">Loading debate topic…</p></header>
+
+<!-- AI Judge vs Community Poll Comparison Grid -->
+<div class="comparison-grid" id="consensus-comparison-grid">
+  <div class="comparison-card">
+    <div class="eyebrow" style="color:var(--red);font-size:10px;">AI BENCH VERDICT</div>
+    <h4 id="ai-winner-title" style="font-size:18px;margin:8px 0;">Evaluating AI Verdict…</h4>
+    <p id="ai-verdict-summary" class="muted" style="font-size:13px;line-height:1.6;margin:0;">Synthesizing 4 rounds of debate logic.</p>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:8px;">
+      <span class="badge" id="ai-winner-badge" style="background:var(--yellow);color:#fff;font-weight:700;">FOR WON</span>
+      <span id="ai-confidence-label" style="font-size:12px;color:var(--muted);font-family:var(--mono);">85% Confidence</span>
+    </div>
+  </div>
+
+  <div class="comparison-card">
+    <div class="eyebrow" style="color:var(--yellow);font-size:10px;">COMMUNITY AUDIENCE POLL</div>
+    <h4 id="poll-winner-title" style="font-size:18px;margin:8px 0;">Audience Consensus</h4>
+    <div id="poll-comparison-tally" style="margin:10px 0;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-family:var(--mono);margin-bottom:4px;">
+        <span style="color:var(--yellow);font-weight:700;" id="cmp-poll-for">FOR 50%</span>
+        <span style="color:var(--blue);font-weight:700;" id="cmp-poll-against">AGAINST 50%</span>
+      </div>
+      <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.08);">
+        <div id="cmp-bar-for" style="width:50%;background:var(--yellow);transition:width 0.3s ease;"></div>
+        <div id="cmp-bar-against" style="width:50%;background:var(--blue);transition:width 0.3s ease;"></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:8px;">
+      <span class="badge" id="poll-winner-badge" style="background:var(--paper-3);color:var(--ink-light);font-weight:700;">TIE / PENDING</span>
+      <span id="poll-total-votes-label" style="font-size:12px;color:var(--muted);font-family:var(--mono);">0 Total Votes</span>
+    </div>
+  </div>
+</div>
+
 <div class="result-strip"></div>
 <section class="position-shift"><div class="eyebrow" style="color:#8b867d">SYNTHESIS &amp; COMMON GROUND</div><div class="position-row"></div><p style="margin-top:20px;color:#aaa59c">The AI judge has analyzed all 4 rounds of arguments and cross-examinations.</p></section>
 <section><div class="eyebrow">SCORING BREAKDOWN</div><h2 style="font-size:31px;margin:7px 0 20px">Where each side held up.</h2><div class="score-grid"></div></section>
 <section class="next-debate"><div class="eyebrow">READY FOR MORE?</div><h2>Test your next belief in the arena.</h2><a class="btn btn-red btn-lg" href="/ask">Start a new debate →</a></section>
-</div></main></div><div id="toast-container" class="toast-container"></div>
+</div></main></div>
+
+<!-- Trophy Card Preview Modal -->
+<div class="card-modal-overlay" id="trophy-modal">
+  <div class="card-modal">
+    <div class="card-modal-head">
+      <h3>Debate Trophy Card</h3>
+      <button class="btn btn-ghost btn-sm" id="btn-close-modal" style="font-size:18px;padding:4px 10px;">✕</button>
+    </div>
+    <p class="muted" style="font-size:13px;margin:-10px 0 10px;">Generated at high-resolution 1200×630 for Twitter/X cards, LinkedIn, and social embeds.</p>
+    <div class="card-preview-wrap">
+      <canvas id="trophy-canvas" width="1200" height="630"></canvas>
+    </div>
+    <div class="card-modal-actions">
+      <button class="btn btn-secondary btn-sm" id="btn-close-trophy">Close</button>
+      <button class="btn btn-ghost btn-sm" id="btn-share-twitter" style="border:1px solid #1da1f2;color:#1da1f2;">
+        <span>🐦</span> Share on X
+      </button>
+      <button class="btn btn-red btn-sm" id="btn-download-png">
+        <span>⬇</span> Download PNG
+      </button>
+    </div>
+  </div>
+</div><div id="toast-container" class="toast-container"></div>
 <script type="module" src="/static/js/core/app.js?v=8"></script><script type="module" src="/static/js/pages/verdict.js?v=8"></script>
 </body></html>

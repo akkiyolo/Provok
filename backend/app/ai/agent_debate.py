@@ -216,6 +216,21 @@ async def run_agent_vs_agent_debate(debate_id: str) -> None:
             await session.commit()
             await session.refresh(arg_for)
 
+        badges_for_map = {
+            "OPENING": ["Core Thesis", "Empirical Baseline"],
+            "REBUTTAL": ["Direct Refutation", "Premise Attack"],
+            "CROSS_EXAMINATION": ["Socratic Probe", "Direct Inquiry"],
+            "CLOSING": ["Closing Synthesis", "Impact Calculus"],
+        }
+        badges_against_map = {
+            "OPENING": ["Counter-Thesis", "Empirical Challenge"],
+            "REBUTTAL": ["Logical Scrutiny", "Fallacy Exposure"],
+            "CROSS_EXAMINATION": ["Cross-Defense", "Rebuttal Probe"],
+            "CLOSING": ["Final Synthesis", "Ethical Grounding"],
+        }
+        badges_for = badges_for_map.get(phase_name, ["Argument Point"])
+        badges_against = badges_against_map.get(phase_name, ["Counter-Point"])
+
         # Broadcast turn 1 argument
         await manager.publish_event(
             debate_id=debate_id,
@@ -228,7 +243,8 @@ async def run_agent_vs_agent_debate(debate_id: str) -> None:
                 "is_ai": True,
                 "agent_name": "Agent FOR",
                 "type": arg_type,
-                "round": round_num
+                "round": round_num,
+                "badges": badges_for
             }
         )
 
@@ -295,7 +311,8 @@ async def run_agent_vs_agent_debate(debate_id: str) -> None:
                 "is_ai": True,
                 "agent_name": "Agent AGAINST",
                 "type": arg_type,
-                "round": round_num
+                "round": round_num,
+                "badges": badges_against
             }
         )
 

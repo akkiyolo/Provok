@@ -31,6 +31,7 @@ class ArgumentResponse(ArgumentBase):
     side: Optional[str] = None
     is_ai: Optional[bool] = False
     agent_name: Optional[str] = None
+    badges: List[str] = []
     created_at: datetime
     claims: List[ClaimResponse] = []
     model_config = ConfigDict(from_attributes=True)

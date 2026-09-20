@@ -193,15 +193,18 @@ async def create_debate(
     # Initialize FSM and first round
     fsm = DebateStateMachine(db)
     debate = await fsm.initialize_debate(debate)
+
+    # Commit all debate, side, participant, and round records to ensure they are fully visible
+    await db.commit()
     
-    # Start tasks with Celery durability / background fallback
+    # Start tasks asynchronously without holding the HTTP response
     if dt == DebateType.AI_VS_AI:
         from backend.app.workers.ai_tasks import dispatch_agent_debate
-        dispatch_agent_debate(str(debate.id), background_tasks)
+        dispatch_agent_debate(str(debate.id))
     elif dt == DebateType.HUMAN_VS_AI and debate_in.initial_position == SideLabel.AGAINST:
         # If user picked AGAINST, AI takes FOR and delivers opening statement
         from backend.app.workers.ai_tasks import dispatch_ai_swarm_turn
-        dispatch_ai_swarm_turn(str(debate.id), background_tasks)
+        dispatch_ai_swarm_turn(str(debate.id))
 
     # Return explicit response to avoid async lazy load errors
     from datetime import datetime, timezone

@@ -1,9 +1,13 @@
 import { api, toast } from '../core/app.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    // URL format: /debate/{debate_id}/verdict
-    let debateId = pathParts.length >= 2 ? pathParts[pathParts.length - 2] : null;
+    const urlParams = new URLSearchParams(window.location.search);
+    let debateId = urlParams.get('debate_id') || urlParams.get('id');
+    if (!debateId) {
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        // URL format: /debate/{debate_id}/verdict
+        debateId = pathParts.length >= 2 ? pathParts[pathParts.length - 2] : null;
+    }
     
     if (!debateId || debateId === 'debate' || debateId === 'setup') {
         return;

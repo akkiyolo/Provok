@@ -294,6 +294,7 @@ FRONTEND_ROUTES = {
     "/login": "login.html",
     "/signup": "signup.html",
     "/notifications": "notifications.html",
+    "/verdict": "verdict.html",
 }
 
 

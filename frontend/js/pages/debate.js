@@ -574,6 +574,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (e) {
                 console.error('Failed to parse WS message', e);
             }
+        };
+
         socket.onclose = () => {
             if (pingInterval) clearInterval(pingInterval);
             console.log('WS closed, reconnecting in 2s…');

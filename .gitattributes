@@ -1,0 +1,4 @@
+# Shell scripts and server config run on Linux (or Git Bash): always LF, whatever the checkout platform.
+*.sh text eol=lf
+Caddyfile text eol=lf
+infra/server/* text eol=lf

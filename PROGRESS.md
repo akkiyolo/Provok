@@ -138,7 +138,9 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   formats (`github_repository_ids`). Git Bash rewrote `/provok/...` SSM names into Windows paths
   (`MSYS_NO_PATHCONV=1` in the scripts). The SSM agent can miss the instance role on first boot (reboot fixes it).
 - The founder's network (Fortinet DNS filter) blocks `*.sslip.io`; another reason to get a real domain.
-- Next: Google OAuth redirect for the staging URL, then an end-to-end debate on staging.
+- Verified by the founder on staging: email sign-up + verification (SES, landed in spam), Google sign-in, and a
+  human-vs-AI debate with AI replies. 3 of 6 Gemini calls in that debate got Google's 503 "high demand" (free tier);
+  retries recovered. Paid keys (launch checklist #1) remove this.
 
 ## Not yet verified (needs your accounts/keys)
 

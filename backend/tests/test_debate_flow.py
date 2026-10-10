@@ -12,6 +12,7 @@ from backend.app.engine.transitions import TURN_PLAN
 from backend.app.engine.types import Round
 from backend.app.llm.gateway import Role
 from backend.app.models import Claim, CreditLedger, Debate, DebateRound, Turn, User, Verdict
+from backend.app.services.email import sent_emails
 from backend.app.workers import tasks
 
 D = "/api/v1/debates"
@@ -170,6 +171,39 @@ async def test_challenge_timeout_fallback_to_ai(client, make_user, jobs):
     assert r.json()["mode"] == "hva"
     me = (await alice.get("/api/v1/auth/me")).json()
     assert me["free_ai_debates_left"] == 2  # the fallback counts as an AI debate
+
+
+async def test_private_invite_link_only_admits_token_holders(client, make_user):
+    alice, bob, carol = await make_user("alice"), await make_user("bob"), await make_user("carol")
+    body = {**hvh_body(), "against": {"type": "link"}}
+    d = (await alice.post(D, body)).json()
+    did = d["id"]
+    token = d["sides"][1]["invite_token"]
+    assert d["status"] == "waiting_for_opponent" and token and d["sides"][1]["invite_link"]
+
+    # Only the creator ever sees the token, and the debate stays out of the public challenges list.
+    seen_by_carol = (await carol.get(f"{D}/{did}")).json()["sides"][1]
+    assert seen_by_carol["invite_link"] and seen_by_carol["invite_token"] is None
+    assert (await client.get(f"{D}/feed?tab=challenges")).json()["items"] == []
+
+    for attempt in (None, {"invite_token": "wrong"}):
+        r = await carol.post(f"{D}/{did}/join", attempt)
+        assert r.status_code == 403 and r.json()["error"]["code"] == "invite_link_required"
+    r = await bob.post(f"{D}/{did}/join", {"invite_token": token})
+    assert r.status_code == 200 and r.json()["status"] == "opening"
+    assert r.json()["sides"][1]["user"]["username"] == "bob"
+    assert all(s["invite_token"] is None for s in (await alice.get(f"{D}/{did}")).json()["sides"])
+
+
+async def test_challenge_someone_emails_the_invitee(client, make_user):
+    alice = await make_user("alice")
+    await make_user("bob")
+    sent_emails().clear()
+    r = await alice.post(D, {**hvh_body(), "against": {"type": "invite", "username": "bob"}})
+    assert r.status_code == 201, r.text
+    mail = [m for m in sent_emails() if m["to"] == "bob@example.com"]
+    assert len(mail) == 1 and "challenged you" in mail[0]["subject"]
+    assert f"/d/{r.json()['id']}" in mail[0]["text"]
 
 
 async def test_vote_rules(client, make_user, jobs):

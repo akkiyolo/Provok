@@ -52,6 +52,10 @@ export interface SideView {
   model: ModelRef | null;
   persona: string | null;
   ready: boolean;
+  /** The open seat can only be taken through a private invite link. */
+  invite_link: boolean;
+  /** Only sent to the debate's creator. */
+  invite_token: string | null;
 }
 
 export interface Citation {

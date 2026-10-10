@@ -124,7 +124,8 @@ export function SignupForm({ onDone, next }: { onDone?: () => void; next?: strin
 export function AuthGateSheet() {
   const { gate } = useAuth();
   const [mode, setMode] = useState<"signup" | "login">("signup");
-  const next = typeof window !== "undefined" ? window.location.pathname : "/";
+  // Keep the query string: an invite link's ?invite= token must survive sign-up (including the Google round trip).
+  const next = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
   return (
     <Sheet open={gate.open} onClose={gate.close} title={mode === "signup" ? "Join the arena" : "Welcome back"}>
       {gate.reason && <p className="-mt-2 mb-4 text-sm text-dim">{gate.reason}</p>}

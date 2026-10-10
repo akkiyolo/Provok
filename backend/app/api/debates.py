@@ -136,7 +136,8 @@ async def feed(db: DB, user: OptionalUser, tab: FeedTab = "live", cursor: str | 
     elif tab == "ava":
         q = q.where(Debate.mode == "ava", Debate.status.not_in([Status.CANCELLED.value, Status.ABANDONED.value]))
     elif tab == "challenges":
-        open_side = select(Side.debate_id).where(Side.participant_type.is_(None), Side.invited_user_id.is_(None))
+        open_side = select(Side.debate_id).where(Side.participant_type.is_(None), Side.invited_user_id.is_(None),
+                                                  Side.invite_token.is_(None))
         q = q.where(Debate.status.in_([Status.WAITING_FOR_OPPONENT.value, Status.SWARM_FALLBACK_OFFERED.value]),
                     Debate.id.in_(open_side))
     elif tab == "completed":
@@ -183,10 +184,14 @@ async def _apply_and_respond(db, debate: Debate, event: tx.Event, user: User | N
     return await build_debate_view(db, debate, user)
 
 
+class JoinIn(BaseModel):
+    invite_token: str | None = Field(default=None, max_length=64)
+
+
 @router.post("/{debate_id}/join")
-async def join(debate_id: uuid.UUID, user: ActiveDebater, db: DB) -> dict:
+async def join(debate_id: uuid.UUID, user: ActiveDebater, db: DB, body: JoinIn | None = None) -> dict:
     debate = await get_debate_for_update(db, debate_id)
-    await svc.assert_can_join(db, debate, user)
+    await svc.assert_can_join(db, debate, user, body.invite_token if body else None)
     view = await _apply_and_respond(db, debate, tx.OpponentJoined(user.id, utcnow()), user)
     if debate.created_by:
         outbox = Outbox()
@@ -391,7 +396,7 @@ async def rematch_template(debate_id: uuid.UUID, db: DB, user: CurrentUser) -> d
             return {"type": "invite", "username": users[side.user_id].username}
         if side.swarm_config:
             return {"type": "swarm", **side.swarm_config}
-        return {"type": "open"}
+        return {"type": "link"} if side.invite_token else {"type": "open"}
 
     # Swap corners for the rematch.
     return {"question": debate.question, "timing": debate.timing, "word_limit": debate.word_limit,

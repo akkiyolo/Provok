@@ -91,6 +91,15 @@ async def send_password_reset(to: str, token: str) -> None:
                      f"Reset your Provok password (expires in {s.password_reset_ttl_minutes} min): {url}")
 
 
+async def send_challenge(to: str, challenger: str, question: str, debate_url: str) -> None:
+    await send_email(to, f"{challenger} challenged you on Provok",
+                     _layout(f"{challenger} wants to debate you.",
+                             f"<p><b>{html.escape(question)}</b></p><p>Take the other side and the debate starts "
+                             "right away. If nobody answers in time, they can bring in an AI instead.</p>",
+                             "Accept the challenge", debate_url),
+                     f"{challenger} challenged you to a debate: '{question}'. Accept: {debate_url}")
+
+
 async def send_turn_reminder(to: str, question: str, debate_url: str) -> None:
     await send_email(to, "Your move on Provok",
                      _layout("It's your turn.", f"<p>Your opponent has spoken on <b>{html.escape(question)}</b>. "

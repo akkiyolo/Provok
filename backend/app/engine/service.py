@@ -167,6 +167,7 @@ async def _apply_db_effects(db: AsyncSession, debate: Debate, t: tx.Transition, 
                 sides[p].participant_type = ParticipantType.HUMAN.value
                 sides[p].user_id = uid
                 sides[p].invited_user_id = None
+                sides[p].invite_token = None
             case tx.AssignSwarm(position=p):
                 if not swarm_config:
                     raise Conflict("No AI configuration available for the fallback opponent.")
@@ -174,6 +175,7 @@ async def _apply_db_effects(db: AsyncSession, debate: Debate, t: tx.Transition, 
                 sides[p].swarm_config = swarm_config
                 sides[p].user_id = None
                 sides[p].invited_user_id = None
+                sides[p].invite_token = None
             case tx.MarkReady(position=p):
                 sides[p].ready_at = now
             case tx.MarkStarted():

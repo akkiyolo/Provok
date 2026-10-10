@@ -1,4 +1,4 @@
-import { ARG, expect, newUserPage, signUp, test } from "./fixtures";
+import { ARG, expect, newUserPage, PASSWORD, signUp, test, uniqueName } from "./fixtures";
 
 test("anonymous visitor sees the arena and is prompted to sign in at the moment of action", async ({ page }) => {
   await page.goto("/");
@@ -82,4 +82,53 @@ test("wrong password shows a clear error and no account enumeration", async ({ p
   await page.getByLabel("Password").fill("not-the-password");
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page.getByText(/password don.t match/)).toBeVisible();
+});
+
+test("private invite link: only the link admits, and a brand-new user can sign up and join", async ({ browser }) => {
+  const alice = await newUserPage(browser, "al");
+  // Capture what "Send on WhatsApp" would open instead of leaving the app.
+  await alice.page.addInitScript(() => {
+    const w = window as unknown as { __opened?: string[] };
+    window.open = ((url?: string | URL) => {
+      w.__opened = [...(w.__opened ?? []), String(url)];
+      return null;
+    }) as typeof window.open;
+  });
+  await alice.page.goto("/new");
+  await alice.page.getByLabel("Debate question").fill("Should homework be banned in primary schools?");
+  await alice.page.getByRole("button", { name: "Pick the corners →" }).click();
+  await alice.page.getByRole("button", { name: /Invite link/ }).last().click();
+  await alice.page.getByRole("button", { name: "Choose the format →" }).click();
+  await alice.page.getByRole("button", { name: "Review →" }).click();
+  await alice.page.getByRole("button", { name: /Start the debate/ }).click();
+  await alice.page.waitForURL(/\/d\//);
+  const debatePath = new URL(alice.page.url()).pathname;
+  await alice.page.getByRole("button", { name: "Send on WhatsApp" }).click();
+  const opened = await alice.page.evaluate(() => (window as unknown as { __opened: string[] }).__opened[0]);
+  const inviteUrl = new URL(new URL(opened).searchParams.get("text")!.split(" ").pop()!);
+  expect(inviteUrl.pathname).toBe(debatePath);
+  expect(inviteUrl.searchParams.get("invite")).toBeTruthy();
+
+  // Without the link: no way in, and it isn't listed publicly.
+  const nosy = await newUserPage(browser, "no");
+  await nosy.page.goto(debatePath);
+  await expect(nosy.page.getByText("This is a private challenge.")).toBeVisible();
+  await expect(nosy.page.getByRole("button", { name: /Take the AGAINST side/ })).toHaveCount(0);
+  await nosy.page.goto("/challenges");
+  await expect(nosy.page.getByRole("link", { name: /homework/ })).toHaveCount(0);
+
+  // With the link: an anonymous friend signs up right there and takes the seat.
+  const bob = await (await browser.newContext()).newPage();
+  await bob.goto(inviteUrl.pathname + inviteUrl.search);
+  await expect(bob.getByText("You've been challenged.")).toBeVisible();
+  await bob.getByRole("button", { name: /Take the AGAINST side/ }).click();
+  const bobName = uniqueName("bo");
+  await bob.getByLabel("Email").fill(`${bobName}@example.com`);
+  await bob.getByLabel("Username").fill(bobName);
+  await bob.getByLabel("Password").fill(PASSWORD);
+  await bob.getByRole("button", { name: "Create account" }).click();
+  await bob.getByRole("button", { name: /Take the AGAINST side/ }).click();
+  await expect(bob.getByText("ON THE CLOCK")).toBeVisible();
+  await alice.page.reload();
+  await expect(alice.page.getByText(bobName).first()).toBeVisible();
 });

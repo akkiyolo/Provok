@@ -25,7 +25,7 @@ frontend, video included, Google + email/password auth (no phone OTP).** Everyth
 
 ## Verified
 
-- **163 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
+- **165 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
 - **Frontend**: typecheck, lint (React Compiler rules) and production build all pass.
 - **Live end-to-end run with real models** (Qwen vs GPT-OSS on Groq): a full 10-turn AvA debate ran to
   a judged verdict through the real worker, surviving free-tier rate limits via backoff + auto-resume,
@@ -39,7 +39,7 @@ regression test).
 
 ## Browser E2E (Playwright)
 
-`apps/web/e2e` — 36 tests (desktop + mobile): first debate vs AI through to the verdict, human-vs-human
+`apps/web/e2e` — 38 tests (desktop + mobile): first debate vs AI through to the verdict, human-vs-human
 challenge → join → turns → spectator vote, auth errors, no page errors/hydration mismatches, no horizontal
 scroll at 360px, security headers, share metadata. Runs in CI against the real stack with `LLM_FAKE=true`.
 The browser pass found and fixed: a paywall on "debate an AI now" (flagship default), a hydration race in
@@ -57,6 +57,17 @@ fixed dock covering Submit, and a client-side vote rule contradicting the server
 - Live run on Neon found: Gemini 3.x Flash "thinks" inside its token budget, so short JSON replies (critic, 400 tokens)
   were truncated and the turn failed with `swarm_error`. Fixed: Gemini 2.5/3.x get the reasoning-model budget, and
   an unparseable strategist/critic reply is skipped instead of failing the turn (regression test in `test_debate_flow.py`).
+
+## Invites (2026-10-10)
+
+- **Challenge someone** now also emails the invitee (verified emails only), not just an in-app notification.
+- **Invite link**: a new corner type. The open seat gets a secret token; only `/d/{id}?invite=<token>` can take it
+  (checked server-side, `invite_link_required` otherwise). Only the creator ever receives the token; link debates
+  never appear in Open Challenges. The creator gets "Send on WhatsApp" / "Copy invite link". The token survives
+  sign-up from the auth sheet, including Google sign-in. Migration `0002` adds `sides.invite_token`.
+- Fixed: the arena header flipped between collapsed/expanded on short pages (scroll threshold without hysteresis).
+- Known gap: with `REQUIRE_VERIFIED_EMAIL_TO_DEBATE=true`, a brand-new email/password user must verify their
+  email before joining; the verification email does not yet bring them back to the invite (Google sign-up does).
 
 ## Not yet verified (needs your accounts/keys)
 

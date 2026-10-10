@@ -14,7 +14,7 @@ import { cx, PERSONA_LABEL } from "@/lib/format";
 import { useMeta } from "@/lib/meta";
 import type { DebateView, Position, PublicUser, Timing } from "@/lib/types";
 
-type CornerType = "me" | "open" | "invite" | "swarm";
+type CornerType = "me" | "open" | "invite" | "link" | "swarm";
 interface Corner {
   type: CornerType;
   username?: string;
@@ -61,6 +61,7 @@ function CornerSlot({ position, value, onChange, other, models, personas, defaul
     { type: "swarm", label: "AI Swarm", hint: "Research + strategy + writer + critic" },
     { type: "open", label: "Open challenge", hint: "Anyone can take it", disabled: other.type !== "me" },
     { type: "invite", label: "Challenge someone", hint: "Invite a specific person", disabled: other.type !== "me" },
+    { type: "link", label: "Invite link", hint: "Send a private link, e.g. on WhatsApp", disabled: other.type !== "me" },
   ];
   const color = position === "for" ? "for" : "against";
   return (
@@ -337,7 +338,7 @@ export function CreateWizard() {
                   <div key={p} className={cx("rounded-2xl border p-4", p === "for" ? "border-for/50" : "border-against/50")}>
                     <SideTag position={p} />
                     <p className="mt-2 font-semibold">
-                      {c.type === "me" ? "You" : c.type === "open" ? "Open challenge" : c.type === "invite" ? `@${c.username}` :
+                      {c.type === "me" ? "You" : c.type === "open" ? "Open challenge" : c.type === "invite" ? `@${c.username}` : c.type === "link" ? "Whoever gets your link" :
                         <ModelBadge model={models.find((m) => m.key === c.model_key) ?? null} position={p} />}
                     </p>
                     {c.type === "swarm" && c.persona && <p className="text-[12px] text-faint">{PERSONA_LABEL[c.persona]}</p>}

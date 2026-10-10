@@ -33,6 +33,7 @@ export function sideName(side: SideView | undefined): string {
   if (side.participant_type === "swarm") return side.model?.display_name ?? "AI Swarm";
   if (side.user) return side.user.display_name;
   if (side.invited) return `@${side.invited.username} (invited)`;
+  if (side.invite_link) return "Invite only";
   return "Open seat";
 }
 

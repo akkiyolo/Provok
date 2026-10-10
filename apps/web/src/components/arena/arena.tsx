@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { MomentumBar, RoundRail, Timer } from "@/components/arena/broadcast";
 import { ClaimBoard } from "@/components/arena/claims";
@@ -14,7 +14,7 @@ import { RoundSection, ThinkingCard, TurnCard, TypingCard } from "@/components/a
 import { VideoStage } from "@/components/arena/video";
 import { VotePanel } from "@/components/arena/vote";
 import { ReportButton } from "@/components/report";
-import { useShare } from "@/components/share";
+import { shareUrl, useShare } from "@/components/share";
 import { useToast } from "@/components/toast";
 import { Button, ErrorBlock, LiveBadge, ModelBadge, Pill, Sheet } from "@/components/ui";
 import { ApiError, errorMessage, get, post } from "@/lib/api";
@@ -74,6 +74,13 @@ function Corner({ debate, position }: { debate: DebateView; position: Position }
   );
 }
 
+const noSubscribe = () => () => {};
+
+/** The ?invite= token from a private invite link (never read during SSR, so hydration stays stable). */
+function useInviteToken(): string | null {
+  return useSyncExternalStore(noSubscribe, () => new URLSearchParams(window.location.search).get("invite"), () => null);
+}
+
 function Banner({ debate, onAction }: { debate: DebateView; onAction: (d: DebateView) => void }) {
   const { user, requireAuth } = useAuth();
   const toast = useToast();
@@ -85,6 +92,7 @@ function Banner({ debate, onAction }: { debate: DebateView; onAction: (d: Debate
   const [picked, setModel] = useState<string>("");
   const model = picked || meta?.default_model_key || "";
   const isCreator = debate.viewer?.is_creator;
+  const inviteToken = useInviteToken();
   const act = async (path: string, body?: unknown, okMsg?: string) => {
     setBusy(true);
     try {
@@ -112,19 +120,37 @@ function Banner({ debate, onAction }: { debate: DebateView; onAction: (d: Debate
     case "swarm_fallback_offered": {
       const openSide = debate.sides.find((s) => !s.participant_type);
       if (isCreator) {
+        const invitePath = openSide?.invite_token ? `/d/${debate.id}?invite=${encodeURIComponent(openSide.invite_token)}` : null;
+        const inviteText = `I'm challenging you to a debate on Provok: "${debate.question}" Take the other side:`;
         return shell(
           <>
             <div className="flex-1">
               <p className="font-semibold">{debate.status === "swarm_fallback_offered" ? "No challenger yet." : "Waiting for a challenger…"}</p>
               <p className="text-sm text-dim">
-                {openSide?.invited ? `We've pinged @${openSide.invited.username}. ` : "Share the link — first to accept takes the other corner. "}
+                {openSide?.invited ? `We've pinged @${openSide.invited.username}. `
+                  : invitePath ? "Send your private invite link. Only someone who has it can take the other side. "
+                  : "Share the link — first to accept takes the other corner. "}
                 Or bring in an AI opponent right now.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => share({ title: debate.question, text: `Take the other side: "${debate.question}"`, path: `/d/${debate.id}`, debateId: debate.id, kind: "challenge" })}>
-                Share challenge
-              </Button>
+              {invitePath ? (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    track("share_clicked", { kind: "invite_link", via: "whatsapp" }, debate.id);
+                    window.open(`https://wa.me/?text=${encodeURIComponent(`${inviteText} ${shareUrl(invitePath)}`)}`, "_blank", "noopener,noreferrer");
+                  }}>
+                    Send on WhatsApp
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => share({ title: debate.question, text: inviteText, path: invitePath, debateId: debate.id, kind: "invite_link" })}>
+                    Copy invite link
+                  </Button>
+                </>
+              ) : (
+                <Button size="sm" variant="outline" onClick={() => share({ title: debate.question, text: `Take the other side: "${debate.question}"`, path: `/d/${debate.id}`, debateId: debate.id, kind: "challenge" })}>
+                  Share challenge
+                </Button>
+              )}
               <Button size="sm" variant="primary" onClick={() => setAiOpen(true)}>Face an AI instead</Button>
               <Button size="sm" variant="ghost" loading={busy} onClick={() => act("cancel", undefined, "Debate cancelled.")}>Cancel</Button>
             </div>
@@ -146,15 +172,22 @@ function Banner({ debate, onAction }: { debate: DebateView; onAction: (d: Debate
           </>, "win");
       }
       const invitedOther = openSide?.invited && openSide.invited.id !== user?.id;
+      const needsLink = !!openSide?.invite_link && !inviteToken;
       return shell(
         <>
           <div className="flex-1">
-            <p className="font-semibold">{invitedOther ? `This is a private challenge for @${openSide!.invited!.username}.` : "This corner is open."}</p>
-            <p className="text-sm text-dim">Take the {openSide?.position === "for" ? "FOR" : "AGAINST"} side and the debate starts right away.</p>
+            <p className="font-semibold">
+              {invitedOther ? `This is a private challenge for @${openSide!.invited!.username}.`
+                : needsLink ? "This is a private challenge." : openSide?.invite_link ? "You've been challenged." : "This corner is open."}
+            </p>
+            <p className="text-sm text-dim">
+              {needsLink ? "Only someone with the invite link can take the other side."
+                : `Take the ${openSide?.position === "for" ? "FOR" : "AGAINST"} side and the debate starts right away.`}
+            </p>
           </div>
-          {!invitedOther && (
+          {!invitedOther && !needsLink && (
             <Button variant={openSide?.position === "against" ? "against" : "for"} loading={busy}
-              onClick={() => requireAuth("Sign in to take the other side.") && act("join", undefined, "You're in. Good luck.")}>
+              onClick={() => requireAuth("Sign in to take the other side.") && act("join", inviteToken ? { invite_token: inviteToken } : undefined, "You're in. Good luck.")}>
               Take the {openSide?.position === "for" ? "FOR" : "AGAINST"} side
             </Button>
           )}
@@ -215,7 +248,9 @@ export function Arena({ id }: { id: string }) {
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
     // Collapse the broadcast header once the viewer scrolls into the debate (keeps phones readable).
-    const onScroll = () => setCollapsed(window.scrollY > 140);
+    // Hysteresis: collapsing shortens the page, which can pull scrollY back under the threshold. A single
+    // threshold then flips the header back and forth on short pages (e.g. a debate waiting for an opponent).
+    const onScroll = () => setCollapsed((c) => (c ? window.scrollY > 20 : window.scrollY > 140));
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -275,7 +310,7 @@ export function Arena({ id }: { id: string }) {
               className="-ml-1 grid size-8 place-items-center rounded-full text-dim hover:bg-surface-2">
               <svg viewBox="0 0 20 20" className="size-4" fill="currentColor"><path d="M12.7 4.3 7 10l5.7 5.7-1.4 1.4L4.2 10l7.1-7.1z" /></svg>
             </button>
-            {live ? <LiveBadge label={d.status === "judging" ? "JUDGING" : d.status === "lobby" ? "PRE-SHOW" : "LIVE"} /> : <Pill>{statusText(d.status)}</Pill>}
+            {live ? <LiveBadge label={d.status === "judging" ? "JUDGING" : d.status === "lobby" ? "PRE-SHOW" : "LIVE"} /> : <Pill>{d.status === "waiting_for_opponent" && d.sides.some((s) => s.invite_link || s.invited) ? "Private challenge" : statusText(d.status)}</Pill>}
             <Pill>{modeText(d.mode)}</Pill>
             {d.timing === "async" && <Pill>Async</Pill>}
             <span className="ml-auto flex items-center gap-3 font-mono text-[11px] text-faint">

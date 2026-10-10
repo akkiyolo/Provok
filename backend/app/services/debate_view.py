@@ -68,8 +68,8 @@ async def _load_users(db: AsyncSession, sides: list[Side]) -> dict[uuid.UUID, Us
     return {u.id: u for u in (await db.scalars(select(User).where(User.id.in_(user_ids)))).all()}
 
 
-async def _side_views(db: AsyncSession, sides: list[Side],
-                      users: dict[uuid.UUID, User] | None = None) -> list[dict[str, Any]]:
+async def _side_views(db: AsyncSession, sides: list[Side], users: dict[uuid.UUID, User] | None = None, *,
+                      reveal_invite_token: bool = False) -> list[dict[str, Any]]:
     if users is None:
         users = await _load_users(db, sides)
     models = await all_models()
@@ -88,6 +88,8 @@ async def _side_views(db: AsyncSession, sides: list[Side],
             "user": public_user(users.get(s.user_id)) if s.user_id else None,
             "invited": public_user(users.get(s.invited_user_id)) if s.invited_user_id else None,
             "model": model, "persona": persona, "ready": s.ready_at is not None,
+            "invite_link": s.invite_token is not None,
+            "invite_token": s.invite_token if reveal_invite_token else None,
         })
     return out
 
@@ -158,7 +160,8 @@ async def build_debate_view(db: AsyncSession, debate: Debate, viewer: User | Non
         # Monotonic per state change: clients use it to discard out-of-order (stale) responses.
         "version": debate.updated_at.isoformat() if debate.updated_at else None,
         "created_by": str(debate.created_by) if debate.created_by else None,
-        "sides": await _side_views(db, sides), "turns": turn_views, "rounds": round_views,
+        "sides": await _side_views(db, sides, reveal_invite_token=bool(viewer and debate.created_by == viewer.id)),
+        "turns": turn_views, "rounds": round_views,
         "claims": [{"id": str(c.id), "seq": c.seq, "position": side_pos.get(c.side_id), "turn_id": str(c.turn_id),
                     "text": c.text, "source_url": c.source_url,
                     "responds_to": claim_seq.get(c.responds_to_claim_id) if c.responds_to_claim_id else None,

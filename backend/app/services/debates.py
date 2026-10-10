@@ -1,6 +1,7 @@
 """Debate creation and joining logic (shared by API routes)."""
 from __future__ import annotations
 
+import secrets
 from dataclasses import dataclass
 from typing import Literal
 
@@ -27,7 +28,7 @@ from backend.app.video.livekit import minutes_used_this_month
 
 
 class SideSpec(BaseModel):
-    type: Literal["me", "open", "invite", "swarm"]
+    type: Literal["me", "open", "invite", "link", "swarm"]
     username: str | None = Field(default=None, max_length=40)
     model_key: str | None = Field(default=None, max_length=64)
     persona: Persona | None = None
@@ -46,7 +47,7 @@ class CreateDebateIn(BaseModel):
     def _shape(self) -> CreateDebateIn:
         types = {self.for_side.type, self.against_side.type}
         kinds = sorted([self.for_side.type, self.against_side.type])
-        allowed = {("me", "open"), ("invite", "me"), ("me", "swarm"), ("swarm", "swarm")}
+        allowed = {("me", "open"), ("invite", "me"), ("link", "me"), ("me", "swarm"), ("swarm", "swarm")}
         if tuple(kinds) not in allowed:
             raise ValueError("Pick who argues each side: you vs an open challenge, an invited opponent, or an AI; "
                              "or two AIs against each other.")
@@ -164,6 +165,8 @@ async def create_debate(db: AsyncSession, creator: User, body: CreateDebateIn) -
             if invited_user.id == creator.id:
                 raise AppError("You can't challenge yourself.", code="self_invite", status_code=422)
             side.invited_user_id = invited_user.id
+        elif spec.type == "link":
+            side.invite_token = secrets.token_urlsafe(16)
         db.add(side)
         side_states[pos] = tx.SideState(
             position=pos, participant_type=ParticipantType(side.participant_type) if side.participant_type else None,
@@ -186,6 +189,15 @@ async def create_debate(db: AsyncSession, creator: User, body: CreateDebateIn) -
         await notify(db, outcome.outbox, invited_user.id, "challenge",
                      f"{creator.display_name} challenged you to a debate", body=question[:200],
                      link=f"/d/{debate.id}")
+        if invited_user.email_verified_at:
+            from backend.app.services.email import send_challenge
+            to, challenger = invited_user.email, creator.display_name
+            url = f"{get_settings().web_url}/d/{debate.id}"
+
+            async def _email() -> None:
+                await send_challenge(to, challenger, question, url)
+
+            outcome.outbox.add(_email)
     return Created(debate, outcome)
 
 
@@ -195,9 +207,14 @@ async def fallback_swarm_config(model_key: str | None, persona: Persona | None) 
     return m, {"model_key": m.key, "persona": (persona or Persona.DATA_DRIVEN).value}
 
 
-async def assert_can_join(db: AsyncSession, debate: Debate, user: User) -> None:
+async def assert_can_join(db: AsyncSession, debate: Debate, user: User, invite_token: str | None = None) -> None:
     if debate.created_by == user.id:
         raise Forbidden("You can't take the other side of your own debate.", code="own_debate")
+    open_side = next((s for s in debate.sides if s.participant_type is None), None)
+    if open_side is not None and open_side.invite_token and not (
+            invite_token and secrets.compare_digest(invite_token, open_side.invite_token)):
+        raise Forbidden("This is a private challenge. Ask whoever started it for the invite link.",
+                        code="invite_link_required")
     if debate.timing == Timing.VIDEO.value:
         cap = get_settings().video_free_minutes_per_month
         if cap is not None and minutes_used_this_month(user) >= cap:

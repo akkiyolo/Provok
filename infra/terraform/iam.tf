@@ -73,6 +73,10 @@ data "aws_iam_openid_connect_provider" "github" {
 
 locals {
   github_oidc_arn = var.create_github_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : data.aws_iam_openid_connect_provider.github[0].arn
+  github_owner    = split("/", var.github_repository)[0]
+  github_repo     = split("/", var.github_repository)[1]
+  github_owner_id = split("/", var.github_repository_ids)[0]
+  github_repo_id  = split("/", var.github_repository_ids)[1]
 }
 
 resource "aws_iam_role" "deploy" {
@@ -86,7 +90,11 @@ resource "aws_iam_role" "deploy" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:ref:refs/heads/${var.deploy_branch}"
+          # Both subject formats: the classic name-only one and GitHub's newer one with immutable ids.
+          "token.actions.githubusercontent.com:sub" = [
+            "repo:${var.github_repository}:ref:refs/heads/${var.deploy_branch}",
+            "repo:${local.github_owner}@${local.github_owner_id}/${local.github_repo}@${local.github_repo_id}:ref:refs/heads/${var.deploy_branch}",
+          ]
         }
       }
     }]

@@ -3,6 +3,7 @@
 # Usage: infra/scripts/push-env.sh <environment> <env-file> [region]
 # Comments and blank lines are stripped. Never commit the env file (.env.* is gitignored).
 set -euo pipefail
+export MSYS_NO_PATHCONV=1 # Git Bash on Windows would rewrite "/provok/..." into a Windows path
 ENVIRONMENT=$1 FILE=$2 REGION=${3:-ap-south-1}
 BODY=$(grep -vE '^\s*(#|$)' "$FILE")
 # Values reach the app literally (compose env_file format: raw), so an inline "# note" would become part of the value.

@@ -46,6 +46,12 @@ variable "github_repository" {
   default     = "akkiyolo/Provok"
 }
 
+variable "github_repository_ids" {
+  description = "Numeric \"<owner id>/<repo id>\" of github_repository. GitHub now puts them in the OIDC subject (repo:owner@id/name@id:...); they never change, unlike names. Shown in CloudTrail on a denied AssumeRoleWithWebIdentity."
+  type        = string
+  default     = "188705432/1349665845"
+}
+
 variable "deploy_branch" {
   description = "Only workflows running on this branch may assume the deploy role."
   type        = string

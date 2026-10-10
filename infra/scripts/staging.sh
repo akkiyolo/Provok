@@ -2,6 +2,7 @@
 # Save credits: stop the staging server when nobody is testing. Data (Postgres volume) is kept.
 # Usage: infra/scripts/staging.sh start|stop|status|shell [environment] [region]
 set -euo pipefail
+export MSYS_NO_PATHCONV=1 # Git Bash on Windows would rewrite "/provok/..." into a Windows path
 ACTION=${1:?start|stop|status|shell} ENVIRONMENT=${2:-staging} REGION=${3:-ap-south-1}
 ID=$(aws ec2 describe-instances --region "$REGION" \
   --filters "Name=tag:Name,Values=provok-$ENVIRONMENT-app" "Name=instance-state-name,Values=pending,running,stopping,stopped" \

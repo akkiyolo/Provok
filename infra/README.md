@@ -31,7 +31,8 @@ works), Terraform ≥ 1.10.
    ```bash
    terraform init -backend-config="bucket=provok-tfstate-<account>" -backend-config="key=staging/terraform.tfstate" \
      -backend-config="region=ap-south-1" -backend-config="use_lockfile=true"
-   terraform apply -var 'ses_sender_emails=["you@example.com"]'
+   echo 'ses_sender_emails = ["you@example.com"]' > staging.tfvars   # gitignored; keeps per-env settings
+   terraform apply -var-file=staging.tfvars
    ```
    Confirm the SES verification email AWS sends to that address.
 3. **Server env**: copy `infra/staging.env.example` to `.env.staging` (repo root, gitignored), fill it in from
@@ -59,6 +60,9 @@ works), Terraform ≥ 1.10.
 
 A stopped server still pays for its disk and Elastic IP (~$7/month). `terraform destroy` removes everything,
 including the staging database.
+
+If `staging.sh shell` or a deploy says the instance is not connected right after the first `apply`, the SSM agent
+started before the instance role was ready and is backing off: `aws ec2 reboot-instances --instance-ids <id>`.
 
 ## Production (later)
 

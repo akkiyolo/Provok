@@ -125,6 +125,21 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Verified locally: `terraform validate`, compose config with a dummy env, script syntax, workflow YAML.
   **Not yet applied to AWS** (needs the founder's AWS login).
 
+### Staging is live (2026-10-10)
+
+- **https://65-0-216-112.sslip.io** (EC2 `i-08efaf2502bf96a8b`, Mumbai). First deploy from GitHub Actions passed;
+  `/health/ready` reports database, Redis and worker ok; Let's Encrypt certificate issued. `akkiyolo` is admin.
+- AWS account is on the **Free plan**: $199.91 credits, **expires 2027-01-17**. Upgrade to the Paid plan before then
+  (credits carry over) or AWS closes the account. Budget alert `provok-monthly` emails at 80% of $30/month
+  (gross cost, credits excluded).
+- SES is in the sandbox with one verified sender (the founder's Gmail): only verified addresses receive mail,
+  and Gmail-from-SES lands in spam. Fix before launch: own domain (DKIM) + SES production access.
+- Found while applying: GitHub's OIDC token now uses `repo:owner@<id>/name@<id>:...`; the deploy role accepts both
+  formats (`github_repository_ids`). Git Bash rewrote `/provok/...` SSM names into Windows paths
+  (`MSYS_NO_PATHCONV=1` in the scripts). The SSM agent can miss the instance role on first boot (reboot fixes it).
+- The founder's network (Fortinet DNS filter) blocks `*.sslip.io`; another reason to get a real domain.
+- Next: Google OAuth redirect for the staging URL, then an end-to-end debate on staging.
+
 ## Not yet verified (needs your accounts/keys)
 
 - **Video**: needs LiveKit + Deepgram keys and S3 storage; never exercised against real services.

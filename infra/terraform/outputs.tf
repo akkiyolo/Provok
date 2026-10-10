@@ -30,9 +30,14 @@ output "media_base_url" {
 }
 
 output "ses_dkim_records" {
-  description = "Add these CNAMEs at your DNS provider to verify the SES domain."
+  description = "Add these CNAMEs at your DNS provider to verify the SES domain (created automatically when dns_zone covers it)."
   value = var.ses_domain == "" ? [] : [
     for t in aws_sesv2_email_identity.domain[0].dkim_signing_attributes[0].tokens :
     { name = "${t}._domainkey.${var.ses_domain}", type = "CNAME", value = "${t}.dkim.amazonses.com" }
   ]
+}
+
+output "dns_nameservers" {
+  description = "Set these as the domain's nameservers at the registrar (only when this stack created the zone)."
+  value       = var.dns_zone != "" && var.create_dns_zone ? aws_route53_zone.main[0].name_servers : []
 }

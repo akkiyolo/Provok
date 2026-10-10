@@ -28,6 +28,18 @@ variable "domain" {
   default     = ""
 }
 
+variable "dns_zone" {
+  description = "Domain whose DNS Route 53 hosts (e.g. provok.in). Empty = no DNS management."
+  type        = string
+  default     = ""
+}
+
+variable "create_dns_zone" {
+  description = "The Route 53 zone is one per account: create it in the first stack, look it up in later ones."
+  type        = bool
+  default     = true
+}
+
 variable "ses_domain" {
   description = "Domain to send email from via SES (creates the identity and DKIM records to add to DNS). Empty = skip."
   type        = string

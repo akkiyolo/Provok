@@ -142,6 +142,17 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   human-vs-AI debate with AI replies. 3 of 6 Gemini calls in that debate got Google's 503 "high demand" (free tier);
   retries recovered. Paid keys (launch checklist #1) remove this.
 
+### Domain: provok.in (2026-10-10, in progress)
+
+- Bought at GoDaddy (expires 2027-10-10). GoDaddy put it on **client hold** after purchase (new-account fraud check);
+  the founder completed Aadhaar KYC, waiting for GoDaddy to lift it.
+- Route 53 zone + SES domain identity with DKIM, custom MAIL FROM (`mail.provok.in`, SPF) and DMARC (`p=none`)
+  are applied (`infra/terraform/dns.tf`, vars `dns_zone`/`ses_domain` in the gitignored `staging.tfvars`).
+- **Next, once the hold lifts:** set GoDaddy nameservers to `terraform output dns_nameservers`; when they resolve,
+  apply `domain = "staging.provok.in"` (adds the A record), update `.env.staging` (SITE_DOMAIN, URLs,
+  `EMAIL_FROM=Provok <noreply@provok.in>`), push-env, redeploy, and add the new origin/redirect to the Google OAuth
+  client. `provok.in` itself is kept for production. Then request SES production access.
+
 ## Not yet verified (needs your accounts/keys)
 
 - **Video**: needs LiveKit + Deepgram keys and S3 storage; never exercised against real services.

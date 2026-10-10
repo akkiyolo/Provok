@@ -245,6 +245,9 @@ class Settings(BaseSettings):
                 problems.append("LLM_FAKE must be false in production")
             if self.email_provider == "console":
                 problems.append("EMAIL_PROVIDER must not be 'console' in production")
+            if self.razorpay_key_id and self.razorpay_key_secret and not self.razorpay_webhook_secret:
+                # Without it every webhook is rejected, so a payment whose browser never returns is never credited.
+                problems.append("RAZORPAY_WEBHOOK_SECRET is required when Razorpay keys are set")
             if problems:
                 raise ValueError("Unsafe production configuration: " + "; ".join(problems))
         return self

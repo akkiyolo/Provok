@@ -25,7 +25,7 @@ frontend, video included, Google + email/password auth (no phone OTP).** Everyth
 
 ## Verified
 
-- **169 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
+- **171 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
 - **Frontend**: typecheck, lint (React Compiler rules) and production build all pass.
 - **Live end-to-end run with real models** (Qwen vs GPT-OSS on Groq): a full 10-turn AvA debate ran to
   a judged verdict through the real worker, surviving free-tier rate limits via backoff + auto-resume,
@@ -94,6 +94,22 @@ Accessibility and best practices are 100 on all four. What changed:
 Web error reporting: `NEXT_PUBLIC_SENTRY_DSN` turns on Sentry for the browser and the Next server (`@sentry/nextjs`
 10.75.3). In the browser the SDK is downloaded only when the first error happens (zero cost on healthy loads);
 verified end to end against a fake ingest. Source-map upload is not set up yet (stack traces are minified).
+
+## Pre-launch security review (2026-10-10)
+
+Reviewed: auth/sessions (JWT pinned to HS256 with exp/typ/aud/iss, rotating refresh + reuse detection, hashed
+email tokens, OAuth state/PKCE/nonce, safe `next` redirects), authorization on every route (ownership checks on
+payments, notifications, debate actions; hidden debates; video publish rights), payments, SSRF fetcher, prompt
+injection, XSS sinks (only a static theme script; external links are http(s)-only with `rel=noopener nofollow ugc`),
+websocket origin + ticket auth, rate limits on LLM-spending and spammable endpoints, production config guards, and
+dependency audits (`npm audit --omit=dev`, `pip-audit`: 0 known vulnerabilities).
+
+Fixed:
+- Checkout signature verification accepted an HMAC under an **empty** Razorpay secret. Orders can't be created
+  without keys, but if the secret were ever unset (bad deploy, rotation) open orders could be "paid" with a forged
+  signature. Now rejected (regression test).
+- Production now refuses to boot with Razorpay keys but no `RAZORPAY_WEBHOOK_SECRET` (every webhook would be
+  rejected, so a payment whose browser never came back would never be credited).
 
 ## Not yet verified (needs your accounts/keys)
 

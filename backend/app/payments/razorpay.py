@@ -49,7 +49,10 @@ async def create_order(db: AsyncSession, user: User, pack_id: str) -> tuple[Paym
 
 
 def verify_checkout_signature(order_id: str, payment_id: str, signature: str) -> bool:
-    expected = hmac_sha256_hex(get_settings().razorpay_key_secret, f"{order_id}|{payment_id}".encode())
+    secret = get_settings().razorpay_key_secret
+    if not secret or not signature:
+        return False  # an HMAC under an empty key is forgeable by anyone
+    expected = hmac_sha256_hex(secret, f"{order_id}|{payment_id}".encode())
     return constant_time_equals(expected, signature)
 
 

@@ -83,6 +83,19 @@ async def test_webhook_rejects_bad_signature_and_amount_mismatch(client, make_us
     assert (await alice.get("/api/v1/auth/me")).json()["credits"] == 0
 
 
+async def test_checkout_signature_is_never_accepted_under_an_empty_secret(client, make_user, monkeypatch):
+    # If the secret is ever unset (misconfigured deploy, botched rotation), open orders must not become free credits.
+    from backend.app.core.config import get_settings
+    alice = await make_user("alice")
+    await create_order(alice)
+    monkeypatch.setattr(get_settings(), "razorpay_key_secret", "")
+    forged = sign("", b"order_TEST123|pay_FORGED")
+    r = await alice.post(f"{W}/verify", {"razorpay_order_id": "order_TEST123", "razorpay_payment_id": "pay_FORGED",
+                                         "razorpay_signature": forged})
+    assert r.status_code == 400
+    assert (await alice.get("/api/v1/me/wallet")).json()["credits"] == 0
+
+
 async def test_verify_rejects_someone_elses_order(client, make_user):
     alice, mallory = await make_user("alice"), await make_user("mallory")
     await create_order(alice, "starter", "order_A")

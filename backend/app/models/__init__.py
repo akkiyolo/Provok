@@ -1,48 +1,32 @@
-"""
-PROVOK — ORM Models package.
-
-All models are imported here so Alembic can discover them from Base.metadata.
-"""
-
-from backend.app.models.user import User, OAuthAccount
+"""All ORM models, imported here so Alembic autogenerate sees the full metadata."""
 from backend.app.models.debate import (
-    Question,
-    Topic,
-    QuestionTopic,
-    Debate,
-    DebateSide,
-    Participant,
-    Round,
-    Turn,
-    Message,
-    Argument,
     Claim,
-    Evidence,
-    ArgumentEvidence,
-    Vote,
-    RoundVote,
-    AudienceChallenge,
+    Debate,
+    DebateRound,
+    ResearchCache,
+    Side,
+    Turn,
     Verdict,
-    PositionHistory,
+    Vote,
 )
-from backend.app.models.social import (
+from backend.app.models.platform import (
+    AnalyticsEvent,
+    AuditLog,
+    Clip,
+    CreditLedger,
+    FeatureFlag,
     Follow,
-    Interaction,
+    LLMCall,
+    ModelRegistry,
     Notification,
-    Recommendation,
+    Payment,
+    Report,
+    VideoSession,
 )
-from backend.app.models.files import File, FileChunk, Embedding
-from backend.app.models.analytics import AuditEvent
+from backend.app.models.user import AuthSession, EmailToken, OAuthAccount, User
 
 __all__ = [
-    "User", "OAuthAccount",
-    "Question", "Topic", "QuestionTopic",
-    "Debate", "DebateSide", "Participant",
-    "Round", "Turn", "Message", "Argument",
-    "Claim", "Evidence", "ArgumentEvidence",
-    "Vote", "RoundVote", "AudienceChallenge",
-    "Verdict", "PositionHistory",
-    "Follow", "Interaction", "Notification", "Recommendation",
-    "File", "FileChunk", "Embedding",
-    "AuditEvent",
+    "AnalyticsEvent", "AuditLog", "AuthSession", "Claim", "Clip", "CreditLedger", "Debate", "DebateRound",
+    "EmailToken", "FeatureFlag", "Follow", "LLMCall", "ModelRegistry", "Notification", "OAuthAccount", "Payment",
+    "Report", "ResearchCache", "Side", "Turn", "User", "Verdict", "VideoSession", "Vote",
 ]

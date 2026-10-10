@@ -1,203 +1,179 @@
-# PROVOK ⚡
+# PROVOK ⚔️
 
-**Ask anything. Take a side. Put it under pressure.**
+**Ask anything. Pick your corners. Let the verdict land.**
 
-PROVOK is a high-stakes, structured social debate arena for questions that deserve more than a comment section. Debate humans, AI swarms, or watch autonomous agents clash in spectator mode — then let an impartial multi-metric AI judge and live audience poll decide what survives.
+Provok is a live arena for ideas. A user poses a question and chooses who argues each side — themselves,
+an open challenger, an invited friend, or an **AI swarm** (pick the model and its persona). Debates run
+through four rounds (Opening → Rebuttal → Cross-examination → Closing). The crowd votes after every
+round, and an impartial **AI judge** — blinded, swap-tested, source-checking — explains who won and why.
 
-Live App: [provok.onrender.com](https://provok.onrender.com)
+- **Matchups:** Human vs Human (text or live video), Human vs AI, AI vs AI (model vs model).
+- **Timing:** live (2-min turns), async (24h turns), video (spoken turns, live captions, recording + highlight clips).
+- **Monetisation:** HvH free; first 3 AI debates free; then credits via Razorpay (UPI/cards).
 
----
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![LiteLLM](https://img.shields.io/badge/LLM_gateway-LiteLLM-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## 🌟 Core Features
+| Landing | Matchup picker |
+|---|---|
+| ![Landing page](docs/screenshots/home.png) | ![Choosing who argues each side](docs/screenshots/matchup.png) |
+| **Arena (Human vs AI)** | **Verdict reveal** |
+| ![Live debate arena](docs/screenshots/arena.png) | ![Round-by-round judge scores](docs/screenshots/verdict.png) |
 
-### 1. ⚔️ Three Distinct Debate Modes
-- **Human vs. AI Swarm (`HUMAN_VS_AI`)**: Challenge specialized AI agents fine-tuned for rigorous dialectical argumentation.
-- **Autonomous Agent vs. Agent (`AI_VS_AI`)**: Watch autonomous LLM agents debate each other in real-time spectator mode across all 4 rounds with live streaming indicators.
-- **Human vs. Human (`HUMAN_VS_HUMAN`)**: High-stakes peer-to-peer arena with structured turns.
+## Engineering highlights
 
-### 2. 🏛️ 4-Round Structured Dialectics
-Every debate follows a formal parliamentary debate flow:
-1. **Round 1 · Opening**: Establish core premises and empirical baselines.
-2. **Round 2 · Rebuttal**: Target vulnerabilities and direct premise refutation.
-3. **Round 3 · Cross-Examination**: Socratic probes, direct inquiries, and cross-defenses.
-4. **Round 4 · Closing**: Decisive impact calculus, synthesis, and ethical grounding.
+- **Pure, exhaustively tested state machine.** Every debate mode (live, async, video; human or AI on
+  either side) runs through one side-effect-free transition function. Persistence, timers and realtime
+  are layered around it, so turn order, deadlines and vote windows are fully server-authoritative.
+- **Multi-agent AI debaters.** Each AI turn is a researcher → strategist → writer → critic pipeline
+  with live web research; citations are enforced in code, not just by prompting.
+- **Bias-resistant AI judge.** The judge is blinded to names, models and humanity, runs twice with the
+  sides swapped (position-bias check), verifies cited sources (SSRF-safe fetcher), and its scores are
+  aggregated by pure, regression-tested code. Results feed an Elo leaderboard of LLMs.
+- **Single LLM gateway** (LiteLLM) with per-call cost logging, a DB-driven model registry, versioned
+  prompts, provider fallback for utility roles, and a daily-spend kill switch.
+- **Prompt-injection defences.** User text only enters prompts inside delimited, escaped blocks, with
+  detection and a strike system.
+- **Money-safe payments.** Append-only, idempotent credit ledger; Razorpay checkout and webhooks are
+  signature-verified and amount-checked; refunds are automatic when a debate fails.
+- **Production-grade auth.** Argon2 hashing, rotating refresh tokens with reuse (theft) detection,
+  email verification and reset, and Google OAuth with PKCE and nonce.
+- **Live video debates.** LiveKit rooms with server-controlled mic permissions; Deepgram speech-to-text
+  feeds spoken turns into the same engine; recordings are cut into highlight clips with ffmpeg.
+- **Tested end to end.** 160+ backend tests against real Postgres and Redis, Playwright journeys on
+  desktop and mobile, and CI that runs lint, type checks, tests and a migration round-trip on every push.
 
-### 3. ⚡ Dialectical & Fact-Check Badges
-Arguments are dynamically analyzed and tagged with dialectical role chips:
-- `Core Thesis` & `Empirical Baseline`
-- `Direct Refutation` & `Logical Scrutiny`
-- `Socratic Probe` & `Fallacy Exposure`
-- `Closing Synthesis` & `Impact Calculus`
-
-### 4. 🔥 Live Floating Reactions & Dynamic Sentiment Bar
-- Real-time emoji reaction dock (`🔥`, `🎯`, `🚩`, `🤯`) that emits floating CSS particles synchronized across all connected spectators via WebSockets.
-- Dynamic **Sentiment Swing Bar** at the top of the arena that adjusts live as arguments land and reactions are cast.
-
-### 5. 🗳️ Post-Debate Audience Winner Poll
-- When a debate concludes, spectators and debaters can vote in an interactive community poll.
-- Live tallying with instant percentage bars and duplicate-vote prevention.
-- Features a side-by-side **AI Judge vs. Community Poll** consensus comparison grid on the verdict page.
-
-### 6. 🏆 1200×630 Shareable Verdict Trophy Cards
-- Client-side HTML5 Canvas generator produces high-resolution 1200×630 cards ready for Twitter/X cards, LinkedIn, and social media.
-- Highlights the debate topic, winning side, AI judge confidence score, key turning point quote, and audience consensus tally.
-- Includes **1-Click PNG Download** and **1-Click Share on X (Twitter)**.
-
-### 7. ⚖️ Multi-Metric AI Judge & Synthesis
-Automated AI evaluation evaluating 5 dialectical dimensions:
-- Evidence Quality & Empirical Rigor
-- Logical Reasoning & Premise Validity
-- Rebuttal Effectiveness & Vulnerability Targeting
-- Consistency & Argument Coherence
-- Responsiveness to Opponent Claims
-
----
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Python 3.10+) with async route handlers
-- **AI Inference**: [Groq API](https://groq.com/) (`llama-3.3-70b-versatile`) for sub-second dialectical arguments, cross-examinations, and judging
-- **Database**: PostgreSQL (hosted on Neon / Render) with `pgvector` for semantic argument search
-- **Connection Management**: SQLAlchemy 2.0 Async with `NullPool` (compatible with PgBouncer transaction pooling) + Alembic migrations
-- **Rate Limiting**: `slowapi` (IP-based sliding-window rate limiting)
-- **Real-Time WebSockets**: Asynchronous room manager with broadcast pub/sub and ping-pong heartbeats
-- **Storage**: AWS S3 via `boto3` for media and avatar storage (with local mock fallbacks for testing)
-
-### Frontend
-- **Architecture**: Vanilla HTML5, CSS3, JavaScript (ES6 Modules) — zero heavy build steps
-- **Design System**: Dark glassmorphism, responsive CSS variables, curated typography (Space Grotesk, Inter, DM Mono)
-- **Visuals**: Client-side HTML5 Canvas 1200×630 rendering engine, CSS floating particle physics
+**Stack:** FastAPI · SQLAlchemy 2 (async) · Alembic · PostgreSQL (Neon) · Redis · ARQ workers ·
+LiteLLM · Tavily · LiveKit · Deepgram · Razorpay · Next.js 16 (App Router) · React 19 · Tailwind v4 ·
+TanStack Query · Motion · Playwright · GitHub Actions · Docker
 
 ---
 
-## 🚀 Getting Started
+## Architecture
 
-### Prerequisites
-- Python 3.10+
-- PostgreSQL (with `pgvector` extension)
-- Groq API Key (for fast AI argument generation)
+```
+apps/web/            Next.js 16 · TypeScript strict · Tailwind v4 · Motion · TanStack Query
+  └─ /api/v1/*  ──rewrite──►  FastAPI (same-origin → first-party refresh cookie)
+  └─ wss://api…  ─────────►  FastAPI websockets (arena events, STT stream)
 
-### 1. Clone the Repository
+backend/app/
+  core/          config (env-only), security (Argon2, JWT), errors, rate limiting, middleware, Redis
+  db/ models/    SQLAlchemy 2 async models; Alembic migrations in backend/migrations
+  engine/        transitions.py — the PURE debate state machine (no I/O); service.py persists it
+  llm/           gateway.py — the ONLY path to any model (LiteLLM), registry (DB), versioned prompts
+  swarm/         researcher → strategist → writer → critic (citations enforced in code)
+  ledger/        claim extraction + status tracking (Claim Board)
+  judge/         citation checks, blinded A/B swap-test judging, pure aggregation, Elo
+  moderation/    topic policy, content moderation, prompt-injection defences
+  payments/      append-only idempotent credit ledger, Razorpay orders/verify/webhooks
+  video/         LiveKit tokens + server-authoritative mic permissions, Deepgram STT, ffmpeg clips
+  realtime/      Redis pub/sub fan-out to websockets
+  workers/       ARQ jobs: swarm turns, ledger, moderation, judging, deadlines, sweeper, spend kill-switch
+  api/           HTTP routes (auth, debates, users, wallet, public, admin, video, websockets)
+```
+
+**Key properties**
+
+- **The server is authoritative.** Turn order, deadlines, forfeits, vote windows and who may speak on
+  video are decided server-side by `engine/transitions.py`, a pure function with exhaustive tests.
+- **Self-healing.** Every timer is also covered by a DB-driven sweeper, every job is idempotent, debates
+  paused by an AI-provider outage auto-resume, and the judge rotates to the next healthy judge on retry.
+- **Honest AI results.** Debater and judge roles never silently switch models; only utility roles
+  (moderation, ledger, research) fall back. The judge never sees names, models, or who is human.
+- **Money is exact.** Credits live in an append-only ledger with per-event idempotency keys; payments
+  are signature-verified (checkout + webhook) and amount-checked; refunds are automatic on failure.
+
+---
+
+## Quick start (local)
+
+Requirements: Python 3.11+, Node 20.9+, PostgreSQL 15+, Redis 6+ (or just Docker).
+
+### Option A — Docker (everything)
+
 ```bash
-git clone https://github.com/akkiyolo/Provok.git
-cd Provok
+cp .env.example .env            # add at least one LLM provider key
+docker compose up --build       # web :3000 · api :8000 · postgres · redis · worker
+docker compose exec api python -m backend.app.cli create-admin --email you@x.com --username you --password '...'
 ```
 
-### 2. Set Up Virtual Environment
+### Option B — run services yourself
+
 ```bash
-# Windows
-python -m venv venv
-.\venv\Scripts\activate
+python -m venv .venv && .venv/Scripts/activate        # (source .venv/bin/activate on macOS/Linux)
+pip install -r backend/requirements-dev.txt
+cp .env.example .env                                  # set DATABASE_URL, REDIS_URL, provider keys
+python -m backend.app.cli migrate
+uvicorn backend.app.main:app --reload --port 8000     # API  (docs: http://localhost:8000/api/v1/docs)
+arq backend.app.workers.main.WorkerSettings           # worker (separate terminal)
 
-# macOS / Linux
-python3 -m venv venv
-source venv/bin/activate
+cd apps/web && cp .env.example .env.local && npm install && npm run dev   # http://localhost:3000
 ```
 
-### 3. Install Dependencies
+Useful CLI commands:
+
 ```bash
-pip install -r backend/requirements.txt
-```
-
-### 4. Configure Environment Variables
-Create a `.env` file in the root directory:
-```env
-# Database (PostgreSQL with pgvector)
-DATABASE_URL=postgresql+asyncpg://user:password@host:5432/dbname
-
-# Security & Authentication
-SECRET_KEY=your_super_secret_jwt_key_at_least_32_chars
-ACCESS_TOKEN_EXPIRE_MINUTES=1440
-
-# LLM Providers (Groq recommended for high-speed turns)
-GROQ_API_KEY=gsk_your_groq_api_key
-GROQ_MODEL=llama-3.3-70b-versatile
-
-# Redis (Optional, defaults to in-memory broadcast manager)
-REDIS_URL=redis://localhost:6379/0
-
-# AWS S3 (Optional for cloud media uploads; falls back gracefully if absent)
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=your_bucket_name
-```
-
-### 5. Run Database Migrations
-```bash
-alembic upgrade head
-```
-
-### 6. Start the Server
-```bash
-python -m uvicorn backend.app.main:app --reload --port 8000
-```
-
-Access the application:
-- **Web App**: `http://localhost:8000`
-- **Interactive API Docs (Swagger)**: `http://localhost:8000/docs`
-- **OpenAPI Schema**: `http://localhost:8000/openapi.json`
-
----
-
-## 🧪 Testing
-
-The test suite contains 16 automated integration and unit tests covering authentication, debate creation, agent vs. agent model transitions, rate limiting, S3 mock fallback, dialectical badge assignment, and audience poll tally calculations.
-
-Run the tests:
-```bash
-pytest backend/app/tests/ -v
+python -m backend.app.cli create-admin --email you@x.com --username you --password '...'
+python -m backend.app.cli promote --username someone
+python -m backend.app.cli seed-featured --count 3     # kick off featured AI-vs-AI debates
 ```
 
 ---
 
-## 📁 Project Structure
+## Configuration
 
-```text
-Provok/
-├── backend/
-│   ├── alembic/              # Database schema migrations
-│   ├── app/
-│   │   ├── ai/               # AI debate engine, Groq/DeepSeek clients, prompt templates
-│   │   ├── api/              # FastAPI endpoints (debates, feed, poll, auth, users, search)
-│   │   ├── auth/             # JWT tokens, password hashing (Passlib / Argon2)
-│   │   ├── database/         # Async engine, sessionmaker, base model
-│   │   ├── models/           # SQLAlchemy models (User, Debate, Argument, Verdict, Claim)
-│   │   ├── schemas/          # Pydantic schemas for request & response serialization
-│   │   ├── storage/          # S3 storage manager & local mock fallback
-│   │   ├── websockets/       # WebSocket connection manager & broadcast channels
-│   │   ├── config.py         # Pydantic settings management
-│   │   ├── limiter.py        # SlowAPI rate limiting configuration
-│   │   └── main.py           # FastAPI application entrypoint & middleware pipeline
-│   └── requirements.txt      # Python dependencies
-├── frontend/
-│   ├── css/                  # Styling system (global, debate, verdict, layout, responsive)
-│   ├── js/
-│   │   ├── core/             # API client, store, toast notification system
-│   │   └── pages/            # Page controllers (debate.js, verdict.js, feed.js, etc.)
-│   ├── static/               # Assets, icons, favicons
-│   ├── index.html            # Landing & live debates feed
-│   ├── debate.html           # Live Arena room (4 rounds, chat, reactions, poll)
-│   ├── verdict.html          # Verdict page (scorecards, trophy card, consensus grid)
-│   ├── ask.html              # Debate creator wizard (mode selection & topic setup)
-│   ├── profile.html          # User profile & statistics
-│   └── search.html           # Semantic vector search
-├── INTERVIEW_PREP.md         # Comprehensive system architecture & interview guide
-├── pytest.ini                # Pytest configuration
-└── README.md                 # Project documentation
+Everything is environment-driven — see **`.env.example`** (backend) and **`apps/web/.env.example`**.
+In `APP_ENV=production` the API refuses to boot with unsafe settings (weak JWT secret, debug on,
+insecure cookies, wildcard CORS, console email).
+
+Models live in the **`model_registry`** table, seeded from `backend/app/llm/model_registry.seed.json`
+(seeding never overwrites admin edits; models without a provider key seed as disabled). Manage them
+at `/admin → Models`. Prompts are versioned files in `backend/app/llm/prompts/`.
+
+---
+
+## Testing
+
+```bash
+# backend: real Postgres + Redis, fake LLM, background jobs executed inline
+TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/provok_test \
+TEST_REDIS_URL=redis://localhost:6379/15 pytest
+ruff check backend
+
+# frontend
+cd apps/web && npm run lint && npm run typecheck && npm run build
 ```
 
----
-
-## 🌐 Production Deployment (Render)
-
-Provok is pre-configured for continuous deployment on [Render](https://render.com):
-- **Build Command**: `pip install -r backend/requirements.txt`
-- **Start Command**: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
-- **Health Check**: `/health`
+The suite covers every state-machine transition, vote rules, credit accounting, judge aggregation
+(10 regression fixtures), auth flows (refresh rotation & theft detection, resets), payments
+(signatures, webhook idempotency, amount tampering), SSRF guards, injection defences, rate limits,
+moderation, admin actions, and full HvH / HvA / AvA debates end to end. CI runs it all on every push
+(`.github/workflows/ci.yml`), plus a migration up/check/down round-trip.
 
 ---
 
-## 📄 License
-MIT License. Open source and built for rigorous public discourse.
+## Deploying
+
+| Piece | Recommended | Notes |
+|---|---|---|
+| Web | Vercel or any Node host (`apps/web/Dockerfile`) | set `API_INTERNAL_URL` **at build time** (rewrites are baked in) |
+| API | Railway / Fly.io / Render (`backend/Dockerfile`) | `TRUSTED_PROXY_COUNT=1`, `COOKIE_SECURE=true` |
+| Worker | same image, command `arq backend.app.workers.main.WorkerSettings` | or `EMBEDDED_WORKER=true` on a single dyno |
+| Postgres | Neon / Supabase / RDS | run `python -m backend.app.cli migrate` on each deploy. Neon URLs work as copied (`sslmode`/`channel_binding` are translated for asyncpg); with the `-pooler` host set `DATABASE_PGBOUNCER=true`, and run migrations against the direct host |
+| Redis | Upstash / Railway | used for jobs, rate limits, realtime fan-out |
+| Storage | S3 / R2 / Supabase Storage | avatars, recordings, clips (`STORAGE_BACKEND=s3`) |
+
+Point an uptime monitor at `GET /health/ready` (checks DB, Redis and worker heartbeat).
+Webhooks: Razorpay → `/api/v1/payments/webhook`; LiveKit → `/api/v1/video/webhook`.
+
+See **`PROGRESS.md`** for status, decisions and the launch checklist.
+
+## License
+
+MIT

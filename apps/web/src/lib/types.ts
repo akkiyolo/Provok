@@ -1,0 +1,273 @@
+// Types mirroring the Provok API (backend/app/services/debate_view.py and routes).
+
+export type Position = "for" | "against";
+export type Mode = "hvh" | "hva" | "ava";
+export type Timing = "live" | "async" | "video";
+export type RoundName = "opening" | "rebuttal" | "cross_exam" | "closing";
+export type TurnKind = "argument" | "question" | "answer";
+export type Status =
+  | "waiting_for_opponent"
+  | "swarm_fallback_offered"
+  | "lobby"
+  | "opening"
+  | "rebuttal"
+  | "cross_exam"
+  | "closing"
+  | "judging"
+  | "completed"
+  | "paused"
+  | "abandoned"
+  | "cancelled";
+export type ClaimStatus = "unaddressed" | "rebutted" | "conceded" | "supported" | "unsupported" | "misattributed";
+
+export const ROUNDS: RoundName[] = ["opening", "rebuttal", "cross_exam", "closing"];
+export const ROUND_LABEL: Record<RoundName, string> = {
+  opening: "Opening",
+  rebuttal: "Rebuttal",
+  cross_exam: "Cross-ex",
+  closing: "Closing",
+};
+
+export interface PublicUser {
+  id: string | null;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+  rating: number | null;
+}
+
+export interface ModelRef {
+  key: string;
+  display_name: string;
+  provider: string | null;
+  tier: string | null;
+}
+
+export interface SideView {
+  id: string;
+  position: Position;
+  participant_type: "human" | "swarm" | null;
+  user: PublicUser | null;
+  invited: PublicUser | null;
+  model: ModelRef | null;
+  persona: string | null;
+  ready: boolean;
+}
+
+export interface Citation {
+  n: number;
+  url: string;
+  title: string;
+}
+
+export interface TurnView {
+  id: string;
+  round: RoundName;
+  turn_index: number;
+  position: Position;
+  kind: TurnKind;
+  content: string;
+  hidden: boolean;
+  word_count: number;
+  source: "typed" | "transcript" | "swarm";
+  is_forfeit: boolean;
+  model: { key: string; display_name: string } | null;
+  citations: Citation[];
+  created_at: string;
+}
+
+export interface Tally {
+  for: number;
+  against: number;
+  for_count: number;
+  against_count: number;
+  for_share: number;
+}
+
+export interface RoundView {
+  round: RoundName;
+  started_at: string | null;
+  ended_at: string | null;
+  vote_open: boolean;
+  vote_closes_at: string | null;
+  vote_closed_at: string | null;
+  tally: Tally | null;
+}
+
+export interface ClaimView {
+  id: string;
+  seq: number;
+  position: Position;
+  turn_id: string;
+  text: string;
+  source_url: string | null;
+  responds_to: number | null;
+  status: ClaimStatus;
+}
+
+export interface Momentum {
+  for_share: number;
+  rounds_closed: number;
+  votes_weight: number;
+}
+
+export interface DebateView {
+  id: string;
+  question: string;
+  topic_category: string;
+  mode: Mode;
+  timing: Timing;
+  status: Status;
+  current_round: RoundName | null;
+  turn_index: number;
+  expected: { position: Position; kind: TurnKind } | null;
+  deadline_at: string | null;
+  server_time: string;
+  word_limit: number;
+  is_featured: boolean;
+  paused_reason: string | null;
+  conceded_position: Position | null;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  version: string | null;
+  created_by: string | null;
+  sides: SideView[];
+  turns: TurnView[];
+  rounds: RoundView[];
+  claims: ClaimView[];
+  momentum: Momentum | null;
+  verdict: { winner_position: Position | null; is_close: boolean; scores: Record<string, number> } | null;
+  viewers: number;
+  viewer: { position: Position | null; is_creator: boolean; is_admin: boolean; votes: Record<string, Position> } | null;
+}
+
+export interface DebateCard {
+  id: string;
+  question: string;
+  topic_category: string;
+  mode: Mode;
+  timing: Timing;
+  status: Status;
+  current_round: RoundName | null;
+  deadline_at: string | null;
+  is_featured: boolean;
+  created_at: string;
+  completed_at: string | null;
+  sides: SideView[];
+  momentum: Momentum | null;
+  votes: number;
+  viewers: number;
+  winner_position: Position | null;
+}
+
+export interface Page<T> {
+  items: T[];
+  next_cursor?: string | null;
+}
+
+export interface Me {
+  id: string;
+  email: string;
+  email_verified: boolean;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  role: "user" | "admin";
+  status: "active" | "restricted" | "banned" | "deleted";
+  rating: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  credits: number;
+  free_ai_debates_left: number;
+  has_password: boolean;
+  onboarded: boolean;
+  created_at: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  expires_in: number;
+  user: Me;
+}
+
+export interface Meta {
+  models: ModelRef[];
+  default_model_key: string | null;
+  personas: { key: string; description: string }[];
+  word_limit: { default: number; min: number; max: number };
+  timings: Record<Timing, number>;
+  free_ai_debates: number;
+  credit_costs: { standard: number; flagship: number };
+  free_covers_flagship: boolean;
+  categories: string[];
+  blocked_categories: string[];
+  features: { ai_debates: boolean; video: boolean; payments: boolean; google_login: boolean; signups: boolean };
+  livekit_url: string | null;
+  question_chars: { min: number; max: number };
+}
+
+export interface VerdictResponse {
+  debate: DebateView;
+  judge: {
+    winner_position: Position | null;
+    is_close: boolean;
+    scores: { for?: number; against?: number; margin?: number; runs_agree?: boolean };
+    per_round: Partial<Record<RoundName, Record<Position, Record<string, number>>>>;
+    reasoning: string;
+    decisive_claims: { id: string; seq: number; position: Position; text: string; status: ClaimStatus }[];
+    model_key: string | null;
+    created_at: string;
+  };
+  audience: {
+    per_round: Partial<Record<RoundName, Tally | null>>;
+    totals: { for: number; against: number };
+    winner_position: Position | null;
+    final_vote_open: boolean;
+    final_vote_closes_at: string | null;
+  };
+  clips: { id: string; url: string; reason: string; caption: string | null; duration_ms: number }[];
+}
+
+export interface Profile {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+  bio: string | null;
+  rating: number;
+  rank: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  created_at: string;
+  followers: number;
+  following: number;
+  is_following: boolean;
+  is_me: boolean;
+  debates: DebateCard[];
+}
+
+export interface Wallet {
+  credits: number;
+  free_ai_debates_total: number;
+  free_ai_debates_left: number;
+  costs: { standard: number; flagship: number; free_covers_flagship: boolean };
+  packs: { id: string; credits: number; amount_inr: number; label?: string }[];
+  payments_enabled: boolean;
+  razorpay_key_id: string | null;
+  history: { delta: number; reason: string; balance_after: number; ref_id: string | null; created_at: string }[];
+  payments: { id: string; pack_id: string; amount_inr: number; credits: number; status: string; created_at: string }[];
+}
+
+export interface NotificationItem {
+  id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read: boolean;
+  created_at: string;
+}

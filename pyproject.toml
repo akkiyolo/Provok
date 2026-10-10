@@ -1,0 +1,21 @@
+[project]
+name = "provok"
+version = "2.0.0"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 125
+target-version = "py311"
+extend-exclude = ["legacy", "backend/migrations/versions", ".venv", "venv", "apps"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC", "S", "SIM", "RUF"]
+ignore = [
+  "S101",   # asserts are fine in tests and invariant checks
+  "B008",   # FastAPI Depends() in defaults
+  "RUF001", "RUF002", "RUF003",  # intentional unicode (… ‹ ›) in user-facing strings
+  "SIM105", "SIM102", "SIM108", "S110", "S311", "RUF005", "UP007", "ASYNC240", "B905", "UP040", "RUF012", "B904", "S105", "S106", "ASYNC109", "ASYNC110",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/tests/*" = ["S", "E501", "B017"]

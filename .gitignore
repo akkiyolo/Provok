@@ -53,3 +53,15 @@ coverage.xml
 # ── Node ──
 node_modules/
 npm-debug.log*
+
+# ── Provok v2 ──
+.venv/
+var/
+backend/tests/.media/
+apps/web/.next/
+apps/web/out/
+apps/web/node_modules/
+apps/web/.env*.local
+apps/web/tsconfig.tsbuildinfo
+interview_prep.txt
+*.log

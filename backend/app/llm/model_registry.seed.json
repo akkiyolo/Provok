@@ -1,0 +1,98 @@
+[
+ {
+  "key": "claude_opus",
+  "litellm_id": "anthropic/claude-opus-5-5",
+  "display_name": "Claude Opus",
+  "provider": "anthropic",
+  "tier": "flagship",
+  "sort_order": 10,
+  "notes": "Verify ID against Anthropic docs before launch."
+ },
+ {
+  "key": "claude_sonnet",
+  "litellm_id": "anthropic/claude-sonnet-5-5",
+  "display_name": "Claude Sonnet",
+  "provider": "anthropic",
+  "tier": "standard",
+  "sort_order": 20
+ },
+ {
+  "key": "claude_haiku",
+  "litellm_id": "anthropic/claude-haiku-5-5",
+  "display_name": "Claude Haiku",
+  "provider": "anthropic",
+  "tier": "utility",
+  "selectable": false,
+  "sort_order": 90
+ },
+ {
+  "key": "astra",
+  "litellm_id": "openai/REPLACE-WITH-GPT-6-ASTRA-ID",
+  "display_name": "GPT-6 Astra",
+  "provider": "openai",
+  "tier": "flagship",
+  "enabled": false,
+  "sort_order": 11,
+  "notes": "Fill in the real model id, then enable."
+ },
+ {
+  "key": "gemini_flash",
+  "litellm_id": "gemini/gemini-3.6-flash",
+  "display_name": "Gemini Flash",
+  "provider": "gemini",
+  "tier": "standard",
+  "sort_order": 30
+ },
+ {
+  "key": "groq_qwen",
+  "litellm_id": "groq/qwen/qwen3.8-27b",
+  "display_name": "Qwen (Groq)",
+  "provider": "groq",
+  "tier": "standard",
+  "sort_order": 40
+ },
+ {
+  "key": "groq_gpt_oss",
+  "litellm_id": "groq/openai/gpt-oss-120b",
+  "display_name": "GPT-OSS 120B",
+  "provider": "groq",
+  "tier": "standard",
+  "sort_order": 45
+ },
+ {
+  "key": "groq_gpt_oss_small",
+  "litellm_id": "groq/openai/gpt-oss-20b",
+  "display_name": "GPT-OSS 20B",
+  "provider": "groq",
+  "tier": "utility",
+  "selectable": false,
+  "sort_order": 91
+ },
+ {
+  "key": "judge_primary",
+  "litellm_id": "gemini/gemini-3.6-flash",
+  "display_name": "Judge (Gemini)",
+  "provider": "gemini",
+  "tier": "judge",
+  "selectable": false,
+  "sort_order": 100
+ },
+ {
+  "key": "judge_secondary",
+  "litellm_id": "anthropic/claude-sonnet-5-5",
+  "display_name": "Judge (Claude)",
+  "provider": "anthropic",
+  "tier": "judge",
+  "selectable": false,
+  "sort_order": 101
+ },
+ {
+  "key": "judge_groq",
+  "litellm_id": "groq/openai/gpt-oss-120b",
+  "display_name": "Judge (GPT-OSS)",
+  "provider": "groq",
+  "tier": "judge",
+  "selectable": false,
+  "sort_order": 102
+ }
+]

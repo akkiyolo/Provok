@@ -1,0 +1,3754 @@
+[
+ {
+  "id": "clear_for",
+  "description": "FOR dominates in both blinded runs",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "B",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side B wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "for",
+   "is_close": false
+  }
+ },
+ {
+  "id": "clear_against",
+  "description": "AGAINST dominates in both runs",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "B",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side B wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 4,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 4,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 4,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 4,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 4,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "against",
+   "is_close": false
+  }
+ },
+ {
+  "id": "narrow_for",
+  "description": "FOR edges it by 0.2 \u2014 under the close margin",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.0,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.0,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.2,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.2,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "B",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side B wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "for",
+   "is_close": true
+  }
+ },
+ {
+  "id": "label_bias",
+  "description": "Judge always favours label A \u2014 swap test exposes it",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": null,
+   "is_close": true
+  }
+ },
+ {
+  "id": "split_runs",
+  "description": "Runs disagree but FOR leads on average",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6.5,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6.5,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6.5,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6.5,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "for",
+   "is_close": true
+  }
+ },
+ {
+  "id": "round_swing",
+  "description": "FOR wins early rounds big, AGAINST takes the closing narrowly",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 9,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 9,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 9,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 9,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 9,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 5,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 9,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 9,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 9,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 9,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 9,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 8,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 8,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 8,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 8,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 8,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "B",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side B wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "for",
+   "is_close": false
+  }
+ },
+ {
+  "id": "forfeits",
+  "description": "AGAINST forfeited two rounds (scored 1)",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 1,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 1,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 1,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 1,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 1,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 1,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 1,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 1,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 1,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 1,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 1,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 1,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 1,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 1,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 1,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 1,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 1,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 1,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 1,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 1,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "B",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side B wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "for",
+   "is_close": false
+  }
+ },
+ {
+  "id": "dead_heat",
+  "description": "Identical scores \u2014 a draw",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "tie",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side tie wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 7,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "tie",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side tie wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": null,
+   "is_close": true
+  }
+ },
+ {
+  "id": "out_of_range",
+  "description": "Out-of-range scores are clamped to 1..10",
+  "rounds": [
+   "opening",
+   "rebuttal",
+   "cross_exam",
+   "closing"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": -3,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": -3,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": -3,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": -3,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": -3,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     },
+     "cross_exam": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     },
+     "closing": {
+      "argument_strength": {
+       "score": 14,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 14,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 14,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 14,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 14,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "B",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side B wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "for",
+   "is_close": false
+  }
+ },
+ {
+  "id": "partial_rounds",
+  "description": "Debate ended after two rounds; only played rounds count",
+  "rounds": [
+   "opening",
+   "rebuttal"
+  ],
+  "run_for_is_A": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.5,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.5,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "B",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side B wins."
+  },
+  "run_for_is_B": {
+   "scores": {
+    "A": {
+     "opening": {
+      "argument_strength": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.5,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 7.5,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 7.5,
+       "why": "C1"
+      }
+     }
+    },
+    "B": {
+     "opening": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     },
+     "rebuttal": {
+      "argument_strength": {
+       "score": 6,
+       "why": "C1"
+      },
+      "evidence_quality": {
+       "score": 6,
+       "why": "C1"
+      },
+      "rebuttal_coverage": {
+       "score": 6,
+       "why": "C1"
+      },
+      "responsiveness": {
+       "score": 6,
+       "why": "C1"
+      },
+      "consistency": {
+       "score": 6,
+       "why": "C1"
+      }
+     }
+    }
+   },
+   "winner": "A",
+   "decisive_claims": [
+    1
+   ],
+   "explanation": "Side A wins."
+  },
+  "conceded_position": null,
+  "expected": {
+   "winner": "against",
+   "is_close": false
+  }
+ }
+]

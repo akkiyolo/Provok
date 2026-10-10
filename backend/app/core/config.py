@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     google_client_secret: str = ""
 
     # ── Email ───────────────────────────────────────────────────────────
-    email_provider: Literal["console", "smtp", "resend"] = "console"
+    email_provider: Literal["console", "smtp", "resend", "ses"] = "console"
     email_from: str = "Provok <no-reply@provok.app>"
     smtp_host: str = ""
     smtp_port: int = 587
@@ -83,6 +83,8 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_starttls: bool = True
     resend_api_key: str = ""
+    # Amazon SES (email_provider=ses): credentials come from the instance/task role, never from env.
+    ses_region: str = "ap-south-1"
 
     # ── LLM providers (LiteLLM reads these from the environment) ────────
     openai_api_key: str = ""

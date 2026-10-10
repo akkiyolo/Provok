@@ -1,0 +1,110 @@
+name: Deploy
+
+# Staging deploys automatically after CI passes on main; any environment can also be deployed by hand.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy
+        default: staging
+        required: true
+
+permissions:
+  id-token: write # OIDC → short-lived AWS credentials; no AWS keys are stored in GitHub
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Skipped until AWS is set up (repository variable AWS_DEPLOY_ROLE_ARN, from `terraform output deploy_role_arn`).
+    if: vars.AWS_DEPLOY_ROLE_ARN != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AWS_REGION: ap-south-1
+      ENVIRONMENT: ${{ inputs.environment || 'staging' }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Read deploy config (written by Terraform)
+        id: cfg
+        run: |
+          cfg=$(aws ssm get-parameter --name "/provok/$ENVIRONMENT/deploy" --query Parameter.Value --output text)
+          for k in site_domain instance_id deploy_bucket registry api_repo web_repo; do
+            echo "$k=$(jq -r ".$k" <<<"$cfg")" >> "$GITHUB_OUTPUT"
+          done
+          echo "tag=${SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          tags: ${{ steps.cfg.outputs.registry }}/${{ steps.cfg.outputs.api_repo }}:${{ steps.cfg.outputs.tag }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          push: true
+          tags: ${{ steps.cfg.outputs.registry }}/${{ steps.cfg.outputs.web_repo }}:${{ steps.cfg.outputs.tag }}
+          # Public, per-environment values are baked into the client bundle at build time.
+          build-args: |
+            API_INTERNAL_URL=http://api:8000
+            NEXT_PUBLIC_SITE_URL=https://${{ steps.cfg.outputs.site_domain }}
+            NEXT_PUBLIC_WS_URL=wss://${{ steps.cfg.outputs.site_domain }}
+            NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+      - name: Upload deploy bundle
+        run: aws s3 cp infra/server/ "s3://${{ steps.cfg.outputs.deploy_bucket }}/${{ steps.cfg.outputs.tag }}/" --recursive --only-show-errors
+
+      - name: Deploy on the server (SSM)
+        env:
+          INSTANCE: ${{ steps.cfg.outputs.instance_id }}
+          BUCKET: ${{ steps.cfg.outputs.deploy_bucket }}
+          TAG: ${{ steps.cfg.outputs.tag }}
+        run: |
+          script="aws s3 cp s3://$BUCKET/$TAG/deploy.sh /opt/provok/deploy.sh --region $AWS_REGION --only-show-errors && bash /opt/provok/deploy.sh $ENVIRONMENT $TAG $BUCKET $AWS_REGION"
+          id=$(aws ssm send-command --instance-ids "$INSTANCE" --document-name AWS-RunShellScript \
+            --comment "deploy $TAG" --timeout-seconds 900 \
+            --parameters "$(jq -cn --arg s "$script" '{commands: [$s], executionTimeout: ["900"]}')" \
+            --query Command.CommandId --output text)
+          for _ in $(seq 1 90); do
+            status=$(aws ssm get-command-invocation --command-id "$id" --instance-id "$INSTANCE" --query Status --output text 2>/dev/null || echo Pending)
+            case "$status" in Pending|InProgress|Delayed) sleep 10 ;; *) break ;; esac
+          done
+          aws ssm get-command-invocation --command-id "$id" --instance-id "$INSTANCE" \
+            --query '[StandardOutputContent, StandardErrorContent]' --output text | tail -60
+          [ "$status" = "Success" ] || { echo "::error::deploy finished with status $status"; exit 1; }
+
+      - name: Smoke test
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS "https://${{ steps.cfg.outputs.site_domain }}/health/ready"; then echo; exit 0; fi
+            sleep 5
+          done
+          echo "::error::https://${{ steps.cfg.outputs.site_domain }}/health/ready never became ready"; exit 1

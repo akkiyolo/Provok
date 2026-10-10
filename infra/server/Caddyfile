@@ -1,0 +1,17 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+
+	# The API and its websockets are served on the same origin, so the refresh cookie is first-party.
+	@api path /api/* /ws/* /media/* /health /health/*
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

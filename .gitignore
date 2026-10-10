@@ -65,3 +65,9 @@ apps/web/.env*.local
 apps/web/tsconfig.tsbuildinfo
 interview_prep.txt
 *.log
+
+# Terraform
+infra/terraform/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan

@@ -43,7 +43,9 @@ async def send_email(to: str, subject: str, html_body: str, text_body: str) -> N
         log.info("email_console", to=to, subject=subject, text=text_body)
         return
     try:
-        if s.email_provider == "resend":
+        if s.email_provider == "ses":
+            await asyncio.to_thread(_send_ses, to, subject, html_body, text_body)
+        elif s.email_provider == "resend":
             async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.post(
                     "https://api.resend.com/emails",
@@ -56,6 +58,18 @@ async def send_email(to: str, subject: str, html_body: str, text_body: str) -> N
         log.info("email_sent", provider=s.email_provider, subject=subject)
     except Exception as exc:
         log.error("email_failed", provider=s.email_provider, subject=subject, error=str(exc))
+
+
+def _send_ses(to: str, subject: str, html_body: str, text_body: str) -> None:
+    import boto3
+    s = get_settings()
+    boto3.client("sesv2", region_name=s.ses_region).send_email(
+        FromEmailAddress=s.email_from,
+        Destination={"ToAddresses": [to]},
+        Content={"Simple": {"Subject": {"Data": subject, "Charset": "UTF-8"},
+                            "Body": {"Text": {"Data": text_body, "Charset": "UTF-8"},
+                                     "Html": {"Data": html_body, "Charset": "UTF-8"}}}},
+    )
 
 
 def _send_smtp(to: str, subject: str, html_body: str, text_body: str) -> None:

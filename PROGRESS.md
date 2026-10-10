@@ -25,7 +25,7 @@ frontend, video included, Google + email/password auth (no phone OTP).** Everyth
 
 ## Verified
 
-- **171 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
+- **172 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
 - **Frontend**: typecheck, lint (React Compiler rules) and production build all pass.
 - **Live end-to-end run with real models** (Qwen vs GPT-OSS on Groq): a full 10-turn AvA debate ran to
   a judged verdict through the real worker, surviving free-tier rate limits via backoff + auto-resume,
@@ -110,6 +110,20 @@ Fixed:
   signature. Now rejected (regression test).
 - Production now refuses to boot with Razorpay keys but no `RAZORPAY_WEBHOOK_SECRET` (every webhook would be
   rejected, so a payment whose browser never came back would never be credited).
+
+## Infrastructure (2026-10-10)
+
+Hosting moves straight to **AWS Mumbai** (founder's decision; $200 credits). `infra/` holds Terraform for one
+small EC2 server per environment (Caddy + web + API with embedded worker + Redis, Postgres on staging), ECR, an S3
+media bucket, SES, an SSM SecureString for the server `.env`, and a GitHub OIDC deploy role. `.github/workflows/
+deploy.yml` builds both images, pushes them and deploys over SSM after CI passes on `main` (skipped until the
+`AWS_DEPLOY_ROLE_ARN` repo variable exists). Runbook: `infra/README.md`.
+
+- Chosen over ECS/ALB/NAT for now: ~$20–25/month for staging vs $60+, so the credits last ~8–10 months.
+  Same images move to ECS + RDS later.
+- New `EMAIL_PROVIDER=ses` (IAM role credentials, no SMTP password).
+- Verified locally: `terraform validate`, compose config with a dummy env, script syntax, workflow YAML.
+  **Not yet applied to AWS** (needs the founder's AWS login).
 
 ## Not yet verified (needs your accounts/keys)
 

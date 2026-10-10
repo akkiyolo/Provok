@@ -47,7 +47,7 @@ export function refreshSession(): Promise<TokenResponse | null> {
   if (!refreshInFlight) {
     refreshInFlight = fetch(`${base()}/auth/refresh`, { method: "POST", credentials: "same-origin" })
       .then(async (r) => {
-        if (!r.ok) return null;
+        if (!r.ok || r.status === 204) return null; // 204: signed out
         return (await r.json()) as TokenResponse;
       })
       .catch(() => null)

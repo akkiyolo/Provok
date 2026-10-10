@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "motion/react";
+import { m } from "motion/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
@@ -11,7 +12,6 @@ import { ClaimBoard } from "@/components/arena/claims";
 import { Composer } from "@/components/arena/composer";
 import { FloatingReactions, ReactionDock } from "@/components/arena/reactions";
 import { RoundSection, ThinkingCard, TurnCard, TypingCard } from "@/components/arena/turns";
-import { VideoStage } from "@/components/arena/video";
 import { VotePanel } from "@/components/arena/vote";
 import { ReportButton } from "@/components/report";
 import { shareUrl, useShare } from "@/components/share";
@@ -24,6 +24,13 @@ import { compact, cx, isLive, isRound, modeText, PERSONA_LABEL, sideName, sideOf
 import { useMeta } from "@/lib/meta";
 import { type Reaction, useDebateChannel } from "@/lib/realtime";
 import { type DebateView, type Position, ROUNDS } from "@/lib/types";
+
+// LiveKit (~150 KB) is only needed for video debates, so it loads on demand instead of with every arena
+// (and every feed card's prefetch of the arena route).
+const VideoStage = dynamic(() => import("@/components/arena/video").then((mod) => mod.VideoStage), {
+  ssr: false,
+  loading: () => <div className="aspect-video w-full animate-pulse rounded-3xl border border-line bg-surface" aria-busy="true" />,
+});
 
 type WithClock = DebateView & { _offset: number };
 
@@ -396,11 +403,11 @@ export function Arena({ id }: { id: string }) {
         </button>
         {live && <ReactionDock side={myPos} onReact={channel.sendReaction} />}
         {d.status === "completed" && (
-          <motion.span initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <m.span initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <Link href={`/d/${d.id}/verdict`} className="flex h-11 items-center rounded-full bg-win px-5 font-semibold text-[#0a0a0b] shadow-[0_0_40px_rgba(232,197,71,0.45)]">
               Reveal the verdict →
             </Link>
-          </motion.span>
+          </m.span>
         )}
       </div>
       <FloatingReactions items={reactions} />

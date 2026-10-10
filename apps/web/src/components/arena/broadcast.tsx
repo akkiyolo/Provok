@@ -1,6 +1,6 @@
 "use client";
 
-import { animate, motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { animate, m, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import { cx, formatClock } from "@/lib/format";
@@ -34,8 +34,8 @@ export function MomentumBar({ share, size = "md", showLabels = true, emptyLabel 
         </div>
       )}
       <div className={cx("relative w-full overflow-hidden rounded-full bg-against", h, share === null && "opacity-40")}>
-        <motion.div className="absolute inset-y-0 left-0 bg-for" style={{ width }} />
-        <motion.div className="absolute inset-y-0 w-[3px] -translate-x-1/2 bg-bg" style={{ left: width }} aria-hidden />
+        <m.div className="absolute inset-y-0 left-0 bg-for" style={{ width }} />
+        <m.div className="absolute inset-y-0 w-[3px] -translate-x-1/2 bg-bg" style={{ left: width }} aria-hidden />
       </div>
     </div>
   );

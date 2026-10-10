@@ -7,7 +7,8 @@ export const metadata: Metadata = { title: "Start a debate", robots: { index: fa
 
 export default function NewDebatePage() {
   return (
-    <Suspense>
+    // Reserve the wizard's height so the footer doesn't jump when it renders (layout shift).
+    <Suspense fallback={<div className="min-h-[85dvh]" aria-busy="true" />}>
       <CreateWizard />
     </Suspense>
   );

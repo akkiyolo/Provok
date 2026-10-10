@@ -12,7 +12,7 @@ interface AuthContextValue {
   user: Me | null;
   status: Status;
   login: (identifier: string, password: string) => Promise<Me>;
-  register: (input: { email: string; password: string; username: string; display_name?: string }) => Promise<Me>;
+  register: (input: { email: string; password: string; username: string; display_name?: string; next?: string }) => Promise<Me>;
   logout: () => Promise<void>;
   acceptTokens: (t: TokenResponse) => void;
   setUser: (u: Me) => void;
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const register = useCallback(
-    async (input: { email: string; password: string; username: string; display_name?: string }) => {
+    async (input: { email: string; password: string; username: string; display_name?: string; next?: string }) => {
       const t = await post<TokenResponse>("/auth/register", input);
       acceptTokens(t);
       broadcast();

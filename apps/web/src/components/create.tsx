@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -81,7 +81,7 @@ function CornerSlot({ position, value, onChange, other, models, personas, defaul
       </div>
       <AnimatePresence initial={false}>
         {value.type === "swarm" && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col gap-2 overflow-hidden">
+          <m.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col gap-2 overflow-hidden">
             <p className="text-[12px] font-semibold text-dim">Model</p>
             <div className="flex flex-wrap gap-2">
               {models.map((m) => (
@@ -104,10 +104,10 @@ function CornerSlot({ position, value, onChange, other, models, personas, defaul
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
         {value.type === "invite" && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+          <m.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <input value={query} onChange={(e) => { setQuery(e.target.value.replace(/^@/, "")); onChange({ type: "invite" }); }}
               placeholder="Search by username" aria-label="Opponent username"
               className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm outline-none focus:border-text/50" />
@@ -119,7 +119,7 @@ function CornerSlot({ position, value, onChange, other, models, personas, defaul
                 </button>
               ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -231,7 +231,7 @@ export function CreateWizard() {
   const qOk = question.trim().length >= (meta?.question_chars.min ?? 10) && topic.data?.ok !== false;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-24 pt-6 sm:px-6">
+    <div className="mx-auto min-h-[85dvh] max-w-3xl px-4 pb-24 pt-6 sm:px-6">
       <ol className="mb-8 flex gap-2" aria-label="Steps">
         {steps.map((s, i) => (
           <li key={s} className="flex flex-1 flex-col gap-1.5" aria-current={i === step ? "step" : undefined}>
@@ -242,7 +242,7 @@ export function CreateWizard() {
       </ol>
 
       <AnimatePresence mode="wait">
-        <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
+        <m.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
           {step === 0 && (
             <section>
               <h1 className="font-display text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95]">What should we fight about?</h1>
@@ -366,7 +366,7 @@ export function CreateWizard() {
               </div>
             </section>
           )}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
     </div>
   );

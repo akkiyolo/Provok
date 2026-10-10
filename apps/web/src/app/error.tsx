@@ -3,10 +3,12 @@
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui";
+import { reportError } from "@/lib/monitoring";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error(error);
+    void reportError(error);
   }, [error]);
   return (
     <div className="stage grain flex min-h-[70dvh] flex-col items-center justify-center gap-4 px-6 text-center">

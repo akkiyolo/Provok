@@ -162,7 +162,7 @@ moderation, admin actions, and full HvH / HvA / AvA debates end to end. CI runs 
 
 | Piece | Recommended | Notes |
 |---|---|---|
-| Web | Vercel or any Node host (`apps/web/Dockerfile`) | set `API_INTERNAL_URL` **at build time** (rewrites are baked in) |
+| Web | Vercel or any Node host (`apps/web/Dockerfile`) | set `API_INTERNAL_URL` **at build time and at runtime** (rewrites are baked in at build; server-side metadata fetches read it at runtime). Optional `NEXT_PUBLIC_SENTRY_DSN` for error reports |
 | API | Railway / Fly.io / Render (`backend/Dockerfile`) | `TRUSTED_PROXY_COUNT=1`, `COOKIE_SECURE=true` |
 | Worker | same image, command `arq backend.app.workers.main.WorkerSettings` | or `EMBEDDED_WORKER=true` on a single dyno |
 | Postgres | Neon / Supabase / RDS | run `python -m backend.app.cli migrate` on each deploy. Neon URLs work as copied (`sslmode`/`channel_binding` are translated for asyncpg); with the `-pooler` host set `DATABASE_PGBOUNCER=true`, and run migrations against the direct host |

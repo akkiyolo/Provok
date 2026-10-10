@@ -47,6 +47,12 @@ class RegisterIn(BaseModel):
     password: str = Field(min_length=1, max_length=256)
     username: str = Field(min_length=1, max_length=40)
     display_name: str | None = Field(default=None, max_length=80)
+    # Where the verification link should bring them back to (e.g. the invite they signed up from).
+    next: str | None = Field(default=None, max_length=300)
+
+
+class NextIn(BaseModel):
+    next: str | None = Field(default=None, max_length=300)
 
 
 class LoginIn(BaseModel):
@@ -122,7 +128,7 @@ async def register(body: RegisterIn, request: Request, response: Response, db: D
     tokens = await svc.issue_session(db, user, user_agent=request.headers.get("user-agent"), ip=client_ip(request))
     db.add(AnalyticsEvent(name="signup", user_id=user.id, props={"method": "password"}))
     await db.commit()
-    await mail.send_verification(user.email, user.display_name, token)
+    await mail.send_verification(user.email, user.display_name, token, next_path=_safe_next(body.next))
     return await _tokens_response(response, tokens, user)
 
 
@@ -149,12 +155,14 @@ async def login(body: LoginIn, request: Request, response: Response, db: DB) -> 
     return await _tokens_response(response, tokens, user)
 
 
-@router.post("/refresh", response_model=TokenOut)
-async def refresh(request: Request, response: Response, db: DB) -> TokenOut:
+@router.post("/refresh", response_model=TokenOut, responses={204: {"description": "No session (signed out)"}})
+async def refresh(request: Request, response: Response, db: DB) -> TokenOut | Response:
     _origin_ok(request)
     cookie = request.cookies.get(get_settings().refresh_cookie_name)
     if not cookie:
-        raise Unauthorized("Sign in to continue.", code="no_session")
+        # Every signed-out page load checks for a session; "there is none" is an answer, not an error
+        # (a 401 here put a red console error on every visit). Bad or stolen cookies still get 401.
+        return Response(status_code=204)
     try:
         user, tokens = await svc.rotate_session(db, cookie, user_agent=request.headers.get("user-agent"),
                                                 ip=client_ip(request))
@@ -208,13 +216,13 @@ async def verify_email(body: TokenIn, db: DB) -> dict:
 
 
 @router.post("/resend-verification")
-async def resend_verification(user: CurrentUser, request: Request, db: DB) -> dict:
+async def resend_verification(user: CurrentUser, request: Request, db: DB, body: NextIn | None = None) -> dict:
     if user.email_verified_at is not None:
         return {"ok": True, "already_verified": True}
     await enforce("resend_verify", str(user.id), "3/3600")
     token = await svc.create_email_token(db, user, "verify")
     await db.commit()
-    await mail.send_verification(user.email, user.display_name, token)
+    await mail.send_verification(user.email, user.display_name, token, next_path=_safe_next(body.next if body else None))
     return {"ok": True}
 
 

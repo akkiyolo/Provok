@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
@@ -72,49 +72,49 @@ function Reveal({ v, onDone }: { v: VerdictResponse; onDone: () => void }) {
 
   const flood = stage >= 3 && winner ? (winner === "for" ? "var(--for)" : "var(--against)") : "transparent";
   return (
-    <motion.div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-[#050506] px-6 text-[#F2EFE9]"
+    <m.div className="fixed inset-0 z-[70] flex flex-col items-center justify-center overflow-hidden bg-[#050506] px-6 text-[#F2EFE9]"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }}>
-      <motion.div className="absolute inset-0" animate={{ backgroundColor: flood, opacity: stage >= 3 ? 0.22 : 0 }} transition={{ duration: 1.2 }} aria-hidden />
-      <motion.div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(40% 40% at 50% 40%, rgba(242,239,233,0.12), transparent 70%)" }}
+      <m.div className="absolute inset-0" animate={{ backgroundColor: flood, opacity: stage >= 3 ? 0.22 : 0 }} transition={{ duration: 1.2 }} aria-hidden />
+      <m.div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(40% 40% at 50% 40%, rgba(242,239,233,0.12), transparent 70%)" }}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 1.6 }} aria-hidden />
       <button onClick={onDone} className="absolute right-5 top-5 z-10 rounded-full border border-white/20 px-3 py-1 text-[12px] text-white/70 hover:text-white">Skip</button>
 
       <div className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center">
-        <motion.p initial={{ opacity: 0, letterSpacing: "0.6em" }} animate={{ opacity: 1, letterSpacing: "0.3em" }} transition={{ duration: 1.2 }}
-          className="font-mono text-[12px] font-bold text-white/60">THE VERDICT</motion.p>
-        <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="font-display mt-4 text-[clamp(1.6rem,4.5vw,2.8rem)] font-extrabold leading-[1.02]">{d.question}</motion.h1>
+        <m.p initial={{ opacity: 0, letterSpacing: "0.6em" }} animate={{ opacity: 1, letterSpacing: "0.3em" }} transition={{ duration: 1.2 }}
+          className="font-mono text-[12px] font-bold text-white/60">THE VERDICT</m.p>
+        <m.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="font-display mt-4 text-[clamp(1.6rem,4.5vw,2.8rem)] font-extrabold leading-[1.02]">{d.question}</m.h1>
 
         <AnimatePresence>
           {stage >= 1 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-10 w-full">
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-10 w-full">
               <p className="mb-3 font-mono text-[11px] font-bold tracking-[0.2em] text-white/50">JUDGE · ROUND BY ROUND</p>
               <div className="flex flex-col gap-2">
                 {rounds.map((r, i) => {
                   const pr = v.judge.per_round[r]!;
                   return (
-                    <motion.div key={r} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.9 }}
+                    <m.div key={r} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.9 }}
                       className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-xl border border-white/10 px-4 py-2.5">
                       <span className="text-left font-mono text-2xl font-bold text-[#FF5A1F]"><Ticker value={avg(pr.for)} /></span>
                       <span className="font-mono text-[11px] font-bold tracking-[0.16em] text-white/60">{ROUND_LABEL[r].toUpperCase()}</span>
                       <span className="text-right font-mono text-2xl font-bold text-[#4C6FFF]"><Ticker value={avg(pr.against)} /></span>
-                    </motion.div>
+                    </m.div>
                   );
                 })}
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
         {stage >= 2 && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-8 w-full">
+          <m.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-8 w-full">
             <p className="mb-3 font-mono text-[11px] font-bold tracking-[0.2em] text-white/50">THE CROWD</p>
             <MomentumBar share={(v.audience.totals.for + v.audience.totals.against) ? v.audience.totals.for / (v.audience.totals.for + v.audience.totals.against) : null} size="lg" />
-          </motion.div>
+          </m.div>
         )}
 
         {stage >= 3 && (
-          <motion.div initial={{ scale: 2.4, opacity: 0, rotate: -6 }} animate={{ scale: 1, opacity: 1, rotate: -3 }}
+          <m.div initial={{ scale: 2.4, opacity: 0, rotate: -6 }} animate={{ scale: 1, opacity: 1, rotate: -3 }}
             transition={{ type: "spring", stiffness: 260, damping: 16 }} className="mt-10">
             {winner ? (
               <div className="flex flex-col items-center gap-2">
@@ -127,10 +127,10 @@ function Reveal({ v, onDone }: { v: VerdictResponse; onDone: () => void }) {
             ) : (
               <span className="font-display text-5xl font-extrabold text-[#E8C547]">TOO CLOSE TO CALL</span>
             )}
-          </motion.div>
+          </m.div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

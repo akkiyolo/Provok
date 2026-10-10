@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { Fragment } from "react";
 
 import { ReportButton } from "@/components/report";
@@ -51,7 +51,7 @@ function Speaker({ side, position }: { side: SideView | undefined; position: Pos
 export function TurnCard({ turn, side, highlight }: { turn: TurnView; side: SideView | undefined; highlight?: boolean }) {
   const p = turn.position;
   return (
-    <motion.article
+    <m.article
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -93,7 +93,7 @@ export function TurnCard({ turn, side, highlight }: { turn: TurnView; side: Side
           </span>
         </footer>
       )}
-    </motion.article>
+    </m.article>
   );
 }
 
@@ -123,7 +123,7 @@ export function ThinkingCard({ position, side }: { position: Position; side: Sid
       <Speaker side={side} position={position} />
       <span className="flex gap-1" aria-label="Thinking">
         {[0, 1, 2].map((i) => (
-          <motion.span key={i} className={cx("size-1.5 rounded-full", position === "for" ? "bg-for" : "bg-against")}
+          <m.span key={i} className={cx("size-1.5 rounded-full", position === "for" ? "bg-for" : "bg-against")}
             animate={{ opacity: [0.2, 1, 0.2] }} transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
         ))}
       </span>

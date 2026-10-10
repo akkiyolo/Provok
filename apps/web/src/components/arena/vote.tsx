@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -49,7 +49,7 @@ export function VotePanel({ debate, round, offsetMs }: { debate: DebateView; rou
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+    <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className="stage grain overflow-hidden rounded-3xl border border-line-strong p-4 sm:p-5" role="group" aria-label={`Vote on the ${ROUND_LABEL[round.round]}`}>
       <div className="mb-3 flex items-center gap-3">
         <span className="font-mono text-[11px] font-bold tracking-[0.16em] text-live">VOTE NOW</span>
@@ -73,6 +73,6 @@ export function VotePanel({ debate, round, offsetMs }: { debate: DebateView; rou
         })}
       </div>
       {mine && <p className="mt-2 text-[12px] text-faint">You can change your vote until the window closes.</p>}
-    </motion.div>
+    </m.div>
   );
 }

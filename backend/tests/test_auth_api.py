@@ -37,6 +37,26 @@ async def test_register_issues_tokens_cookie_and_verification_email(client):
     assert sent_emails() and "Confirm" in sent_emails()[-1]["subject"]
 
 
+@pytest.mark.parametrize(("next_path", "expected"), [
+    ("/d/abc?invite=xyz", "&next=%2Fd%2Fabc%3Finvite%3Dxyz"),  # brings an invited newcomer back to the invite
+    ("https://evil.example/phish", None),  # never an off-site redirect
+    ("//evil.example", None),
+])
+async def test_verification_link_returns_to_where_they_signed_up(client, next_path, expected):
+    r = await client.post(f"{API}/register", json={"email": "nia@example.com", "password": "correct-horse-battery",
+                                                   "username": "nia", "next": next_path})
+    assert r.status_code == 201
+    text = sent_emails()[-1]["text"]
+    if expected:
+        assert expected in text
+    else:
+        assert "next=" not in text
+    resent = await client.post(f"{API}/resend-verification", json={"next": next_path},
+                               headers={"Authorization": f"Bearer {r.json()['access_token']}"})
+    assert resent.status_code == 200
+    assert (expected in sent_emails()[-1]["text"]) if expected else ("next=" not in sent_emails()[-1]["text"])
+
+
 @pytest.mark.parametrize("username,password,code", [
     ("ab", "correct-horse-battery", "invalid_username"),
     ("Bad Name", "correct-horse-battery", "invalid_username"),
@@ -98,6 +118,11 @@ async def test_refresh_rotates_and_detects_reuse(client):
     # The whole family is now dead — including the legitimately rotated token.
     client.cookies.set("provok_rt", second_cookie, path="/api/v1/auth")
     assert (await client.post(f"{API}/refresh")).status_code == 401
+
+
+async def test_refresh_without_any_session_is_a_quiet_no_content(client):
+    r = await client.post(f"{API}/refresh")
+    assert r.status_code == 204 and not r.content
 
 
 async def test_concurrent_refresh_within_grace_is_allowed(client):

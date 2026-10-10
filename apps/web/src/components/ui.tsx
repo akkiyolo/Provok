@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import Link from "next/link";
 import { forwardRef, useEffect, useId, useRef } from "react";
 
@@ -188,9 +188,9 @@ export function Sheet({ open, onClose, title, children, wide }: {
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center" role="presentation">
-          <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}
+          <m.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-          <motion.div
+          <m.div
             ref={panel}
             role="dialog" aria-modal="true" aria-labelledby={title ? titleId : undefined}
             className={cx("relative z-10 max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-line bg-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-3xl sm:p-7",
@@ -204,7 +204,7 @@ export function Sheet({ open, onClose, title, children, wide }: {
               <svg viewBox="0 0 20 20" className="size-4" fill="currentColor"><path d="M5.3 4.3 10 9l4.7-4.7 1 1L11 10l4.7 4.7-1 1L10 11l-4.7 4.7-1-1L9 10 4.3 5.3z" /></svg>
             </button>
             {children}
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>
@@ -223,7 +223,7 @@ export function Tabs<T extends string>({ value, onChange, items, className }: {
         return (
           <button key={it.value} role="tab" aria-selected={active} onClick={() => onChange(it.value)}
             className={cx("relative shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition", active ? "text-bg" : "text-dim hover:text-text")}>
-            {active && <motion.span layoutId={`tab-${items.map((i) => i.value).join("")}`} className="absolute inset-0 rounded-full bg-text" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+            {active && <m.span layoutId={`tab-${items.map((i) => i.value).join("")}`} className="absolute inset-0 rounded-full bg-text" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
             <span className="relative">{it.label}</span>
           </button>
         );

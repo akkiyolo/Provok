@@ -7,6 +7,8 @@ const API = (process.env.API_INTERNAL_URL ?? "http://localhost:8000").replace(/\
 const WS = (process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000").replace(/\/$/, "");
 const LIVEKIT = process.env.NEXT_PUBLIC_LIVEKIT_URL ?? "wss://*.livekit.cloud";
 const MEDIA = process.env.NEXT_PUBLIC_MEDIA_ORIGIN ?? "";
+// Error reports go straight to Sentry's ingest host (from the DSN), so the CSP must allow it.
+const SENTRY = process.env.NEXT_PUBLIC_SENTRY_DSN ? new URL(process.env.NEXT_PUBLIC_SENTRY_DSN).origin : "";
 
 const csp = [
   "default-src 'self'",
@@ -15,7 +17,7 @@ const csp = [
   `img-src 'self' data: blob: https:`,
   "font-src 'self' data:",
   `media-src 'self' blob: https: ${MEDIA}`.trim(),
-  `connect-src 'self' ${WS} ${LIVEKIT} ${LIVEKIT.replace("wss://", "https://")} https://lumberjack.razorpay.com https://api.razorpay.com${isDev ? " ws://localhost:* http://localhost:*" : ""}`,
+  `connect-src 'self' ${WS} ${LIVEKIT} ${LIVEKIT.replace("wss://", "https://")} https://lumberjack.razorpay.com https://api.razorpay.com ${SENTRY}${isDev ? " ws://localhost:* http://localhost:*" : ""}`.replace(/\s+/g, " ").trim(),
   "frame-src https://api.razorpay.com https://checkout.razorpay.com",
   "worker-src 'self' blob:",
   "object-src 'none'",

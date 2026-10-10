@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 
 import type { Reaction } from "@/lib/realtime";
 import type { Position } from "@/lib/types";
@@ -27,12 +27,12 @@ export function FloatingReactions({ items }: { items: Reaction[] }) {
         {items.map((r) => {
           const x = r.position === "for" ? 18 + (r.id % 5) * 4 : r.position === "against" ? 62 + (r.id % 5) * 4 : 30 + (r.id % 9) * 5;
           return (
-            <motion.span key={r.id} className="absolute text-3xl" style={{ left: `${x}%` }}
+            <m.span key={r.id} className="absolute text-3xl" style={{ left: `${x}%` }}
               initial={{ y: 0, opacity: 0, scale: 0.6 }}
               animate={{ y: -260 - (r.id % 4) * 30, opacity: [0, 1, 1, 0], scale: [0.6, 1.2, 1, 0.9], x: [0, (r.id % 2 ? 14 : -14), 0] }}
               exit={{ opacity: 0 }} transition={{ duration: 2.4, ease: "easeOut" }}>
               {r.emoji}
-            </motion.span>
+            </m.span>
           );
         })}
       </AnimatePresence>

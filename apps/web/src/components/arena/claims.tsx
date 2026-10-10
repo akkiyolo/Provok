@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 
 import { SideTag } from "@/components/ui";
 import { cx } from "@/lib/format";
@@ -18,7 +18,7 @@ export function ClaimChip({ claim, id }: { claim: ClaimView; id?: string }) {
   const stamp = STAMP[claim.status];
   const struck = claim.status === "rebutted" || claim.status === "conceded";
   return (
-    <motion.li id={id} layout initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
+    <m.li id={id} layout initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
       className={cx("relative rounded-xl border bg-surface p-3",
         claim.position === "for" ? "border-for/25" : "border-against/30",
         claim.status === "unaddressed" && "animate-pulse-soft")}>
@@ -37,15 +37,15 @@ export function ClaimChip({ claim, id }: { claim: ClaimView; id?: string }) {
       )}
       <AnimatePresence>
         {stamp && (
-          <motion.span key={claim.status}
+          <m.span key={claim.status}
             initial={{ scale: 2.2, opacity: 0, rotate: -14 }} animate={{ scale: 1, opacity: 1, rotate: -8 }}
             transition={{ type: "spring", stiffness: 420, damping: 18 }}
             className={cx("absolute -right-1 -top-2 rounded-md border-2 bg-bg px-1.5 py-0.5 font-mono text-[9px] font-black tracking-[0.12em]", stamp.cls)}>
             {stamp.text}
-          </motion.span>
+          </m.span>
         )}
       </AnimatePresence>
-    </motion.li>
+    </m.li>
   );
 }
 

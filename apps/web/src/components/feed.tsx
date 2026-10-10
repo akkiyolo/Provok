@@ -59,7 +59,9 @@ export function Feed() {
   };
 
   return (
-    <section aria-label="Debates">
+    <section aria-labelledby="feed-heading">
+      {/* Cards title their questions with <h3>; this keeps the outline h1 → h2 → h3 for screen readers. */}
+      <h2 id="feed-heading" className="sr-only">Debates</h2>
       <div className="sticky top-14 z-30 -mx-4 bg-bg/85 px-4 py-3 backdrop-blur-xl sm:top-16 sm:mx-0 sm:px-0">
         <Tabs value={tab} onChange={setTab} items={TABS} className="w-fit max-w-full" />
       </div>

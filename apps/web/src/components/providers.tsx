@@ -1,13 +1,15 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MotionConfig } from "motion/react";
+import { LazyMotion, MotionConfig } from "motion/react";
 import { useState } from "react";
 
 import { AuthGateSheet } from "@/components/auth-forms";
 import { ToastProvider } from "@/components/toast";
 import { ApiError } from "@/lib/api";
 import { AuthProvider } from "@/lib/auth";
+
+const loadMotionFeatures = () => import("@/lib/motion-features").then((mod) => mod.default);
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(
@@ -24,14 +26,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
   return (
     <QueryClientProvider client={client}>
-      <MotionConfig reducedMotion="user">
-        <ToastProvider>
-          <AuthProvider>
-            {children}
-            <AuthGateSheet />
-          </AuthProvider>
-        </ToastProvider>
-      </MotionConfig>
+      <LazyMotion features={loadMotionFeatures} strict>
+        <MotionConfig reducedMotion="user">
+          <ToastProvider>
+            <AuthProvider>
+              {children}
+              <AuthGateSheet />
+            </AuthProvider>
+          </ToastProvider>
+        </MotionConfig>
+      </LazyMotion>
     </QueryClientProvider>
   );
 }

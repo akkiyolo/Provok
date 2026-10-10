@@ -70,6 +70,7 @@ export function OAuthCallback() {
 export function VerifyEmail() {
   const params = useSearchParams();
   const token = params.get("token");
+  const next = safeNext(params.get("next"));
   const { acceptTokens, setUser, status } = useAuth();
   const [state, setState] = useState<"working" | "ok" | "error">(token ? "working" : "error");
   const [message, setMessage] = useState(token ? "" : "This link is missing its token.");
@@ -91,8 +92,8 @@ export function VerifyEmail() {
     <Shell title={state === "ok" ? "You're verified." : state === "error" ? "Link didn't work." : "Confirming…"}
       sub={state === "ok" ? "You can now debate, vote and buy credits." : message}>
       {state === "working" ? <Spinner className="size-6" /> : (
-        <Button href={state === "ok" ? "/" : "/settings"} variant={state === "ok" ? "for" : "outline"} className="w-full">
-          {state === "ok" ? "Enter the arena →" : "Request a new link"}
+        <Button href={state === "ok" ? next : "/settings"} variant={state === "ok" ? "for" : "outline"} className="w-full">
+          {state === "ok" ? (next === "/" ? "Enter the arena →" : "Continue where you left off →") : "Request a new link"}
         </Button>
       )}
     </Shell>
@@ -171,7 +172,7 @@ export function VerifyBanner() {
   const resend = async () => {
     setBusy(true);
     try {
-      await post("/auth/resend-verification");
+      await post("/auth/resend-verification", { next: window.location.pathname + window.location.search });
       toast(`Sent! Check ${user.email}.`, "success");
     } catch (e) {
       toast(errorMessage(e), "error");

@@ -5,6 +5,7 @@ import asyncio
 import html
 import smtplib
 from email.message import EmailMessage
+from urllib.parse import quote
 
 import httpx
 
@@ -73,8 +74,10 @@ def _send_smtp(to: str, subject: str, html_body: str, text_body: str) -> None:
         smtp.send_message(msg)
 
 
-async def send_verification(to: str, name: str, token: str) -> None:
+async def send_verification(to: str, name: str, token: str, *, next_path: str = "/") -> None:
     url = f"{get_settings().web_url}/verify-email?token={token}"
+    if next_path != "/":
+        url += f"&next={quote(next_path, safe='')}"
     await send_email(to, "Confirm your email for Provok",
                      _layout(f"Welcome to the arena, {name}.",
                              "<p>Confirm your email to start debating and voting.</p>", "Confirm email", url),

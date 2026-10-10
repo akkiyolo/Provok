@@ -25,7 +25,7 @@ frontend, video included, Google + email/password auth (no phone OTP).** Everyth
 
 ## Verified
 
-- **165 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
+- **169 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
 - **Frontend**: typecheck, lint (React Compiler rules) and production build all pass.
 - **Live end-to-end run with real models** (Qwen vs GPT-OSS on Groq): a full 10-turn AvA debate ran to
   a judged verdict through the real worker, surviving free-tier rate limits via backoff + auto-resume,
@@ -66,8 +66,34 @@ fixed dock covering Submit, and a client-side vote rule contradicting the server
   never appear in Open Challenges. The creator gets "Send on WhatsApp" / "Copy invite link". The token survives
   sign-up from the auth sheet, including Google sign-in. Migration `0002` adds `sides.invite_token`.
 - Fixed: the arena header flipped between collapsed/expanded on short pages (scroll threshold without hysteresis).
-- Known gap: with `REQUIRE_VERIFIED_EMAIL_TO_DEBATE=true`, a brand-new email/password user must verify their
-  email before joining; the verification email does not yet bring them back to the invite (Google sign-up does).
+- The verification email now brings a new user back to where they signed up (`next`, validated server-side), so an
+  invited newcomer lands on the invite after confirming their email.
+
+## Performance + monitoring (2026-10-10)
+
+Lighthouse 13.5 mobile (simulated slow 4G, 4x CPU), production build:
+
+| Page | Before | After | LCP | TBT | CLS |
+|---|---|---|---|---|---|
+| Home | 55 | 80 | 5.4s → 4.2s | 1143 → 280ms | 0.001 |
+| Create | 39 | 71 | 5.9s → 4.6s | 785 → 483ms | 0.461 → 0.003 |
+| Arena | (trace failed) | 68 | 4.5s | 627ms | 0 |
+| Verdict | 57 | 78 | 5.1s → 4.1s | 981 → 320ms | 0.079 |
+
+Accessibility and best practices are 100 on all four. What changed:
+- The live dot animated `box-shadow`, repainting every frame under the blurred header and grain overlay
+  (28s of rendering during a Lighthouse run). It now animates transform/opacity on a pseudo-element (0.3s).
+- `motion` uses `LazyMotion` + `m` components; the animation engine (`domMax`) loads after hydration.
+- LiveKit (~150 KB) loads only for video debates (`next/dynamic`); before, every feed card's prefetch pulled it.
+- `/new` reserves the wizard's height while it loads (layout shift 0.46 → 0.003).
+- `/auth/refresh` with no session returns 204 instead of 401 (a red console error on every signed-out visit).
+- `--text-faint` raised to WCAG AA contrast in both themes; the feed has a screen-reader `h2` for heading order.
+- Remaining LCP is the hero heading repainting when the display font arrives; `display: optional` would fix it at
+  the cost of the fallback font on first visits. Not changed (design call).
+
+Web error reporting: `NEXT_PUBLIC_SENTRY_DSN` turns on Sentry for the browser and the Next server (`@sentry/nextjs`
+10.75.3). In the browser the SDK is downloaded only when the first error happens (zero cost on healthy loads);
+verified end to end against a fake ingest. Source-map upload is not set up yet (stack traces are minified).
 
 ## Not yet verified (needs your accounts/keys)
 
@@ -113,7 +139,5 @@ fixed dock covering Submit, and a client-side vote rule contradicting the server
 
 ## Known gaps / next up
 
-- A Lighthouse performance pass is not done yet (production build is clean; no measurements taken).
-- Sentry for the web app isn't wired (API + worker are).
 - `npm audit` reports advisories in the ESLint toolchain (dev-only, not shipped).
 - Push notifications (web push) are not implemented; in-app + email only.

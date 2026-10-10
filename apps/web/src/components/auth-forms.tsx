@@ -84,7 +84,7 @@ export function SignupForm({ onDone, next }: { onDone?: () => void; next?: strin
     setErrors({});
     track("signup_started", { method: "password" });
     try {
-      await register({ ...form, display_name: form.username });
+      await register({ ...form, display_name: form.username, next });
       onDone?.();
     } catch (err) {
       if (err instanceof ApiError) {

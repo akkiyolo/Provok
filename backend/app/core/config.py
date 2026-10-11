@@ -93,6 +93,8 @@ class Settings(BaseSettings):
     google_api_key: str = ""  # legacy alias for gemini_api_key
     groq_api_key: str = ""
     mistral_api_key: str = ""
+    # Amazon Bedrock: many model families through the server's own AWS role (no API key). Empty = off.
+    bedrock_region: str = ""
     model_registry_seed_path: str = str(APP_DIR / "llm" / "model_registry.seed.json")
     utility_model_key: str = "gemini_flash"
     utility_fallback_model_keys: str = "groq_gpt_oss_small,claude_haiku"
@@ -329,11 +331,18 @@ class Settings(BaseSettings):
             "LANGFUSE_SECRET_KEY": self.langfuse_secret_key,
             "LANGFUSE_HOST": self.langfuse_host,
         }
+        if self.bedrock_region:
+            mapping["AWS_REGION_NAME"] = self.bedrock_region
         for k, v in mapping.items():
             if v and not os.environ.get(k):
                 os.environ[k] = v
+        # LiteLLM otherwise loads the nearest .env file on import, which can carry unrelated AWS keys.
+        os.environ.setdefault("LITELLM_MODE", "PRODUCTION")
 
-    def provider_configured(self, provider: str) -> bool:
+    def provider_configured(self, provider: str, litellm_id: str = "") -> bool:
+        """Can we reach this model? Bedrock models go through the AWS role whatever their maker (`provider`)."""
+        if litellm_id.startswith("bedrock/"):
+            return bool(self.bedrock_region)
         return bool(
             {
                 "openai": self.openai_api_key,

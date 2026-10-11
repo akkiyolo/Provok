@@ -202,6 +202,21 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
+### AI models on Amazon Bedrock (2026-10-11)
+
+- The AWS account's promotional credits (~$120 would otherwise expire unused on 2027-01-17) pay for Bedrock. LiteLLM
+  calls it through the server's IAM role (`BEDROCK_REGION`; IAM `BedrockInvoke`, invoke only); no API keys.
+- Live and verified through LiteLLM (text + JSON + cost): Qwen3 235B, DeepSeek V3.2, Kimi K2.5, Mistral Large 3,
+  GLM-5 (selectable, standard tier); GPT-OSS 120B and Nova Lite (utility); DeepSeek and Qwen judges.
+  `provider` = the model's maker, so judges stay cross-family. Staging: default debater Qwen3, utility GPT-OSS →
+  Nova Lite → Groq, judges DeepSeek → Qwen → Groq.
+- Locked for this account: Claude Sonnet 5, GPT-6 Astra, Grok, GPT-5.6 ("not available for this account").
+  Claude Haiku 4.5 needs a payment method (AWS Marketplace, not covered by credits): seeded disabled.
+- **To verify within 24h:** Cost Explorer shows the Bedrock charges were offset by credits.
+- Test: every enabled Bedrock seed model must have a LiteLLM price (keeps the daily spend kill-switch accurate).
+- LiteLLM loads the nearest `.env` on import (it found the repo's legacy `.env` with another IAM user's keys);
+  `LITELLM_MODE=PRODUCTION` is now set before import.
+
 ### Production, ready to switch on (2026-10-11)
 
 - `infra/terraform/database.tf`: with `database = "rds"`, a private RDS Postgres 17 (db.t4g.micro, gp3 20→100 GB,

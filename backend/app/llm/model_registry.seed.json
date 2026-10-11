@@ -94,5 +94,100 @@
   "tier": "judge",
   "selectable": false,
   "sort_order": 102
+ },
+ {
+  "key": "bedrock_qwen",
+  "litellm_id": "bedrock/converse/qwen.qwen3-235b-a22b-2507-v1:0",
+  "display_name": "Qwen3 235B",
+  "provider": "qwen",
+  "tier": "standard",
+  "sort_order": 50,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account."
+ },
+ {
+  "key": "bedrock_deepseek",
+  "litellm_id": "bedrock/converse/deepseek.v3.2",
+  "display_name": "DeepSeek V3.2",
+  "provider": "deepseek",
+  "tier": "standard",
+  "sort_order": 51,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account."
+ },
+ {
+  "key": "bedrock_kimi",
+  "litellm_id": "bedrock/converse/moonshotai.kimi-k2.5",
+  "display_name": "Kimi K2.5",
+  "provider": "moonshot",
+  "tier": "standard",
+  "sort_order": 52,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account."
+ },
+ {
+  "key": "bedrock_mistral",
+  "litellm_id": "bedrock/converse/mistral.mistral-large-3-675b-instruct",
+  "display_name": "Mistral Large 3",
+  "provider": "mistral",
+  "tier": "standard",
+  "sort_order": 53,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account."
+ },
+ {
+  "key": "bedrock_glm",
+  "litellm_id": "bedrock/converse/zai.glm-5",
+  "display_name": "GLM-5",
+  "provider": "zhipu",
+  "tier": "standard",
+  "sort_order": 54,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account."
+ },
+ {
+  "key": "bedrock_claude_haiku",
+  "litellm_id": "bedrock/converse/in.anthropic.claude-haiku-4-5-20251001-v1:0",
+  "display_name": "Claude Haiku 4.5",
+  "provider": "anthropic",
+  "tier": "flagship",
+  "sort_order": 12,
+  "enabled": false,
+  "notes": "Bedrock via AWS Marketplace: needs a payment method on the AWS account (not covered by promotional credits). LiteLLM has no price for the in. profile: check cost logging before enabling."
+ },
+ {
+  "key": "bedrock_gpt_oss",
+  "litellm_id": "bedrock/converse/openai.gpt-oss-120b-1:0",
+  "display_name": "GPT-OSS 120B (Bedrock)",
+  "provider": "openai",
+  "tier": "utility",
+  "selectable": false,
+  "sort_order": 92,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account. Utility roles; no Groq rate limits."
+ },
+ {
+  "key": "bedrock_nova_lite",
+  "litellm_id": "bedrock/converse/apac.amazon.nova-lite-v1:0",
+  "display_name": "Amazon Nova Lite",
+  "provider": "amazon",
+  "tier": "utility",
+  "selectable": false,
+  "sort_order": 93,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account. Cheapest fallback for utility roles."
+ },
+ {
+  "key": "judge_deepseek",
+  "litellm_id": "bedrock/converse/deepseek.v3.2",
+  "display_name": "Judge (DeepSeek)",
+  "provider": "deepseek",
+  "tier": "judge",
+  "selectable": false,
+  "sort_order": 103,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account."
+ },
+ {
+  "key": "judge_qwen",
+  "litellm_id": "bedrock/converse/qwen.qwen3-235b-a22b-2507-v1:0",
+  "display_name": "Judge (Qwen)",
+  "provider": "qwen",
+  "tier": "judge",
+  "selectable": false,
+  "sort_order": 104,
+  "notes": "Amazon Bedrock (BEDROCK_REGION); billed to the AWS account."
  }
 ]

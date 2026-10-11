@@ -143,7 +143,7 @@ def parse_json(text: str) -> Any:
 
 
 def _with_cache_control(messages: Messages, model: ModelInfo) -> Messages:
-    if model.provider != "anthropic":
+    if model.provider != "anthropic" or model.litellm_id.startswith("bedrock/"):
         return messages
     out: Messages = []
     for i, m in enumerate(messages):
@@ -240,7 +240,8 @@ async def _call_once(role: Role, model: ModelInfo, messages: Messages, *, max_to
         cost = Decimal(str(litellm.completion_cost(completion_response=resp) or 0)).quantize(Decimal("0.000001"))
     except Exception:
         cost = Decimal("0")
-    if cost == 0 and model.provider in ("anthropic", "openai", "gemini") and (in_tok or out_tok):
+    if cost == 0 and (model.provider in ("anthropic", "openai", "gemini") or model.litellm_id.startswith("bedrock/")) \
+            and (in_tok or out_tok):
         log.warning("llm_cost_zero_for_paid_model", model_key=model.key, litellm_id=model.litellm_id)
     await _log_call(debate_id=debate_id, role=role, model=model, input_tokens=in_tok, output_tokens=out_tok,
                     cost=cost, latency_ms=latency, success=bool(text), error=None if text else "empty response")

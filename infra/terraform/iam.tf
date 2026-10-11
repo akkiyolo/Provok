@@ -49,6 +49,17 @@ resource "aws_iam_role_policy" "app" {
         Condition = { StringEquals = { "kms:ViaService" = "ssm.${var.region}.amazonaws.com" } }
       },
       { Sid = "SendEmail", Effect = "Allow", Action = ["ses:SendEmail", "ses:SendRawEmail"], Resource = "*" },
+      {
+        # AI models on Amazon Bedrock (BEDROCK_REGION). Invoke only. Cross-region inference profiles route to
+        # foundation models in other regions, hence the wildcard region on those.
+        Sid    = "BedrockInvoke"
+        Effect = "Allow"
+        Action = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/*",
+          "arn:aws:bedrock:*:${local.account_id}:inference-profile/*",
+        ]
+      },
     ]
   })
 }

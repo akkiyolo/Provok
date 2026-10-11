@@ -99,7 +99,8 @@ async def seed_registry(db: AsyncSession) -> int:
     for s in seeds:
         if s["key"] in existing:
             continue
-        enabled = bool(s.get("enabled", True)) and (settings.llm_fake or settings.provider_configured(s["provider"]))
+        reachable = settings.llm_fake or settings.provider_configured(s["provider"], s["litellm_id"])
+        enabled = bool(s.get("enabled", True)) and reachable
         db.add(ModelRegistry(
             key=s["key"], litellm_id=s["litellm_id"], display_name=s["display_name"], provider=s["provider"],
             tier=s["tier"], enabled=enabled, selectable=bool(s.get("selectable", True)), notes=s.get("notes"),

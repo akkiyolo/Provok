@@ -188,6 +188,7 @@ export interface Me {
   free_ai_debates_left: number;
   has_password: boolean;
   onboarded: boolean;
+  email_notifications: boolean;
   created_at: string;
 }
 

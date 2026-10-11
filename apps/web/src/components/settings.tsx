@@ -109,6 +109,26 @@ export function SettingsView() {
         </form>
       </Section>
 
+      <Section title="Email">
+        <label className="flex cursor-pointer items-start justify-between gap-4">
+          <span className="flex flex-col gap-1">
+            <span className="text-[15px] font-medium">Debate emails</span>
+            <span className="text-[13px] text-dim">Challenges, your turn, and verdicts. Account emails like password resets always arrive.</span>
+          </span>
+          <button type="button" role="switch" aria-checked={user.email_notifications} disabled={busy === "email"}
+            onClick={() => run("email", async () => {
+              const next = !user.email_notifications;
+              setUser(await patch<Me>("/me", { email_notifications: next }));
+              toast(next ? "Debate emails on." : "Debate emails off.", "success");
+            })}
+            className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full border transition-colors disabled:opacity-60 ${
+              user.email_notifications ? "border-text bg-text" : "border-line bg-surface"}`}>
+            <span className={`absolute top-0.5 size-[22px] rounded-full transition-transform ${
+              user.email_notifications ? "translate-x-[22px] bg-surface" : "translate-x-0.5 bg-dim"}`} />
+          </button>
+        </label>
+      </Section>
+
       <Section title="Sessions & data">
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" loading={busy === "logoutall"} onClick={() => run("logoutall", async () => {

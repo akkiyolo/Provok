@@ -21,6 +21,24 @@ def test_ses_sends_html_and_text_from_the_configured_sender(monkeypatch) -> None
     regions = []
     monkeypatch.setattr(boto3, "client", lambda service, region_name=None: regions.append(region_name) or client)
     with stub:
-        email._send_ses("nia@example.com", "Hi", "<p>rich</p>", "plain")
+        email._send_ses("nia@example.com", "Hi", "<p>rich</p>", "plain", {})
     stub.assert_no_pending_responses()
     assert regions == [get_settings().ses_region]
+
+
+def test_ses_passes_unsubscribe_headers(monkeypatch) -> None:
+    client = boto3.client("sesv2", region_name="ap-south-1", aws_access_key_id="x", aws_secret_access_key="y")
+    stub = Stubber(client)
+    headers = {"List-Unsubscribe": "<https://x.test/u?token=t>", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"}
+    stub.add_response("send_email", {"MessageId": "m-2"}, {
+        "FromEmailAddress": get_settings().email_from,
+        "Destination": {"ToAddresses": ["nia@example.com"]},
+        "Content": {"Simple": {"Subject": {"Data": "Hi", "Charset": "UTF-8"},
+                               "Body": {"Text": {"Data": "plain", "Charset": "UTF-8"},
+                                        "Html": {"Data": "<p>rich</p>", "Charset": "UTF-8"}},
+                               "Headers": [{"Name": k, "Value": v} for k, v in headers.items()]}},
+    })
+    monkeypatch.setattr(boto3, "client", lambda service, region_name=None: client)
+    with stub:
+        email._send_ses("nia@example.com", "Hi", "<p>rich</p>", "plain", headers)
+    stub.assert_no_pending_responses()

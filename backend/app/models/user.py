@@ -48,6 +48,8 @@ class User(Base):
     video_minutes_period: Mapped[str | None] = mapped_column(String(7))  # "YYYY-MM"
     injection_strikes: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     onboarded: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+    # Challenge, turn and verdict emails. Account emails (verification, password reset) always send.
+    email_notifications: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
 
     created_at: Mapped[datetime] = created_at_col()
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),

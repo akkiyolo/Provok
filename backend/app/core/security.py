@@ -18,7 +18,7 @@ _hasher = PasswordHasher()  # argon2id, library defaults (RFC 9106 low-memory pr
 # Pre-computed hash used to equalise timing when a login targets a non-existent account.
 _DUMMY_HASH = _hasher.hash("provok-dummy-password-for-timing")
 
-TokenType = Literal["access", "ws", "oauth_state"]
+TokenType = Literal["access", "ws", "oauth_state", "unsubscribe"]
 
 COMMON_PASSWORDS = {
     "password", "password1", "12345678", "123456789", "1234567890", "qwerty123", "11111111",

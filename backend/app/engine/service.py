@@ -238,12 +238,12 @@ async def _record_turn(db: AsyncSession, debate: Debate, side: Side, rec: tx.Rec
 async def _notify_turn(db: AsyncSession, debate: Debate, user_id: uuid.UUID, outbox: Outbox) -> None:
     await notify(db, outbox, user_id, "your_turn", "Your move.", body=debate.question[:200], link=f"/d/{debate.id}")
     user = await db.get(User, user_id)
-    if user and user.email_verified_at and user.status == "active":
+    if user and user.email_verified_at and user.status == "active" and user.email_notifications:
         from backend.app.services.email import send_turn_reminder
         email, question, url = user.email, debate.question, f"{get_settings().web_url}/d/{debate.id}"
 
         async def _send() -> None:
-            await send_turn_reminder(email, question, url)
+            await send_turn_reminder(email, user_id, question, url)
 
         outbox.add(_send)
 

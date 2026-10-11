@@ -262,12 +262,13 @@ async def _email_verdict(debate_id: uuid.UUID) -> None:
         await db.refresh(debate, ["sides"])
         ids = [s.user_id for s in debate.sides if s.user_id]
         users = (await db.scalars(select(User).where(User.id.in_(ids)))).all() if ids else []
-        recipients = [u.email for u in users if u.email_verified_at and u.status == "active"]
+        recipients = [(u.email, u.id) for u in users
+                      if u.email_verified_at and u.status == "active" and u.email_notifications]
         question = debate.question
     if debate.timing == Timing.ASYNC.value:
         url = f"{get_settings().web_url}/d/{debate_id}/verdict"
-        for email in recipients:
-            await send_debate_result(email, question, url)
+        for email, user_id in recipients:
+            await send_debate_result(email, user_id, question, url)
 
 
 # ── Ops ────────────────────────────────────────────────────────────────────

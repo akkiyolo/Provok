@@ -100,6 +100,36 @@ export function VerifyEmail() {
   );
 }
 
+export function Unsubscribe() {
+  const token = useSearchParams().get("token");
+  const { status } = useAuth();
+  const [state, setState] = useState<"ask" | "working" | "ok" | "error">(token ? "ask" : "error");
+  const [message, setMessage] = useState(token ? "" : "This link is missing its token.");
+  // A click, not an automatic request on load: link scanners in mail filters open links and must not unsubscribe.
+  const confirm = () => {
+    setState("working");
+    post(`/email/unsubscribe?token=${encodeURIComponent(token ?? "")}`)
+      .then(() => setState("ok"))
+      .catch((e) => {
+        setState("error");
+        setMessage(errorMessage(e));
+      });
+  };
+  return (
+    <Shell title={state === "ok" ? "You're unsubscribed." : state === "error" ? "Link didn't work." : "Stop debate emails?"}
+      sub={state === "ok" ? "No more challenge, turn or verdict emails. Account emails like password resets still arrive."
+        : state === "error" ? message : "You'll stop getting emails about challenges, your turn and verdicts. You still see them in the app."}>
+      {state === "ok" || state === "error" ? (
+        <Button href={status === "authed" ? "/settings" : "/"} variant="outline" className="w-full">
+          {status === "authed" ? "Email settings" : "Back to Provok"}
+        </Button>
+      ) : (
+        <Button onClick={confirm} loading={state === "working"} className="w-full">Unsubscribe</Button>
+      )}
+    </Shell>
+  );
+}
+
 export function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);

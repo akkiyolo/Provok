@@ -155,6 +155,19 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   a deploy (e.g. after an env change) no longer fails on ECR's immutable tags.
 - FortiGuard filters (common on office/college networks) block newly registered domains; submit provok.in for
   categorisation before launch.
+- SES production access requested 2026-10-11 (transactional; review pending).
+- Video: LiveKit Cloud keys added and verified (ListRooms). Deepgram signup kept failing on the founder's side, so
+  speech-to-text is untested; recording is off (`VIDEO_RECORDING_ENABLED=false`) until LiveKit egress gets S3
+  credentials for `recordings/` (and that prefix needs a public-read or signed-URL decision).
+
+### Email unsubscribe (2026-10-11)
+
+- Users can turn off debate emails (challenge, your turn, verdict) in Settings → Email; account emails
+  (verification, password reset) always send. Column `users.email_notifications` (migration `0003`).
+- Every notification email has an "Unsubscribe from debate emails" footer link to `/unsubscribe?token=…`
+  (a confirm click, so mail-filter link scanners can't unsubscribe people) and RFC 8058 one-click headers
+  (`List-Unsubscribe` → `POST /api/v1/email/unsubscribe?token=…`, `List-Unsubscribe-Post`), which Gmail and Yahoo
+  expect. The token is a 1-year JWT of type `unsubscribe`; other token types are rejected. 175 backend tests pass.
 
 ## Not yet verified (needs your accounts/keys)
 

@@ -204,6 +204,44 @@ async def test_challenge_someone_emails_the_invitee(client, make_user):
     mail = [m for m in sent_emails() if m["to"] == "bob@example.com"]
     assert len(mail) == 1 and "challenged you" in mail[0]["subject"]
     assert f"/d/{r.json()['id']}" in mail[0]["text"]
+    # Every notification email carries a visible unsubscribe link and RFC 8058 one-click headers.
+    assert "/unsubscribe?token=" in mail[0]["text"] and "Unsubscribe from debate emails" in mail[0]["html"]
+    assert mail[0]["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"
+    assert mail[0]["List-Unsubscribe"].startswith("<http") and "/api/v1/email/unsubscribe?token=" in mail[0]["List-Unsubscribe"]
+
+
+async def test_unsubscribe_link_stops_notification_emails(client, make_user):
+    alice, bob = await make_user("alice"), await make_user("bob")
+    sent_emails().clear()
+    await alice.post(D, {**hvh_body(), "against": {"type": "invite", "username": "bob"}})
+    one_click = sent_emails()[0]["List-Unsubscribe"].strip("<>")
+    path = one_click[one_click.index("/api/v1/"):]
+
+    r = await client.post(path, content=b"List-Unsubscribe=One-Click",
+                          headers={"Content-Type": "application/x-www-form-urlencoded", "Origin": ""})
+    assert r.status_code == 200, r.text
+    assert (await bob.get("/api/v1/auth/me")).json()["email_notifications"] is False
+
+    sent_emails().clear()
+    await alice.post(D, {**hvh_body("Is a hot dog a sandwich, and does the answer matter?"),
+                         "against": {"type": "invite", "username": "bob"}})
+    assert [m for m in sent_emails() if m["to"] == "bob@example.com"] == []
+
+
+async def test_unsubscribe_rejects_bad_tokens_and_settings_can_resubscribe(client, make_user):
+    from backend.app.core.security import create_access_token
+    bob = await make_user("bob")
+    r = await client.post("/api/v1/email/unsubscribe", params={"token": "not-a-token"})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "invalid_token"
+    # A token minted for another purpose (here an access token) must not unsubscribe anyone.
+    access = create_access_token(uuid.UUID(bob.id), 0, "user")
+    r = await client.post("/api/v1/email/unsubscribe", params={"token": access})
+    assert r.status_code == 400
+
+    r = await bob.client.patch("/api/v1/me", json={"email_notifications": False}, headers=bob.h)
+    assert r.status_code == 200 and r.json()["email_notifications"] is False
+    r = await bob.client.patch("/api/v1/me", json={"email_notifications": True}, headers=bob.h)
+    assert r.json()["email_notifications"] is True
 
 
 async def test_vote_rules(client, make_user, jobs):

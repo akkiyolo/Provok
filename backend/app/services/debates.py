@@ -189,13 +189,13 @@ async def create_debate(db: AsyncSession, creator: User, body: CreateDebateIn) -
         await notify(db, outcome.outbox, invited_user.id, "challenge",
                      f"{creator.display_name} challenged you to a debate", body=question[:200],
                      link=f"/d/{debate.id}")
-        if invited_user.email_verified_at:
+        if invited_user.email_verified_at and invited_user.email_notifications:
             from backend.app.services.email import send_challenge
-            to, challenger = invited_user.email, creator.display_name
+            to, to_id, challenger = invited_user.email, invited_user.id, creator.display_name
             url = f"{get_settings().web_url}/d/{debate.id}"
 
             async def _email() -> None:
-                await send_challenge(to, challenger, question, url)
+                await send_challenge(to, to_id, challenger, question, url)
 
             outcome.outbox.add(_email)
     return Created(debate, outcome)

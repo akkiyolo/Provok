@@ -5,6 +5,7 @@ import io
 import secrets
 import uuid
 
+import jwt
 from fastapi import APIRouter, File, Query, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, desc, func, or_, select, update
@@ -14,7 +15,7 @@ from backend.app.api.deps import DB, CurrentUser, OptionalUser
 from backend.app.core.config import get_settings
 from backend.app.core.errors import AppError, Conflict, NotFound
 from backend.app.core.ratelimit import enforce
-from backend.app.core.security import utcnow, verify_password
+from backend.app.core.security import decode_jwt, utcnow, verify_password
 from backend.app.engine.types import UserStatus
 from backend.app.models import (
     AuthSession,
@@ -101,6 +102,7 @@ class ProfileIn(BaseModel):
     username: str | None = Field(default=None, max_length=40)
     bio: str | None = Field(default=None, max_length=280)
     onboarded: bool | None = None
+    email_notifications: bool | None = None
 
 
 @router.patch("/me")
@@ -121,8 +123,23 @@ async def update_me(body: ProfileIn, user: CurrentUser, db: DB) -> dict:
         user.bio = auth_svc.clean_display_name(body.bio.replace("\n", " "))[:280] or None
     if body.onboarded is not None:
         user.onboarded = body.onboarded
+    if body.email_notifications is not None:
+        user.email_notifications = body.email_notifications
     await db.commit()
     return me_payload(user)
+
+
+@router.post("/email/unsubscribe")
+async def unsubscribe(db: DB, token: str = Query(max_length=2000)) -> dict:
+    """No sign-in: the signed token is the authorisation. Serves the /unsubscribe page and RFC 8058 one-click
+    POSTs from mail clients (Gmail's "Unsubscribe" button), which carry the token in the URL."""
+    try:
+        user_id = uuid.UUID(decode_jwt(token, "unsubscribe")["sub"])
+    except (jwt.PyJWTError, ValueError) as exc:
+        raise AppError("This unsubscribe link is invalid or has expired.", code="invalid_token") from exc
+    await db.execute(update(User).where(User.id == user_id).values(email_notifications=False))
+    await db.commit()
+    return {"ok": True}
 
 
 ALLOWED_IMAGE_FORMATS = {"JPEG", "PNG", "WEBP", "GIF"}

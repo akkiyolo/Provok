@@ -6,6 +6,7 @@ ENVIRONMENT=$1 TAG=$2 BUCKET=$3 REGION=$4
 cd /opt/provok
 
 aws s3 cp "s3://$BUCKET/$TAG/docker-compose.yml" docker-compose.yml --region "$REGION" --only-show-errors
+OLD_CADDYFILE=$(sha256sum Caddyfile 2>/dev/null || true)
 aws s3 cp "s3://$BUCKET/$TAG/Caddyfile" Caddyfile --region "$REGION" --only-show-errors
 
 # Secrets live in SSM Parameter Store, never on GitHub or in the image.
@@ -25,5 +26,7 @@ docker compose up -d --wait redis
 if grep -q '^COMPOSE_PROFILES=.*localdb' .env; then docker compose up -d --wait postgres; fi
 docker compose run --rm --no-deps api python -m backend.app.cli migrate
 docker compose up -d --remove-orphans --wait
+# Caddy reads its config only at start, and the bind mount may still point at the replaced file.
+if [ "$(sha256sum Caddyfile)" != "$OLD_CADDYFILE" ]; then docker compose up -d --force-recreate --no-deps caddy; fi
 docker image prune -af --filter "until=168h" > /dev/null
 echo "deployed $TAG"

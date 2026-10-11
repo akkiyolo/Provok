@@ -215,6 +215,20 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Error reports (Sentry) now carry environment and release (deploy tag) on web, API and worker. Needs the founder's
   Sentry DSNs: `SENTRY_DSN_API` in the server env, `NEXT_PUBLIC_SENTRY_DSN` as a GitHub variable.
 
+### Legal pages (2026-10-11)
+
+- Terms: minimum age 18 (DPDP treats under-18s as children needing verifiable parental consent, which we don't
+  collect; matches the Play listing), covers the Android app, jurisdiction city from config.
+- Privacy: named service providers and where they process data (AWS Mumbai; Groq/Google/Anthropic/OpenAI, Tavily,
+  LiveKit, Deepgram, Sentry in the US; Razorpay), cross-border transfer, cookies, email choices, the Android app,
+  retention of logs, full DPDP rights incl. consent withdrawal, nomination and the Data Protection Board, children,
+  breach notification. Claims checked against the code (e.g. Sentry scrubbing).
+- Business details were never passed into the web build (the live site showed placeholders). The deploy now passes
+  `NEXT_PUBLIC_LEGAL_NAME/ADDRESS/CITY`, `NEXT_PUBLIC_SUPPORT_EMAIL/PHONE`, `NEXT_PUBLIC_GRIEVANCE_OFFICER` from
+  GitHub repository variables, and the image tag hashes every baked-in value so a change triggers a rebuild.
+- Support email default is now `support@provok.in`, but **no mailbox receives it yet** (needs forwarding or a
+  mail host + MX records). **Have a lawyer review the pages before launch.**
+
 ### Email unsubscribe (2026-10-11)
 
 - Users can turn off debate emails (challenge, your turn, verdict) in Settings → Email; account emails

@@ -7,10 +7,10 @@ export const metadata: Metadata = { title: "Terms of Service" };
 export default function TermsPage() {
   return (
     <LegalPage title="Terms of Service">
-      <p>These Terms govern your use of {BUSINESS.brand} (the &ldquo;Service&rdquo;), operated by {BUSINESS.name} (&ldquo;we&rdquo;, &ldquo;us&rdquo;). By creating an account or using the Service you agree to them.</p>
+      <p>These Terms govern your use of {BUSINESS.brand} (the &ldquo;Service&rdquo;) on the web and in our Android app, operated by {BUSINESS.name} (&ldquo;we&rdquo;, &ldquo;us&rdquo;). By creating an account or using the Service you agree to them.</p>
       <h2>1. Eligibility and accounts</h2>
       <ul>
-        <li>You must be at least 13 years old (18 to purchase credits, or have a parent&apos;s consent).</li>
+        <li>You must be at least 18 years old to create an account. The Service is not directed at children.</li>
         <li>You are responsible for your account and for keeping your password secure. One person, one account.</li>
         <li>We may require email verification before you can debate, vote or pay.</li>
       </ul>
@@ -36,7 +36,7 @@ export default function TermsPage() {
       <h2>7. Disclaimers and liability</h2>
       <p>The Service is provided &ldquo;as is&rdquo;. To the maximum extent permitted by law, our total liability for any claim is limited to the amount you paid us in the 3 months before the claim.</p>
       <h2>8. Governing law</h2>
-      <p>These Terms are governed by the laws of India. Courts at [City], India have exclusive jurisdiction.</p>
+      <p>These Terms are governed by the laws of India. Courts at {BUSINESS.city}, India have exclusive jurisdiction.</p>
       <h2>9. Contact</h2>
       <p>{BUSINESS.name}, {BUSINESS.address}. Email: <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.</p>
     </LegalPage>

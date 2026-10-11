@@ -1,13 +1,16 @@
 // Shared layout + business details for legal/info pages (server component).
+// The details are public (shown on every legal page) and baked in at build time from GitHub repository variables
+// of the same names (see .github/workflows/deploy.yml). Bracketed text is shown until they are set.
 
 export const BUSINESS = {
-  name: process.env.NEXT_PUBLIC_LEGAL_NAME ?? "[Your registered business name]",
+  name: process.env.NEXT_PUBLIC_LEGAL_NAME || "[Your registered business name]",
   brand: "Provok",
-  email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@provok.app",
-  address: process.env.NEXT_PUBLIC_LEGAL_ADDRESS ?? "[Registered address, City, State, PIN, India]",
-  phone: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "",
-  grievanceOfficer: process.env.NEXT_PUBLIC_GRIEVANCE_OFFICER ?? "[Grievance Officer name]",
-  updated: "8 October 2026",
+  email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@provok.in",
+  address: process.env.NEXT_PUBLIC_LEGAL_ADDRESS || "[Registered address, City, State, PIN, India]",
+  city: process.env.NEXT_PUBLIC_LEGAL_CITY || "[City]",
+  phone: process.env.NEXT_PUBLIC_SUPPORT_PHONE || "",
+  grievanceOfficer: process.env.NEXT_PUBLIC_GRIEVANCE_OFFICER || "[Grievance Officer name]",
+  updated: "11 October 2026",
 };
 
 export function LegalPage({ title, children }: { title: string; children: React.ReactNode }) {

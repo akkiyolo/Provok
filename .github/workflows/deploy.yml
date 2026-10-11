@@ -54,15 +54,39 @@ jobs:
 
       - name: Read deploy config (written by Terraform)
         id: cfg
+        env:
+          # Public values baked into the web bundle, from repository variables (Settings → Variables → Actions).
+          # Passed as env, not pasted into the script, so quotes in an address can't break the shell.
+          SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          LEGAL_NAME: ${{ vars.NEXT_PUBLIC_LEGAL_NAME }}
+          LEGAL_ADDRESS: ${{ vars.NEXT_PUBLIC_LEGAL_ADDRESS }}
+          LEGAL_CITY: ${{ vars.NEXT_PUBLIC_LEGAL_CITY }}
+          SUPPORT_EMAIL: ${{ vars.NEXT_PUBLIC_SUPPORT_EMAIL }}
+          SUPPORT_PHONE: ${{ vars.NEXT_PUBLIC_SUPPORT_PHONE }}
+          GRIEVANCE_OFFICER: ${{ vars.NEXT_PUBLIC_GRIEVANCE_OFFICER }}
         run: |
           cfg=$(aws ssm get-parameter --name "/provok/$ENVIRONMENT/deploy" --query Parameter.Value --output text)
           for k in site_domain instance_id deploy_bucket registry api_repo web_repo; do
             echo "$k=$(jq -r ".$k" <<<"$cfg")" >> "$GITHUB_OUTPUT"
           done
-          # The web image bakes in public build settings, so the tag covers them as well as the commit.
+          site=$(jq -r .site_domain <<<"$cfg")
+          web_args=$(printf '%s\n' \
+            "API_INTERNAL_URL=http://api:8000" \
+            "NEXT_PUBLIC_SITE_URL=https://$site" \
+            "NEXT_PUBLIC_WS_URL=wss://$site" \
+            "NEXT_PUBLIC_SENTRY_DSN=$SENTRY_DSN" \
+            "NEXT_PUBLIC_SENTRY_ENV=$ENVIRONMENT" \
+            "NEXT_PUBLIC_LEGAL_NAME=$LEGAL_NAME" \
+            "NEXT_PUBLIC_LEGAL_ADDRESS=$LEGAL_ADDRESS" \
+            "NEXT_PUBLIC_LEGAL_CITY=$LEGAL_CITY" \
+            "NEXT_PUBLIC_SUPPORT_EMAIL=$SUPPORT_EMAIL" \
+            "NEXT_PUBLIC_SUPPORT_PHONE=$SUPPORT_PHONE" \
+            "NEXT_PUBLIC_GRIEVANCE_OFFICER=$GRIEVANCE_OFFICER")
+          # The web image bakes in these settings, so the tag covers them as well as the commit.
           # Tags are immutable: a re-run with the same code and settings reuses the images already pushed.
-          build_id=$(printf '%s|%s' "$(jq -r .site_domain <<<"$cfg")" "${{ vars.NEXT_PUBLIC_SENTRY_DSN }}" | sha256sum | cut -c1-8)
+          build_id=$(sha256sum <<<"$web_args" | cut -c1-8)
           echo "tag=${SHA::12}-$build_id" >> "$GITHUB_OUTPUT"
+          { echo "web_args<<WEB_ARGS_EOF"; echo "$web_args"; echo "WEB_ARGS_EOF"; } >> "$GITHUB_OUTPUT"
 
       - uses: aws-actions/amazon-ecr-login@v2
 
@@ -103,11 +127,7 @@ jobs:
           tags: ${{ steps.cfg.outputs.registry }}/${{ steps.cfg.outputs.web_repo }}:${{ steps.cfg.outputs.tag }}
           # Public, per-environment values are baked into the client bundle at build time.
           build-args: |
-            API_INTERNAL_URL=http://api:8000
-            NEXT_PUBLIC_SITE_URL=https://${{ steps.cfg.outputs.site_domain }}
-            NEXT_PUBLIC_WS_URL=wss://${{ steps.cfg.outputs.site_domain }}
-            NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
-            NEXT_PUBLIC_SENTRY_ENV=${{ env.ENVIRONMENT }}
+            ${{ steps.cfg.outputs.web_args }}
             NEXT_PUBLIC_SENTRY_RELEASE=${{ steps.cfg.outputs.tag }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max

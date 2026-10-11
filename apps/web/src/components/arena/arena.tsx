@@ -22,6 +22,7 @@ import { track } from "@/lib/analytics";
 import { useAuth } from "@/lib/auth";
 import { compact, cx, isLive, isRound, modeText, PERSONA_LABEL, sideName, sideOf, statusText } from "@/lib/format";
 import { useMeta } from "@/lib/meta";
+import { IN_APP_NO_CREDITS, isAndroidApp } from "@/lib/platform";
 import { type Reaction, useDebateChannel } from "@/lib/realtime";
 import { type DebateView, type Position, ROUNDS } from "@/lib/types";
 
@@ -108,7 +109,8 @@ function Banner({ debate, onAction }: { debate: DebateView; onAction: (d: Debate
       if (okMsg) toast(okMsg, "success");
     } catch (e) {
       if (e instanceof ApiError && e.code === "insufficient_credits") {
-        toast(e.message, "error", { label: "Top up", onClick: () => router.push("/wallet") });
+        if (isAndroidApp()) toast(IN_APP_NO_CREDITS, "error");
+        else toast(e.message, "error", { label: "Top up", onClick: () => router.push("/wallet") });
       } else toast(errorMessage(e), "error");
     } finally {
       setBusy(false);

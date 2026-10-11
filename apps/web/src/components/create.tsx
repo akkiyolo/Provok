@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { cx, PERSONA_LABEL } from "@/lib/format";
 import { useMeta } from "@/lib/meta";
+import { IN_APP_NO_CREDITS, useIsAndroidApp } from "@/lib/platform";
 import type { DebateView, Position, PublicUser, Timing } from "@/lib/types";
 
 type CornerType = "me" | "open" | "invite" | "link" | "swarm";
@@ -129,6 +130,7 @@ function CornerSlot({ position, value, onChange, other, models, personas, defaul
 export function CreateWizard() {
   const meta = useMeta();
   const { user, requireAuth, status } = useAuth();
+  const inApp = useIsAndroidApp();
   const router = useRouter();
   const params = useSearchParams();
   const toast = useToast();
@@ -217,10 +219,9 @@ export function CreateWizard() {
       track("create_step", { step: "created", mode }, d.id);
       router.push(`/d/${d.id}`);
     } catch (e) {
-      if (e instanceof ApiError && e.code === "insufficient_credits") {
-        toast(e.message, "error", { label: "Top up", onClick: () => router.push("/wallet") });
-      }
-      setError(errorMessage(e));
+      const noCredits = e instanceof ApiError && e.code === "insufficient_credits";
+      if (noCredits && !inApp) toast(e.message, "error", { label: "Top up", onClick: () => router.push("/wallet") });
+      setError(noCredits && inApp ? IN_APP_NO_CREDITS : errorMessage(e));
       if (e instanceof ApiError && ["blocked_category", "not_debatable", "too_short", "too_long", "abusive"].includes(e.code)) setStep(0);
     } finally {
       setBusy(false);
@@ -360,6 +361,8 @@ export function CreateWizard() {
                 <Button variant="ghost" onClick={() => setStep(2)}>← Back</Button>
                 {canAfford ? (
                   <Button size="lg" variant="for" loading={busy} onClick={submit} disabled={!cornersValid || !qOk}>Start the debate ⚔️</Button>
+                ) : inApp ? (
+                  <p className="self-center text-sm text-dim">{IN_APP_NO_CREDITS}</p>
                 ) : (
                   <Button size="lg" variant="win" href="/wallet">Get credits to start</Button>
                 )}

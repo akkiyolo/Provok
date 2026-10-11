@@ -90,7 +90,7 @@ export function VerifyEmail() {
   }, [token, status, setUser, acceptTokens]);
   return (
     <Shell title={state === "ok" ? "You're verified." : state === "error" ? "Link didn't work." : "Confirming…"}
-      sub={state === "ok" ? "You can now debate, vote and buy credits." : message}>
+      sub={state === "ok" ? "You can now debate and vote." : message}>
       {state === "working" ? <Spinner className="size-6" /> : (
         <Button href={state === "ok" ? next : "/settings"} variant={state === "ok" ? "for" : "outline"} className="w-full">
           {state === "ok" ? (next === "/" ? "Enter the arena →" : "Continue where you left off →") : "Request a new link"}

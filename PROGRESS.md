@@ -193,9 +193,12 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   `manageSpaceActivity`); verified on the device over adb: opens full-screen with no URL bar (asset links verified).
 - `.github/workflows/android.yml` builds the app on changes (separate from CI so it never blocks web deploys).
 - Store listing, content rating, data safety and target-audience answers: `apps/android/play-store/LISTING.md`.
-- **Open decisions before Play submission:** (1) credit purchases: Play policy generally requires Play Billing for
-  digital goods, so hide purchases in the app or add Play Billing; (2) new personal Play accounts need a 12-tester,
-  14-day closed test before production.
+- **In-app purchases are hidden** (Play's payments policy: no outside checkout for digital goods and no pointers to
+  buying elsewhere). The app launches `/?app=android`; `lib/platform.ts` records it (or an `android-app://`
+  referrer) in sessionStorage, which the app's session doesn't share with normal Chrome tabs. Inside the app the
+  wallet shows balance and history only, and "not enough credits" says human debates are free instead of "Top up".
+  Credits bought on the website work in the app. E2E: `inside the Android app the wallet ... no purchases`.
+- New personal Play accounts need a 12-tester, 14-day closed test before production.
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 

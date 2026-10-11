@@ -12,6 +12,7 @@ import { ApiError, del, errorMessage, get, post } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { cx, timeAgo } from "@/lib/format";
+import { useIsAndroidApp } from "@/lib/platform";
 import type { NotificationItem, Profile, Wallet } from "@/lib/types";
 
 // ── Profile ────────────────────────────────────────────────────────────────
@@ -98,6 +99,7 @@ export function WalletView() {
   const qc = useQueryClient();
   const toast = useToast();
   const [buying, setBuying] = useState<string | null>(null);
+  const inApp = useIsAndroidApp();
   const q = useQuery({ queryKey: ["wallet"], queryFn: () => get<Wallet>("/me/wallet"), enabled: status === "authed" });
   useEffect(() => {
     if (status === "anon") requireAuth("Sign in to see your wallet.");
@@ -157,23 +159,28 @@ export function WalletView() {
             </div>
           </section>
 
-          <h2 className="font-display mb-4 mt-10 text-2xl font-bold">Top up</h2>
-          {!w.payments_enabled ? <p className="text-sm text-dim">Payments are temporarily unavailable.</p> : (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {w.packs.map((p, i) => (
-                <div key={p.id} className={cx("flex flex-col rounded-3xl border p-5", i === 1 ? "border-for shadow-[0_0_32px_var(--for-glow)]" : "border-line bg-surface")}>
-                  {i === 1 && <span className="mb-2 w-fit rounded-full bg-for px-2 py-0.5 font-mono text-[10px] font-bold text-[#0a0a0b]">MOST POPULAR</span>}
-                  <p className="font-semibold">{p.label ?? p.id}</p>
-                  <p className="font-display mt-1 text-4xl font-extrabold">{p.credits} <span className="text-base font-semibold text-dim">credits</span></p>
-                  <p className="mt-1 text-sm text-dim">₹{p.amount_inr} · ₹{(p.amount_inr / p.credits).toFixed(1)}/credit</p>
-                  <Button className="mt-5" variant={i === 1 ? "for" : "primary"} loading={buying === p.id} disabled={!!buying} onClick={() => buy(p.id)}>
-                    Buy for ₹{p.amount_inr}
-                  </Button>
+          {/* Google Play: no purchases (and no pointers to buying elsewhere) inside the Android app. */}
+          {!inApp && (
+            <>
+              <h2 className="font-display mb-4 mt-10 text-2xl font-bold">Top up</h2>
+              {!w.payments_enabled ? <p className="text-sm text-dim">Payments are temporarily unavailable.</p> : (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {w.packs.map((p, i) => (
+                    <div key={p.id} className={cx("flex flex-col rounded-3xl border p-5", i === 1 ? "border-for shadow-[0_0_32px_var(--for-glow)]" : "border-line bg-surface")}>
+                      {i === 1 && <span className="mb-2 w-fit rounded-full bg-for px-2 py-0.5 font-mono text-[10px] font-bold text-[#0a0a0b]">MOST POPULAR</span>}
+                      <p className="font-semibold">{p.label ?? p.id}</p>
+                      <p className="font-display mt-1 text-4xl font-extrabold">{p.credits} <span className="text-base font-semibold text-dim">credits</span></p>
+                      <p className="mt-1 text-sm text-dim">₹{p.amount_inr} · ₹{(p.amount_inr / p.credits).toFixed(1)}/credit</p>
+                      <Button className="mt-5" variant={i === 1 ? "for" : "primary"} loading={buying === p.id} disabled={!!buying} onClick={() => buy(p.id)}>
+                        Buy for ₹{p.amount_inr}
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+              <p className="mt-3 text-[12px] text-faint">Secure checkout by Razorpay — UPI, cards, netbanking. Prices include taxes. See our <Link href="/refunds" className="underline">refund policy</Link>.</p>
+            </>
           )}
-          <p className="mt-3 text-[12px] text-faint">Secure checkout by Razorpay — UPI, cards, netbanking. Prices include taxes. See our <Link href="/refunds" className="underline">refund policy</Link>.</p>
 
           <h2 className="font-display mb-4 mt-10 text-2xl font-bold">History</h2>
           {w.history.length === 0 ? <p className="text-sm text-dim">No credit activity yet.</p> : (

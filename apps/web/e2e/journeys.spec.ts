@@ -132,3 +132,17 @@ test("private invite link: only the link admits, and a brand-new user can sign u
   await alice.page.reload();
   await expect(alice.page.getByText(bobName).first()).toBeVisible();
 });
+
+test("inside the Android app the wallet shows balance and history but no purchases", async ({ page }) => {
+  await signUp(page);
+  await page.goto("/wallet");
+  await expect(page.getByRole("heading", { name: "Top up" })).toBeVisible();
+
+  // The app's launch URL carries ?app=android; the flag holds for the rest of the app session.
+  await page.goto("/?app=android");
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem("provok:android-app"))).toBe("1");
+  await page.goto("/wallet");
+  await expect(page.getByRole("heading", { name: "History" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Top up" })).toHaveCount(0);
+  await expect(page.getByText(/Razorpay/)).toHaveCount(0);
+});

@@ -58,7 +58,8 @@ android {
                 }
                 manifestPlaceholders["hostName"] = host
                 resValue("string", "app_name", if (env == "production") "Provok" else "Provok ${env.replaceFirstChar { it.uppercase() }}")
-                resValue("string", "launch_url", "https://$host/")
+                // ?app=android tells the site it's inside the app (it hides credit purchases there, per Play policy).
+                resValue("string", "launch_url", "https://$host/?app=android")
                 // Android string resources drop bare double quotes, so escape them or the JSON is unreadable.
                 val statements = """[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"web","site":"https://$host"}}]"""
                 resValue("string", "asset_statements", statements.replace("\"", "\\\""))

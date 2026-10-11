@@ -20,6 +20,8 @@ REGISTRY="$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
 aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$REGISTRY"
 # Recorded in .env too, so later manual `docker compose logs/exec` on the server resolve the same images.
 printf 'API_IMAGE=%s\nWEB_IMAGE=%s\n' "$REGISTRY/provok-$ENVIRONMENT/api:$TAG" "$REGISTRY/provok-$ENVIRONMENT/web:$TAG" >> .env
+# Error reports from the API and worker carry the deployed version (the web bundle gets the same tag at build).
+printf 'RELEASE=%s\n' "$TAG" >> .env
 
 docker compose pull --quiet
 docker compose up -d --wait redis

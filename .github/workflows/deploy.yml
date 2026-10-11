@@ -96,6 +96,8 @@ jobs:
             NEXT_PUBLIC_SITE_URL=https://${{ steps.cfg.outputs.site_domain }}
             NEXT_PUBLIC_WS_URL=wss://${{ steps.cfg.outputs.site_domain }}
             NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+            NEXT_PUBLIC_SENTRY_ENV=${{ env.ENVIRONMENT }}
+            NEXT_PUBLIC_SENTRY_RELEASE=${{ steps.cfg.outputs.tag }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max
 

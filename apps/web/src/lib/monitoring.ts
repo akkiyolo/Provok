@@ -10,6 +10,7 @@ export const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN || undefined;
 export const SENTRY_OPTIONS = {
   dsn: SENTRY_DSN,
   environment: process.env.NEXT_PUBLIC_SENTRY_ENV || process.env.NODE_ENV,
+  release: process.env.NEXT_PUBLIC_SENTRY_RELEASE || undefined,
   tracesSampleRate: 0,
   sendDefaultPii: false,
 };

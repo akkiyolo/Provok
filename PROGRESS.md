@@ -155,7 +155,13 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   a deploy (e.g. after an env change) no longer fails on ECR's immutable tags.
 - FortiGuard filters (common on office/college networks) block newly registered domains; submit provok.in for
   categorisation before launch.
-- SES production access requested 2026-10-11 (transactional; review pending).
+- SES production access requested 2026-10-11; AWS's first review asked for more detail (case 179169689700462,
+  shown as DENIED in the API). The founder replied with volume, opt-in, bounce/complaint handling, auth records and
+  sample emails. **Fallback if refused:** Resend (`EMAIL_PROVIDER=resend` is already supported): add its DKIM/SPF
+  records to Route 53 and switch the env. Deferred until AWS answers.
+- Gemini's 04:00 UTC featured debate stalled on the exhausted quota; hidden. Featured debates now use Groq models.
+- CI e2e had been failing since `90d27d7`: `wait-on` probes with HEAD and `/health` answered 405, so the job timed
+  out before any test ran. Health endpoints now accept HEAD (monitors use it too) and CI waits with `http-get://`.
 - Video: LiveKit Cloud keys added and verified (ListRooms). Deepgram signup kept failing on the founder's side, so
   speech-to-text is untested; recording is off (`VIDEO_RECORDING_ENABLED=false`) until LiveKit egress gets S3
   credentials for `recordings/` (and that prefix needs a public-read or signed-URL decision).
@@ -167,6 +173,24 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   `staging.sh stop` pauses the alarm's actions; `start` resumes them after 5 min. `infra/terraform/monitoring.tf`.
 - Gemini models are disabled in the staging registry (free tier too small); re-enable in Admin → Models with a
   billed key.
+
+### Android app (2026-10-11)
+
+- `apps/android`: a **Trusted Web Activity** (android-browser-helper 2.7.4, AGP 9.4.1, Gradle 9.8.1, compileSdk 37,
+  targetSdk 36, minSdk 24). Chosen over a native/React Native app as the simplest path: every web feature works
+  unchanged and web deploys reach the app. Flavours `staging` (`in.provok.app.staging` → staging.provok.in) and
+  `production` (`in.provok.app` → provok.in). Native adaptive + themed icon, splash, Play icon and feature graphic.
+- Digital Asset Links: the API serves `/.well-known/assetlinks.json` from `ANDROID_PACKAGE` / `ANDROID_CERT_SHA256`
+  (staging is configured with the upload key). After the first Play upload, add Play's app-signing fingerprint.
+- Upload keystore `apps/android/provok-upload.jks` + `keystore.properties` are gitignored and exist only on the
+  founder's laptop: **back them up**. Signed builds in `apps/android/dist/` (staging APK, production AAB 1.0.0).
+- `.github/workflows/android.yml` builds the app on changes (separate from CI so it never blocks web deploys).
+- Store listing, content rating, data safety and target-audience answers: `apps/android/play-store/LISTING.md`.
+- **Open decisions before Play submission:** (1) credit purchases: Play policy generally requires Play Billing for
+  digital goods, so hide purchases in the app or add Play Billing; (2) new personal Play accounts need a 12-tester,
+  14-day closed test before production.
+- Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
+  generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
 ### Email unsubscribe (2026-10-11)
 

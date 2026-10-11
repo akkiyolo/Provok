@@ -163,6 +163,11 @@ class Settings(BaseSettings):
     clip_min_seconds: int = 30
     clip_max_seconds: int = 60
 
+    # ── Android app (Trusted Web Activity) ──────────────────────────────
+    # Served as /.well-known/assetlinks.json so Android opens the site full-screen inside the app.
+    android_package: str = ""  # e.g. in.provok.app (staging builds use in.provok.app.staging)
+    android_cert_sha256: str = ""  # comma-separated signing-cert SHA-256 fingerprints (upload key + Play app signing)
+
     # ── Storage (S3-compatible: AWS S3, R2, Supabase Storage …) ─────────
     storage_backend: Literal["local", "s3"] = "local"
     storage_local_dir: str = str(BASE_DIR / "var" / "uploads")
@@ -267,6 +272,10 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip().rstrip("/") for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def android_cert_fingerprints(self) -> list[str]:
+        return [f.strip().upper() for f in self.android_cert_sha256.split(",") if f.strip()]
 
     @property
     def blocked_categories(self) -> set[str]:

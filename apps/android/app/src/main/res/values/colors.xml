@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the site's theme_color / background_color. -->
+    <color name="background">#0A0A0B</color>
+    <color name="corner_for">#FF5A1F</color>
+    <color name="corner_against">#4C6FFF</color>
+</resources>

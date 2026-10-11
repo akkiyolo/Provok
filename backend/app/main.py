@@ -126,6 +126,17 @@ def create_app() -> FastAPI:
         media.mkdir(parents=True, exist_ok=True)
         app.mount("/media", StaticFiles(directory=str(media)), name="media")
 
+    @app.get("/.well-known/assetlinks.json", include_in_schema=False)
+    async def assetlinks() -> JSONResponse:
+        """Digital Asset Links: lets the Android app (a Trusted Web Activity) show this site without a URL bar."""
+        s = get_settings()
+        statements = [] if not (s.android_package and s.android_cert_fingerprints) else [{
+            "relation": ["delegate_permission/common.handle_all_urls"],
+            "target": {"namespace": "android_app", "package_name": s.android_package,
+                       "sha256_cert_fingerprints": s.android_cert_fingerprints},
+        }]
+        return JSONResponse(statements, headers={"Cache-Control": "public, max-age=3600"})
+
     # HEAD too: uptime monitors and wait-on probe with HEAD, and a 405 reads as "down".
     @app.api_route("/health", methods=["GET", "HEAD"], tags=["ops"])
     async def health() -> dict:

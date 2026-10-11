@@ -2,3 +2,6 @@
 *.sh text eol=lf
 Caddyfile text eol=lf
 infra/server/* text eol=lf
+apps/android/gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary

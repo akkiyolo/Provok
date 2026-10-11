@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Provok mark: the FOR and AGAINST corners as two halves of a circle with a gap between them.
+     108dp adaptive-icon canvas; the mark stays inside the 66dp safe zone. The gap is cut out (not painted over)
+     so the monochrome themed icon keeps it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="@color/corner_for" android:pathData="M52.200,29.065 A25,25 0 0,0 52.200,78.935 Z" />
+    <path android:fillColor="@color/corner_against" android:pathData="M55.800,29.065 A25,25 0 0,1 55.800,78.935 Z" />
+</vector>

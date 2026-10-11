@@ -1,0 +1,9 @@
+.gradle/
+build/
+app/build/
+local.properties
+# Signing secrets: never commit. Back the keystore up somewhere safe (see README).
+keystore.properties
+*.jks
+*.keystore
+dist/

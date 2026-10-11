@@ -52,11 +52,15 @@ works), Terraform ≥ 1.10.
 
 | Task | Command |
 |---|---|
-| Stop staging (save credits; data is kept) | `infra/scripts/staging.sh stop` |
+| Stop staging (save credits; data is kept; pauses uptime alerts) | `infra/scripts/staging.sh stop` |
 | Start it again | `infra/scripts/staging.sh start` |
 | Shell on the server | `infra/scripts/staging.sh shell` |
 | Change env / secrets | edit `.env.staging` → `push-env.sh staging .env.staging` → run *Deploy* |
 | Logs | shell, then `cd /opt/provok && sudo docker compose logs -f api` |
+
+**Uptime alerts**: with `alert_email` and `domain` set, Route 53 probes `https://<domain>/health/ready` every 30s
+and emails when it fails for ~2 minutes (and again when it recovers). It passes only if the worker heartbeat is ok.
+First check: `docker compose ps` and `docker compose logs api --tail 100` on the server.
 
 A stopped server still pays for its disk and Elastic IP (~$7/month). `terraform destroy` removes everything,
 including the staging database.

@@ -160,6 +160,14 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   speech-to-text is untested; recording is off (`VIDEO_RECORDING_ENABLED=false`) until LiveKit egress gets S3
   credentials for `recordings/` (and that prefix needs a public-read or signed-URL decision).
 
+### Uptime monitoring (2026-10-11)
+
+- Route 53 health check on `https://staging.provok.in/health/ready` (every 30s, many regions; passes only when the
+  body has `"worker":"ok"`) → CloudWatch alarm (us-east-1) → SNS email to the founder, on failure and on recovery.
+  `staging.sh stop` pauses the alarm's actions; `start` resumes them after 5 min. `infra/terraform/monitoring.tf`.
+- Gemini models are disabled in the staging registry (free tier too small); re-enable in Admin → Models with a
+  billed key.
+
 ### Email unsubscribe (2026-10-11)
 
 - Users can turn off debate emails (challenge, your turn, verdict) in Settings → Email; account emails

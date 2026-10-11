@@ -40,6 +40,12 @@ variable "create_dns_zone" {
   default     = true
 }
 
+variable "alert_email" {
+  description = "Where uptime alerts go (needs `domain`). AWS emails a confirmation link first. Empty = no monitoring."
+  type        = string
+  default     = ""
+}
+
 variable "ses_domain" {
   description = "Domain to send email from via SES (creates the identity and DKIM records to add to DNS). Empty = skip."
   type        = string

@@ -142,16 +142,19 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   human-vs-AI debate with AI replies. 3 of 6 Gemini calls in that debate got Google's 503 "high demand" (free tier);
   retries recovered. Paid keys (launch checklist #1) remove this.
 
-### Domain: provok.in (2026-10-10, in progress)
+### Domain: provok.in (2026-10-11)
 
-- Bought at GoDaddy (expires 2027-10-10). GoDaddy put it on **client hold** after purchase (new-account fraud check);
-  the founder completed Aadhaar KYC, waiting for GoDaddy to lift it.
-- Route 53 zone + SES domain identity with DKIM, custom MAIL FROM (`mail.provok.in`, SPF) and DMARC (`p=none`)
-  are applied (`infra/terraform/dns.tf`, vars `dns_zone`/`ses_domain` in the gitignored `staging.tfvars`).
-- **Next, once the hold lifts:** set GoDaddy nameservers to `terraform output dns_nameservers`; when they resolve,
-  apply `domain = "staging.provok.in"` (adds the A record), update `.env.staging` (SITE_DOMAIN, URLs,
-  `EMAIL_FROM=Provok <noreply@provok.in>`), push-env, redeploy, and add the new origin/redirect to the Google OAuth
-  client. `provok.in` itself is kept for production. Then request SES production access.
+- Bought at GoDaddy (expires 2027-10-10); GoDaddy's post-purchase hold lifted after Aadhaar KYC.
+- DNS in Route 53 (`infra/terraform/dns.tf`); **staging is https://staging.provok.in** (sslip.io retired),
+  `provok.in` itself is kept for production. Google OAuth has the new origin + redirect.
+- SES domain `provok.in` verified (DKIM; custom MAIL FROM `mail.provok.in`; DMARC `p=none`); mail now sends from
+  `noreply@provok.in`. Still in the SES sandbox: request production access before launch.
+- Gemini's free tier (~20 requests/day) ran out mid-debate (429), so staging defaults to Groq
+  (`DEFAULT_SWARM_MODEL_KEY=groq_gpt_oss`). Debates already on Gemini resume when the quota resets.
+- Deploy fix: image tags are now `<sha>-<hash of baked web settings>` and existing images are reused, so re-running
+  a deploy (e.g. after an env change) no longer fails on ECR's immutable tags.
+- FortiGuard filters (common on office/college networks) block newly registered domains; submit provok.in for
+  categorisation before launch.
 
 ## Not yet verified (needs your accounts/keys)
 

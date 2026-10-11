@@ -48,13 +48,32 @@ jobs:
           for k in site_domain instance_id deploy_bucket registry api_repo web_repo; do
             echo "$k=$(jq -r ".$k" <<<"$cfg")" >> "$GITHUB_OUTPUT"
           done
-          echo "tag=${SHA::12}" >> "$GITHUB_OUTPUT"
+          # The web image bakes in public build settings, so the tag covers them as well as the commit.
+          # Tags are immutable: a re-run with the same code and settings reuses the images already pushed.
+          build_id=$(printf '%s|%s' "$(jq -r .site_domain <<<"$cfg")" "${{ vars.NEXT_PUBLIC_SENTRY_DSN }}" | sha256sum | cut -c1-8)
+          echo "tag=${SHA::12}-$build_id" >> "$GITHUB_OUTPUT"
 
       - uses: aws-actions/amazon-ecr-login@v2
 
       - uses: docker/setup-buildx-action@v3
 
+      - name: Check for images already built
+        id: built
+        env:
+          TAG: ${{ steps.cfg.outputs.tag }}
+          REGISTRY: ${{ steps.cfg.outputs.registry }}
+          API_REPO: ${{ steps.cfg.outputs.api_repo }}
+          WEB_REPO: ${{ steps.cfg.outputs.web_repo }}
+        run: |
+          for r in api web; do
+            repo=$API_REPO; [ "$r" = web ] && repo=$WEB_REPO
+            if docker buildx imagetools inspect "$REGISTRY/$repo:$TAG" >/dev/null 2>&1; then
+              echo "$r=true" >> "$GITHUB_OUTPUT"; echo "$r:$TAG exists, skipping build"
+            fi
+          done
+
       - name: Build and push API image
+        if: steps.built.outputs.api != 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -65,6 +84,7 @@ jobs:
           cache-to: type=gha,scope=api,mode=max
 
       - name: Build and push web image
+        if: steps.built.outputs.web != 'true'
         uses: docker/build-push-action@v6
         with:
           context: apps/web

@@ -208,3 +208,17 @@ async def test_ws_ticket(client):
 async def test_google_start_requires_config(client):
     r = await client.get(f"{API}/google/start", follow_redirects=False)
     assert r.status_code == 503
+
+
+async def test_google_start_lets_returning_users_skip_the_account_picker(client, monkeypatch):
+    from urllib.parse import parse_qs, urlparse
+
+    from backend.app.core.config import get_settings
+    s = get_settings()
+    monkeypatch.setattr(s, "google_client_id", "cid.apps.googleusercontent.com")
+    monkeypatch.setattr(s, "google_client_secret", "secret")
+    r = await client.get(f"{API}/google/start", params={"next": "/d/abc"}, follow_redirects=False)
+    assert r.status_code == 302
+    q = parse_qs(urlparse(r.headers["location"]).query)
+    assert "prompt" not in q  # forcing select_account added a screen to every sign-in
+    assert q["code_challenge_method"] == ["S256"] and q["state"] and q["nonce"]

@@ -4,7 +4,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import secrets
-from urllib.parse import quote, urlencode
+from urllib.parse import urlencode
 
 import httpx
 import jwt
@@ -291,7 +291,7 @@ async def google_start(next: str | None = Query(default=None)) -> RedirectRespon
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
     params = {"client_id": s.google_client_id, "redirect_uri": _redirect_uri(), "response_type": "code",
               "scope": "openid email profile", "state": state, "nonce": nonce, "code_challenge": challenge,
-              "code_challenge_method": "S256", "prompt": "select_account"}
+              "code_challenge_method": "S256"}  # no prompt: returning users skip Google's account picker
     resp = RedirectResponse(f"{GOOGLE_AUTH_URL}?{urlencode(params)}", status_code=302)
     cookie = create_jwt("google", "oauth_state", 600,
                         {"state": state, "nonce": nonce, "verifier": verifier, "next": _safe_next(next)})
@@ -340,8 +340,9 @@ async def google_callback(request: Request, db: DB, code: str | None = None, sta
         return RedirectResponse(f"{s.web_url}/login?error={exc.code}", status_code=302)
     tokens = await svc.issue_session(db, user, user_agent=request.headers.get("user-agent"), ip=client_ip(request))
     await db.commit()
-    resp = RedirectResponse(f"{s.web_url}/auth/callback?next={quote(_safe_next(st.get('next')), safe='/')}",
-                            status_code=302)
+    # Straight back to where the user was: the app restores the session from the refresh cookie on every load,
+    # so an intermediate /auth/callback page only added a page load.
+    resp = RedirectResponse(f"{s.web_url}{_safe_next(st.get('next'))}", status_code=302)
     svc.set_refresh_cookie(resp, tokens.refresh_token)
     resp.delete_cookie("provok_oauth", path=f"{s.api_prefix}/auth/google")
     return resp

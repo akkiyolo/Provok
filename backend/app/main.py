@@ -126,12 +126,13 @@ def create_app() -> FastAPI:
         media.mkdir(parents=True, exist_ok=True)
         app.mount("/media", StaticFiles(directory=str(media)), name="media")
 
-    @app.get("/health", tags=["ops"])
+    # HEAD too: uptime monitors and wait-on probe with HEAD, and a 405 reads as "down".
+    @app.api_route("/health", methods=["GET", "HEAD"], tags=["ops"])
     async def health() -> dict:
         """Liveness: the process is up."""
         return {"status": "ok", "version": VERSION}
 
-    @app.get("/health/ready", tags=["ops"])
+    @app.api_route("/health/ready", methods=["GET", "HEAD"], tags=["ops"])
     async def ready() -> JSONResponse:
         """Readiness: dependencies reachable. Point your uptime monitor here."""
         checks: dict[str, str] = {}

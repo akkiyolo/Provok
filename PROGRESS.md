@@ -160,6 +160,10 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   sample emails. **Fallback if refused:** Resend (`EMAIL_PROVIDER=resend` is already supported): add its DKIM/SPF
   records to Route 53 and switch the env. Deferred until AWS answers.
 - Gemini's 04:00 UTC featured debate stalled on the exhausted quota; hidden. Featured debates now use Groq models.
+- Two featured AvA debates (Qwen vs GPT-OSS on Groq) paused on Groq's free output-tokens-per-minute limit, auto-resumed
+  and completed with verdicts. Both went to the GPT-OSS side, judged by GPT-OSS, with swap-test runs disagreeing:
+  likely self-preference, possible only because Groq is the sole enabled provider. With paid keys, keep a judge
+  from a different provider than the debaters (`JUDGE_MODEL_KEYS`).
 - CI e2e had been failing since `90d27d7`: `wait-on` probes with HEAD and `/health` answered 405, so the job timed
   out before any test ran. Health endpoints now accept HEAD (monitors use it too) and CI waits with `http-get://`.
 - Video: LiveKit Cloud keys added and verified (ListRooms). Deepgram signup kept failing on the founder's side, so

@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "6.65.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.9.1"
+    }
   }
 
   # Partial config: bucket/key/region are passed to `terraform init` (see infra/README.md).

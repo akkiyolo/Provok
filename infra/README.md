@@ -68,9 +68,37 @@ including the staging database.
 If `staging.sh shell` or a deploy says the instance is not connected right after the first `apply`, the SSM agent
 started before the instance role was ready and is backing off: `aws ec2 reboot-instances --instance-ids <id>`.
 
-## Production (later)
+## Production (provok.in)
 
-Same Terraform with `-var environment=production -var domain=<your domain> -var create_github_oidc_provider=false`
-and its own state key. Before launch: move Postgres to RDS (backups, point-in-time restore), set
-`COMPOSE_PROFILES=` (empty), `ROBOTS_TAG=all` (staging stays out of search engines) and point `DATABASE_URL` at RDS, request SES production access, and add the domain's
-DKIM records (`terraform output ses_dkim_records`).
+Same Terraform, its own state and server, plus **RDS Postgres** (daily backups, 7-day point-in-time restore, no
+public address). It reuses the DNS zone, SES domain and GitHub OIDC provider that the staging stack created.
+Roughly US$35/month (server ~$16, RDS db.t4g.micro ~$13, disk, IP). Upgrade the AWS account to the **Paid plan**
+first: Free plan accounts cap RDS backup retention (and close when the credits run out).
+
+`infra/scripts/tf.sh <environment> ...` picks the right state file and `<environment>.tfvars`, so the two
+environments can't overwrite each other. `infra/terraform/production.tfvars` (gitignored):
+
+```hcl
+domain                      = "provok.in"
+dns_zone                    = "provok.in"
+create_dns_zone             = false
+create_github_oidc_provider = false
+database                    = "rds"
+alert_email                 = "you@example.com"
+```
+
+1. `infra/scripts/tf.sh production plan`, check it, then `infra/scripts/tf.sh production apply`.
+   Confirm the uptime-alert subscription email.
+2. Server env: start from `.env.staging` and change: `SITE_DOMAIN=provok.in` and the URLs, `APP_ENV=production`,
+   `COMPOSE_PROFILES=` (empty: no Postgres container), `DATABASE_URL=$(infra/scripts/tf.sh production output -raw
+   database_url)`, a **new** `JWT_SECRET_KEY`, `S3_BUCKET`/`S3_PUBLIC_BASE_URL` from `tf.sh production output`,
+   `ROBOTS_TAG=all`, `ANDROID_PACKAGE=in.provok.app`, live Razorpay keys, paid LLM keys. Then
+   `infra/scripts/push-env.sh production .env.production`.
+3. GitHub → Settings → Variables: `AWS_DEPLOY_ROLE_ARN_PRODUCTION` = `tf.sh production output -raw deploy_role_arn`.
+4. Actions → Deploy → Run workflow → environment `production`. Production only ever deploys by hand; staging
+   deploys after every green CI run on `main`.
+5. Google OAuth client: add `https://provok.in` and `https://provok.in/api/v1/auth/google/callback`.
+6. `cli promote --username <you>` on the production server (as in step 7 of the staging setup).
+
+Restoring a backup: RDS console → the `provok-production-db` instance → *Actions → Restore to point in time*
+creates a new instance; point `DATABASE_URL` at it and redeploy.

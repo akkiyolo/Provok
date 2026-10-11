@@ -202,6 +202,19 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
+### Production, ready to switch on (2026-10-11)
+
+- `infra/terraform/database.tf`: with `database = "rds"`, a private RDS Postgres 17 (db.t4g.micro, gp3 20→100 GB,
+  encrypted, 7-day backups, deletion protection + final snapshot); `terraform output -raw database_url`.
+- `infra/scripts/tf.sh <env> plan|apply|output` keeps staging and production state separate.
+  `production.tfvars` exists locally (gitignored). `tf.sh production plan` = 31 resources; staging plan unchanged.
+- Deploy workflow: environment is a choice; production uses its own role (`AWS_DEPLOY_ROLE_ARN_PRODUCTION`) and
+  never falls back to staging's. Production deploys only by hand.
+- **Not applied** (~US$35/month): the founder decides when. Runbook: `infra/README.md` → Production. Upgrade the
+  AWS account to the Paid plan first.
+- Error reports (Sentry) now carry environment and release (deploy tag) on web, API and worker. Needs the founder's
+  Sentry DSNs: `SENTRY_DSN_API` in the server env, `NEXT_PUBLIC_SENTRY_DSN` as a GitHub variable.
+
 ### Email unsubscribe (2026-10-11)
 
 - Users can turn off debate emails (challenge, your turn, verdict) in Settings → Email; account emails

@@ -87,3 +87,31 @@ variable "compose_version" {
   type        = string
   default     = "v5.5.1"
 }
+
+variable "database" {
+  description = "\"local\": Postgres in a container on the server (staging). \"rds\": managed RDS with daily backups (production)."
+  type        = string
+  default     = "local"
+  validation {
+    condition     = contains(["local", "rds"], var.database)
+    error_message = "database must be \"local\" or \"rds\"."
+  }
+}
+
+variable "db_instance_class" {
+  description = "RDS size. db.t4g.micro (2 vCPU burst, 1 GB) is plenty at launch."
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "postgres_version" {
+  description = "RDS Postgres major version (AWS picks the current minor)."
+  type        = string
+  default     = "17"
+}
+
+variable "db_backup_retention_days" {
+  description = "Days of automated backups (point-in-time restore window). AWS Free plan accounts may cap this; upgrade to the Paid plan before production."
+  type        = number
+  default     = 7
+}

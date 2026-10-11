@@ -10,6 +10,8 @@ on:
     inputs:
       environment:
         description: Environment to deploy
+        type: choice
+        options: [staging, production]
         default: staging
         required: true
 
@@ -23,7 +25,8 @@ concurrency:
 
 jobs:
   deploy:
-    # Skipped until AWS is set up (repository variable AWS_DEPLOY_ROLE_ARN, from `terraform output deploy_role_arn`).
+    # Skipped until AWS is set up. Each environment has its own deploy role (`terraform output deploy_role_arn`):
+    # repository variables AWS_DEPLOY_ROLE_ARN (staging) and AWS_DEPLOY_ROLE_ARN_PRODUCTION.
     if: vars.AWS_DEPLOY_ROLE_ARN != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -31,14 +34,22 @@ jobs:
       AWS_REGION: ap-south-1
       ENVIRONMENT: ${{ inputs.environment || 'staging' }}
       SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      # Never falls back to the staging role for production: an unset variable stops the deploy instead.
+      DEPLOY_ROLE: ${{ (inputs.environment || 'staging') == 'production' && vars.AWS_DEPLOY_ROLE_ARN_PRODUCTION || ((inputs.environment || 'staging') == 'staging' && vars.AWS_DEPLOY_ROLE_ARN || '') }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}
 
+      - name: Check the deploy role for this environment is set
+        if: env.DEPLOY_ROLE == ''
+        run: |
+          echo "::error::No deploy role for '$ENVIRONMENT'. Set the repository variable AWS_DEPLOY_ROLE_ARN_PRODUCTION (terraform output deploy_role_arn)."
+          exit 1
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ env.DEPLOY_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Read deploy config (written by Terraform)

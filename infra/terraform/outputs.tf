@@ -41,3 +41,9 @@ output "dns_nameservers" {
   description = "Set these as the domain's nameservers at the registrar (only when this stack created the zone)."
   value       = var.dns_zone != "" && var.create_dns_zone ? aws_route53_zone.main[0].name_servers : []
 }
+
+output "database_url" {
+  description = "DATABASE_URL for the server .env when database = \"rds\" (terraform output -raw database_url)."
+  value       = local.rds ? "postgresql://provok:${random_password.db[0].result}@${aws_db_instance.main[0].endpoint}/provok?sslmode=require" : ""
+  sensitive   = true
+}

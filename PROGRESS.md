@@ -188,6 +188,9 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   (staging is configured with the upload key). After the first Play upload, add Play's app-signing fingerprint.
 - Upload keystore `apps/android/provok-upload.jks` + `keystore.properties` are gitignored and exist only on the
   founder's laptop: **back them up**. Signed builds in `apps/android/dist/` (staging APK, production AAB 1.0.0).
+- First install crashed on launch (Samsung A34, Android 16): android-browser-helper 2.7.x enables
+  `ManageDataLauncherActivity` on first run and throws if the manifest doesn't declare it. Declared it (plus
+  `manageSpaceActivity`); verified on the device over adb: opens full-screen with no URL bar (asset links verified).
 - `.github/workflows/android.yml` builds the app on changes (separate from CI so it never blocks web deploys).
 - Store listing, content rating, data safety and target-audience answers: `apps/android/play-store/LISTING.md`.
 - **Open decisions before Play submission:** (1) credit purchases: Play policy generally requires Play Billing for

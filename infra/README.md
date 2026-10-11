@@ -72,5 +72,5 @@ started before the instance role was ready and is backing off: `aws ec2 reboot-i
 
 Same Terraform with `-var environment=production -var domain=<your domain> -var create_github_oidc_provider=false`
 and its own state key. Before launch: move Postgres to RDS (backups, point-in-time restore), set
-`COMPOSE_PROFILES=` (empty) and point `DATABASE_URL` at RDS, request SES production access, and add the domain's
+`COMPOSE_PROFILES=` (empty), `ROBOTS_TAG=all` (staging stays out of search engines) and point `DATABASE_URL` at RDS, request SES production access, and add the domain's
 DKIM records (`terraform output ses_dkim_records`).

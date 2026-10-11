@@ -4,6 +4,7 @@
 
 {$SITE_DOMAIN} {
 	encode zstd gzip
+	header X-Robots-Tag "{$ROBOTS_TAG}"
 
 	# The API and its websockets are served on the same origin, so the refresh cookie is first-party.
 	@api path /api/* /ws/* /media/* /health /health/*

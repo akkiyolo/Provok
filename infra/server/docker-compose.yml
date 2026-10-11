@@ -14,6 +14,8 @@ services:
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN:?set SITE_DOMAIN in .env}
       ACME_EMAIL: ${ACME_EMAIL:-}
+      # Search engines are kept out unless an environment opts in (production sets ROBOTS_TAG=all).
+      ROBOTS_TAG: ${ROBOTS_TAG:-noindex, nofollow}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

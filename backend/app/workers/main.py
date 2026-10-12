@@ -51,6 +51,7 @@ class WorkerSettings:
         func(tasks.swarm_turn, name="swarm_turn", timeout=420, max_tries=1),
         func(tasks.ledger_extract, name="ledger_extract", max_tries=2),
         func(tasks.moderate_turn, name="moderate_turn", max_tries=2),
+        func(tasks.moderate_post, name="moderate_post", max_tries=2),
         func(tasks.judge_job, name="judge_debate", timeout=900, max_tries=1),
         func(tasks.close_vote_job, name="close_vote"),
         func(tasks.video_sync, name="video_sync", max_tries=2),

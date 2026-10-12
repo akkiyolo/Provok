@@ -163,7 +163,7 @@ class Report(Base):
 
     __table_args__ = (
         UniqueConstraint("reporter_id", "target_type", "target_id", name="uq_reports_reporter_target"),
-        CheckConstraint("target_type IN ('debate', 'turn', 'user')", name="target_type_valid"),
+        CheckConstraint("target_type IN ('debate', 'turn', 'user', 'post')", name="target_type_valid"),
         CheckConstraint("status IN ('open', 'actioned', 'dismissed')", name="status_valid"),
         Index("ix_reports_status_created", "status", "created_at"),
     )

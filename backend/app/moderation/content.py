@@ -48,7 +48,7 @@ _PHONE_RE = re.compile(
     r"(?<![\d.,])(?:(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|\+\d{1,3}[\s-]?\(?\d{2,4}\)?[\s-]?\d{3,4}[\s-]?\d{3,4})(?![\d.,])"
 )
 _EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
-_URL_RE = re.compile(r"https?://\S+", re.IGNORECASE)
+URL_RE = re.compile(r"https?://\S+", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -122,7 +122,7 @@ def heuristic_moderation(text: str) -> ModerationResult:
     cats: list[str] = []
     if _EMAIL_RE.search(text) or _PHONE_RE.search(text):
         cats.append("personal_data")
-    if len(_URL_RE.findall(text)) > 4:
+    if len(URL_RE.findall(text)) > 4:
         cats.append("spam")
     return ModerationResult(bool(cats), cats, "Contains contact details or link spam" if cats else None, checked=False)
 

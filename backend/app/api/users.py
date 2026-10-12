@@ -13,26 +13,34 @@ from sqlalchemy import delete, desc, func, or_, select, update
 from backend.app.api.auth import me_payload
 from backend.app.api.deps import DB, CurrentUser, OptionalUser
 from backend.app.core.config import get_settings
-from backend.app.core.errors import AppError, Conflict, NotFound
+from backend.app.core.errors import AppError, Conflict, Forbidden, NotFound
 from backend.app.core.ratelimit import enforce
 from backend.app.core.security import decode_jwt, utcnow, verify_password
 from backend.app.engine.types import UserStatus
 from backend.app.models import (
     AuthSession,
+    Bookmark,
     CreditLedger,
     Debate,
     Follow,
     Notification,
     OAuthAccount,
     Payment,
+    Post,
+    PostLike,
     Side,
     Turn,
     User,
+    UserBlock,
+    UserMute,
     Vote,
 )
 from backend.app.services import auth as auth_svc
+from backend.app.services import posts as posts_svc
 from backend.app.services import storage
 from backend.app.services.debate_view import build_cards
+from backend.app.services.notify import notify
+from backend.app.services.outbox import Outbox
 
 router = APIRouter()
 
@@ -51,6 +59,14 @@ async def profile(username: str, db: DB, viewer: OptionalUser) -> dict:
     following = await db.scalar(select(func.count()).select_from(Follow).where(Follow.follower_id == user.id))
     is_following = bool(viewer and await db.scalar(select(Follow.follower_id).where(
         Follow.follower_id == viewer.id, Follow.followee_id == user.id)))
+    blocked_by_me = bool(viewer and await db.scalar(select(UserBlock.blocker_id).where(
+        UserBlock.blocker_id == viewer.id, UserBlock.blocked_id == user.id)))
+    blocks_me = bool(viewer and await db.scalar(select(UserBlock.blocker_id).where(
+        UserBlock.blocker_id == user.id, UserBlock.blocked_id == viewer.id)))
+    muted = bool(viewer and await db.scalar(select(UserMute.muter_id).where(
+        UserMute.muter_id == viewer.id, UserMute.muted_id == user.id)))
+    posts_count = await db.scalar(select(func.count()).select_from(Post).where(
+        Post.author_id == user.id, Post.status == "visible", Post.kind == "post"))
     debate_ids = select(Side.debate_id).where(Side.user_id == user.id)
     recent = list((await db.scalars(select(Debate).where(Debate.id.in_(debate_ids), Debate.is_hidden.is_(False))
                                     .order_by(desc(Debate.created_at)).limit(12))).all())
@@ -62,6 +78,7 @@ async def profile(username: str, db: DB, viewer: OptionalUser) -> dict:
         "wins": user.wins, "losses": user.losses, "draws": user.draws, "created_at": user.created_at,
         "followers": followers or 0, "following": following or 0, "is_following": is_following,
         "is_me": bool(viewer and viewer.id == user.id), "debates": await build_cards(db, recent),
+        "posts_count": posts_count or 0, "is_blocked": blocked_by_me, "blocks_you": blocks_me, "is_muted": muted,
     }
 
 
@@ -81,11 +98,17 @@ async def follow(username: str, user: CurrentUser, db: DB) -> dict:
     target = await _user_by_username(db, username)
     if target.id == user.id:
         raise AppError("You can't follow yourself.", code="self_follow")
+    if await posts_svc.is_blocked(db, user.id, target.id):
+        raise Forbidden("You can't follow this account.", code="blocked")
     exists = await db.scalar(select(Follow.follower_id).where(Follow.follower_id == user.id,
                                                               Follow.followee_id == target.id))
+    outbox = Outbox()
     if not exists:
         db.add(Follow(follower_id=user.id, followee_id=target.id))
+        await notify(db, outbox, target.id, "follow", f"{user.display_name} followed you",
+                     link=f"/u/{user.username}")
     await db.commit()
+    await outbox.flush()
     return {"following": True}
 
 
@@ -182,6 +205,9 @@ async def export_my_data(user: CurrentUser, db: DB) -> dict:
     votes = (await db.scalars(select(Vote).where(Vote.user_id == user.id))).all()
     ledger = (await db.scalars(select(CreditLedger).where(CreditLedger.user_id == user.id))).all()
     payments = (await db.scalars(select(Payment).where(Payment.user_id == user.id))).all()
+    my_posts = (await db.scalars(select(Post).where(Post.author_id == user.id, Post.status != "deleted")
+                                 .order_by(Post.created_at))).all()
+    likes = (await db.scalars(select(PostLike).where(PostLike.user_id == user.id))).all()
     return {
         "profile": me_payload(user),
         "debates_created": [str(d) for d in (await db.scalars(select(Debate.id).where(
@@ -192,6 +218,10 @@ async def export_my_data(user: CurrentUser, db: DB) -> dict:
         "credit_ledger": [{"delta": e.delta, "reason": e.reason, "created_at": e.created_at} for e in ledger],
         "payments": [{"amount_inr": p.amount_inr, "credits": p.credits, "status": p.status,
                       "created_at": p.created_at} for p in payments],
+        "posts": [{"id": str(x.id), "kind": x.kind, "text": x.text, "reply_to_id": str(x.reply_to_id or "") or None,
+                   "quote_of_id": str(x.quote_of_id or "") or None, "repost_of_id": str(x.repost_of_id or "") or None,
+                   "created_at": x.created_at} for x in my_posts],
+        "likes": [{"post_id": str(x.post_id), "created_at": x.created_at} for x in likes],
         "exported_at": utcnow(),
     }
 
@@ -222,6 +252,11 @@ async def delete_account(body: DeleteIn, user: CurrentUser, db: DB) -> dict:
     await db.execute(delete(OAuthAccount).where(OAuthAccount.user_id == user.id))
     await db.execute(delete(Follow).where(or_(Follow.follower_id == user.id, Follow.followee_id == user.id)))
     await db.execute(delete(Notification).where(Notification.user_id == user.id))
+    await db.execute(update(Post).where(Post.author_id == user.id).values(status="deleted"))
+    await db.execute(delete(PostLike).where(PostLike.user_id == user.id))
+    await db.execute(delete(Bookmark).where(Bookmark.user_id == user.id))
+    await db.execute(delete(UserBlock).where(or_(UserBlock.blocker_id == user.id, UserBlock.blocked_id == user.id)))
+    await db.execute(delete(UserMute).where(or_(UserMute.muter_id == user.id, UserMute.muted_id == user.id)))
     await db.commit()
     return {"ok": True}
 

@@ -23,6 +23,7 @@ from backend.app.models import (
     FeatureFlag,
     LLMCall,
     ModelRegistry,
+    Post,
     Report,
     Turn,
     User,
@@ -53,6 +54,10 @@ async def reports(db: DB, admin: AdminUser, status: Literal["open", "actioned", 
         elif r.target_type == "user":
             u = await db.get(User, r.target_id)
             preview = {"username": u.username, "status": u.status} if u else None
+        elif r.target_type == "post":
+            post = await db.get(Post, r.target_id)
+            preview = {"text": (post.text or "")[:500], "status": post.status,
+                       "moderation_reason": post.moderation_reason} if post else None
         out.append({"id": str(r.id), "target_type": r.target_type, "target_id": str(r.target_id), "reason": r.reason,
                     "details": r.details, "status": r.status, "created_at": r.created_at, "preview": preview})
     return {"items": out}
@@ -77,6 +82,7 @@ async def paused(db: DB, admin: AdminUser) -> dict:
 
 Action = Literal[
     "hide_turn", "approve_turn", "hide_debate", "unhide_debate", "feature_debate", "unfeature_debate",
+    "hide_post", "unhide_post",
     "ban_user", "unban_user", "restrict_user", "unrestrict_user", "resume_debate", "cancel_debate",
     "resolve_report", "dismiss_report", "grant_credits", "make_admin",
 ]
@@ -105,6 +111,11 @@ async def act(body: ActionIn, db: DB, admin: AdminUser) -> dict:
         t.moderation_status = (ModerationStatus.HIDDEN if a == "hide_turn" else ModerationStatus.APPROVED).value
     elif a in ("hide_debate", "unhide_debate"):
         (await get(Debate)).is_hidden = a == "hide_debate"
+    elif a in ("hide_post", "unhide_post"):
+        post = await get(Post)
+        if post.status != "deleted":
+            post.status = "hidden" if a == "hide_post" else "visible"
+            post.moderation_reason = (body.reason or "Hidden by a moderator")[:200] if a == "hide_post" else None
     elif a in ("feature_debate", "unfeature_debate"):
         (await get(Debate)).is_featured = a == "feature_debate"
     elif a in ("ban_user", "unban_user", "restrict_user", "unrestrict_user"):

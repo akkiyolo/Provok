@@ -15,9 +15,10 @@ from backend.app.core.errors import AppError, NotFound
 from backend.app.core.ratelimit import client_ip, enforce
 from backend.app.engine.types import Persona, Status, UserStatus
 from backend.app.llm.registry import all_models, selectable_debaters
-from backend.app.models import AnalyticsEvent, Debate, Report, Side, Turn, User, Verdict
+from backend.app.models import AnalyticsEvent, Debate, Post, Report, Side, Turn, User, Verdict
 from backend.app.moderation.content import TOPIC_CATEGORIES
 from backend.app.services import flags
+from backend.app.services import posts as posts_svc
 from backend.app.services.debate_view import build_cards, public_user
 from backend.app.swarm.context import PERSONAS
 
@@ -114,7 +115,10 @@ async def search(request: Request, db: DB, q: str = Query(min_length=1, max_leng
     users = (await db.scalars(select(User).where(
         (User.username.ilike(term, escape="\\")) | (User.display_name.ilike(term, escape="\\")),
         User.status == UserStatus.ACTIVE).order_by(desc(User.rating)).limit(10))).all()
-    return {"debates": await build_cards(db, debates), "users": [public_user(u) for u in users]}
+    viewer = None  # search results are the same for everyone; viewer flags come from the post views
+    found = await posts_svc.search_posts(db, term, viewer)
+    return {"debates": await build_cards(db, debates), "users": [public_user(u) for u in users],
+            "posts": await posts_svc.build_views(db, found, viewer)}
 
 
 # ── Reports ────────────────────────────────────────────────────────────────
@@ -124,7 +128,7 @@ REPORT_REASONS = ("harassment", "hate", "spam", "misinformation", "sexual", "vio
 
 
 class ReportIn(BaseModel):
-    target_type: Literal["debate", "turn", "user"]
+    target_type: Literal["debate", "turn", "user", "post"]
     target_id: uuid.UUID
     reason: Literal[REPORT_REASONS]  # type: ignore[valid-type]
     details: str | None = Field(default=None, max_length=1000)
@@ -133,7 +137,7 @@ class ReportIn(BaseModel):
 @router.post("/reports", status_code=201)
 async def report(body: ReportIn, user: CurrentUser, db: DB) -> dict:
     await enforce("report", str(user.id), get_settings().rl_report_user)
-    model = {"debate": Debate, "turn": Turn, "user": User}[body.target_type]
+    model = {"debate": Debate, "turn": Turn, "user": User, "post": Post}[body.target_type]
     if await db.get(model, body.target_id) is None:
         raise NotFound("We couldn't find what you're reporting.")
     existing = await db.scalar(select(Report.id).where(Report.reporter_id == user.id,

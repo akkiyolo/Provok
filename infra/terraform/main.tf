@@ -140,7 +140,7 @@ resource "aws_ecr_lifecycle_policy" "app" {
   })
 }
 
-# ── Media (avatars + highlight clips are public; recordings stay private) ──
+# ── Media (avatars, highlight clips and post images are public; recordings stay private) ──
 
 resource "aws_s3_bucket" "media" {
   bucket = "${local.name}-media-${local.account_id}"
@@ -167,11 +167,15 @@ resource "aws_s3_bucket_policy" "media_public_read" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Sid       = "PublicReadAvatarsAndClips"
+      Sid       = "PublicReadAvatarsClipsAndPostImages"
       Effect    = "Allow"
       Principal = "*"
       Action    = "s3:GetObject"
-      Resource  = ["${aws_s3_bucket.media.arn}/avatars/*", "${aws_s3_bucket.media.arn}/clips/*"]
+      Resource = [
+        "${aws_s3_bucket.media.arn}/avatars/*",
+        "${aws_s3_bucket.media.arn}/clips/*",
+        "${aws_s3_bucket.media.arn}/posts/*",
+      ]
     }]
   })
 }

@@ -25,7 +25,7 @@ from backend.app.engine.types import ModerationStatus, Position, Round, Status, 
 from backend.app.judge.judge import JudgingError, judge_debate
 from backend.app.ledger.extract import extract_claims
 from backend.app.llm.gateway import LLMError
-from backend.app.models import AnalyticsEvent, Debate, DebateRound, LLMCall, Turn, User
+from backend.app.models import AnalyticsEvent, Debate, DebateRound, LLMCall, Post, Turn, User
 from backend.app.moderation.content import moderate
 from backend.app.realtime.publish import publish_debate
 from backend.app.services import flags
@@ -204,6 +204,29 @@ async def moderate_turn(ctx: dict, turn_id: str) -> None:
     await outbox.flush()
     if flagged:
         await publish_debate(debate_id, "state_changed", {"reason": "moderation"})
+
+
+async def moderate_post(ctx: dict, post_id: str) -> None:
+    """Posts go live immediately; the model checks them right after. Flagged posts are hidden until a moderator
+    looks (Admin → Reports), and the author is told."""
+    outbox = Outbox()
+    async with session_scope() as db:
+        post = await db.scalar(select(Post).where(Post.id == uuid.UUID(post_id)).with_for_update(key_share=True))
+        if post is None or post.status != "visible" or not post.text:
+            return
+        result = await moderate(post.text)
+        if not result.flagged:
+            return
+        post.status = "hidden"
+        post.moderation_reason = (", ".join(result.categories) or result.reason or "flagged")[:200]
+        log.warning("post_flagged", post_id=post_id, categories=result.categories)
+        await notify(db, outbox, post.author_id, "moderation", "Your post was hidden for review",
+                     body="It may break our community rules. A moderator will take a look.", link=f"/p/{post.id}")
+        admins = (await db.scalars(select(User.id).where(User.role == "admin"))).all()
+        for admin_id in admins[:5]:
+            await notify(db, outbox, admin_id, "moderation", "A post was hidden for review",
+                         body=post.moderation_reason, link="/admin")
+    await outbox.flush()
 
 
 # ── Judge ──────────────────────────────────────────────────────────────────

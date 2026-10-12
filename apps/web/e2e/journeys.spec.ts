@@ -184,3 +184,31 @@ test("social: post, follow, like, reply, and the author is notified", async ({ b
   await alice.page.goto("/tag/chai");
   await expect(alice.page.locator("article", { hasText: take })).toBeVisible();
 });
+
+test("challenge: a post becomes a debate with its author, and posts translate", async ({ browser }) => {
+  const alice = await newUserPage(browser, "ca");
+  const bob = await newUserPage(browser, "cb");
+  const take = `Offices are better for junior engineers ${Date.now() % 10000}`;
+
+  await alice.page.goto("/home");
+  const home = alice.page.locator("section[aria-labelledby='home-heading']");
+  await home.getByLabel("Write a post").fill(take);
+  await home.getByRole("button", { name: "Post", exact: true }).click();
+  await expect(home.locator("article", { hasText: take })).toBeVisible();
+
+  await bob.page.goto("/home");
+  const card = bob.page.locator("article", { hasText: take });
+  await card.getByRole("button", { name: "Translate to हिन्दी" }).click();
+  await expect(card.getByText("अनुवादित पाठ")).toBeVisible();
+
+  await card.getByRole("button", { name: "Challenge to a debate" }).click();
+  const sheet = bob.page.getByRole("dialog");
+  await expect(sheet.getByLabel(/The motion/)).not.toHaveValue("");
+  await expect(sheet.getByText(`@${alice.username}`, { exact: true })).toBeVisible();
+  await sheet.getByRole("button", { name: /Send the challenge/ }).click();
+  await expect(bob.page).toHaveURL(/\/d\//);
+
+  await alice.page.locator("article", { hasText: take }).getByRole("link", { name: /ago|now/ }).first().click();
+  await expect(alice.page).toHaveURL(/\/p\//);
+  await expect(alice.page.getByText("SETTLED IN THE ARENA")).toBeVisible();
+});

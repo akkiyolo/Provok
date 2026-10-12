@@ -206,6 +206,11 @@ async def moderate_turn(ctx: dict, turn_id: str) -> None:
         await publish_debate(debate_id, "state_changed", {"reason": "moderation"})
 
 
+async def factcheck_post(ctx: dict, post_id: str) -> None:
+    from backend.app.services.post_ai import run_factcheck
+    await run_factcheck(uuid.UUID(post_id))
+
+
 async def moderate_post(ctx: dict, post_id: str) -> None:
     """Posts go live immediately; the model checks them right after. Flagged posts are hidden until a moderator
     looks (Admin → Reports), and the author is told."""

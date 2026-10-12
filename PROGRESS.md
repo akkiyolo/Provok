@@ -202,6 +202,26 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
+### Social network, phase S2: what X can't do (2026-10-12)
+
+- **Challenge a post** (⚔ on every post): the utility model turns the post into a neutral motion and says which
+  side its author holds (`post_question` prompt, post text delimited + neutralised); the challenger takes the other
+  side and the author is invited (existing invite + email). Debates keep `source_post_id`; posts show a debate count
+  and the post page lists them ("Settled in the Arena"). Inviting someone across a block is now refused (it wasn't).
+- **AI fact-check** (⋯ → Fact-check with AI): one check per post, shared by every reader; a background job searches
+  the web (Tavily) and the utility model rates the post (`accurate` … `false`, `unverifiable`, or `opinion`) with up
+  to 3 sources. No sources → `failed` (retryable after 10 min). `RL_FACTCHECK_USER` 20/day.
+- **Translate** posts to Hindi/English, cached per post and language (`post_translations`). `posts.lang` is detected
+  from the script (Devanagari, Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada, Malayalam; romanised
+  Hindi reads as English). `RL_TRANSLATE_USER`.
+- **Credibility:** `public_user` carries `debates` (finished); post cards show a ◆ rating badge once it's above 0.
+- Migration `0005`. Tests: `test_post_ai.py` (14), browser journey "challenge: a post becomes a debate…".
+  208 backend tests and 44 browser tests pass.
+- Known: the existing "private invite link" browser test (mobile) flaked once under low laptop memory and passed
+  on retry; untouched code. Watch it in CI.
+- Not yet: full Hindi UI (all screens), automatic fact-checks on viral posts (cost), translation to other Indian
+  languages. Candidates for S3 with ranking, communities and live rooms.
+
 ### Social network, phase S1: the social core (2026-10-12)
 
 Direction (founder, 2026-10-12): grow Provok from a debate app into a **debate-first social network for India**.

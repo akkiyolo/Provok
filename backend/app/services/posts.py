@@ -21,8 +21,10 @@ from backend.app.core.security import utcnow
 from backend.app.engine.types import UserStatus
 from backend.app.models import (
     Bookmark,
+    Debate,
     Follow,
     Post,
+    PostFactCheck,
     PostHashtag,
     PostLike,
     PostMedia,
@@ -35,6 +37,7 @@ from backend.app.moderation.content import URL_RE, heuristic_blocked_category
 from backend.app.services.debate_view import public_user
 from backend.app.services.notify import notify
 from backend.app.services.outbox import Outbox
+from backend.app.services.post_ai import detect_lang, factcheck_view
 
 PAGE_SIZE = 25
 MAX_MENTION_NOTIFICATIONS = 10
@@ -186,7 +189,7 @@ async def create_post(db: AsyncSession, outbox: Outbox, author: User, *, text: s
             raise AppError("One of the photos is missing or expired. Upload it again.", code="bad_media",
                            status_code=422)
 
-    post = Post(author_id=author.id, kind="post", text=body or None,
+    post = Post(author_id=author.id, kind="post", text=body or None, lang=detect_lang(body),
                 reply_to_id=parent.id if parent else None,
                 root_id=(parent.root_id or parent.id) if parent else None,
                 quote_of_id=quoted.id if quoted else None)
@@ -502,6 +505,12 @@ async def build_views(db: AsyncSession, posts: list[Post], viewer: User | None) 
     for m in (await db.scalars(select(PostMedia).where(PostMedia.post_id.in_(every.keys()))
                                .order_by(PostMedia.position))).all():
         media.setdefault(m.post_id, []).append(m)  # type: ignore[arg-type]
+    debate_counts = dict((await db.execute(
+        select(Debate.source_post_id, func.count()).where(
+            Debate.source_post_id.in_(every.keys()), Debate.is_hidden.is_(False),
+            Debate.status.not_in(["cancelled", "abandoned"])).group_by(Debate.source_post_id))).all())
+    checks = {fc.post_id: fc for fc in (await db.scalars(select(PostFactCheck).where(
+        PostFactCheck.post_id.in_(every.keys())))).all()}
     liked = reposted = saved = set()
     if viewer is not None:
         ids = list(every.keys())
@@ -515,7 +524,8 @@ async def build_views(db: AsyncSession, posts: list[Post], viewer: User | None) 
     def one(p: Post, *, embed: bool) -> dict[str, Any]:
         v: dict[str, Any] = {
             "id": str(p.id), "author": public_user(authors.get(p.author_id)), "text": p.text,
-            "created_at": p.created_at,
+            "created_at": p.created_at, "lang": p.lang,
+            "debates": debate_counts.get(p.id, 0), "factcheck": factcheck_view(checks.get(p.id)),
             "media": [{"id": str(m.id), "url": m.url, "width": m.width, "height": m.height, "alt": m.alt}
                       for m in media.get(p.id, [])],
             "reply_to": ({"id": str(p.reply_to_id), "username": parents.get(p.reply_to_id)} if p.reply_to_id

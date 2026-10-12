@@ -200,6 +200,8 @@ class Settings(BaseSettings):
     rl_post_user_day: str = "300/86400"
     rl_reaction_user: str = "600/3600"
     rl_media_user: str = "60/3600"
+    rl_factcheck_user: str = "20/86400"
+    rl_translate_user: str = "120/3600"
     rl_topic_check_user: str = "30/60"
     rl_general_ip: str = "300/60"
     rl_ws_reactions: str = "10/10"

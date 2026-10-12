@@ -3,17 +3,20 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import (
     CheckConstraint,
+    DateTime,
     ForeignKey,
     Index,
     Integer,
     SmallInteger,
     String,
+    func,
 )
 from sqlalchemy import text as sql_text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.db.base import Base, created_at_col, uuid_pk
@@ -45,6 +48,7 @@ class Post(Base):
     # visible | hidden (moderation) | deleted (by the author or with the account)
     status: Mapped[str] = mapped_column(String(8), nullable=False, default="visible", server_default="visible")
     moderation_reason: Mapped[str | None] = mapped_column(String(200))
+    lang: Mapped[str | None] = mapped_column(String(8))  # detected from the script: en, hi, bn, ta, ...
     reply_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     repost_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     quote_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
@@ -151,3 +155,39 @@ class UserMute(Base):
 
     __table_args__ = (CheckConstraint("muter_id <> muted_id", name="no_self_mute"),)
 
+
+
+class PostTranslation(Base):
+    """Machine translations, made once on first request and then served from here."""
+    __tablename__ = "post_translations"
+
+    post_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("posts.id", ondelete="CASCADE"),
+                                               primary_key=True)
+    lang: Mapped[str] = mapped_column(String(8), primary_key=True)
+    text: Mapped[str] = mapped_column(String(POST_MAX_CHARS * 3), nullable=False)
+    created_at: Mapped[datetime] = created_at_col()
+
+
+class PostFactCheck(Base):
+    """An AI fact-check of a post's claims against web sources, requested by a reader and shared with everyone."""
+    __tablename__ = "post_factchecks"
+
+    post_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("posts.id", ondelete="CASCADE"),
+                                               primary_key=True)
+    # pending | done | opinion (nothing factual to check) | failed
+    status: Mapped[str] = mapped_column(String(8), nullable=False, default="pending", server_default="pending")
+    # accurate | mostly_accurate | missing_context | misleading | false | unverifiable
+    rating: Mapped[str | None] = mapped_column(String(16))
+    summary: Mapped[str | None] = mapped_column(String(600))
+    sources: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    requested_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True),
+                                                          ForeignKey("users.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
+                                                 onupdate=func.now(), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("status IN ('pending', 'done', 'opinion', 'failed')", name="status_valid"),
+        CheckConstraint("rating IS NULL OR rating IN ('accurate', 'mostly_accurate', 'missing_context', 'misleading', "
+                        "'false', 'unverifiable')", name="rating_valid"),
+    )

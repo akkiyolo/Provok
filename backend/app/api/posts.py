@@ -10,15 +10,16 @@ from fastapi import APIRouter, File, Query, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
-from backend.app.api.deps import DB, ActiveDebater, CurrentUser, OptionalUser
+from backend.app.api.deps import DB, ActiveDebater, CurrentUser, OptionalUser, VerifiedUser
 from backend.app.core.config import get_settings
 from backend.app.core.errors import AppError, Forbidden, NotFound
 from backend.app.core.ratelimit import enforce
 from backend.app.engine.types import UserStatus
-from backend.app.models import Post, PostMedia, User
+from backend.app.models import Debate, Post, PostMedia, User
 from backend.app.models.social import POST_MAX_CHARS, POST_MAX_MEDIA
+from backend.app.services import post_ai, storage
 from backend.app.services import posts as svc
-from backend.app.services import storage
+from backend.app.services.debate_view import build_cards
 from backend.app.services.outbox import Outbox
 from backend.app.workers.queue import enqueue
 
@@ -88,6 +89,60 @@ async def delete_post(post_id: str, user: CurrentUser, db: DB) -> dict:
     await svc.delete_post(db, post)
     await db.commit()
     return {"ok": True}
+
+
+# ── AI on posts: Challenge, fact-check, translate ──────────────────────────
+
+
+@router.post("/posts/{post_id}/challenge-question")
+async def challenge_question(post_id: str, user: ActiveDebater, db: DB) -> dict:
+    """Suggest a neutral debate motion for "Challenge", and which side the post's author takes."""
+    await enforce("topic_check", str(user.id), get_settings().rl_topic_check_user)
+    post = await svc.get_visible_post(db, _parse_id(post_id), user.id)
+    if post.author_id == user.id:
+        raise AppError("You can't challenge your own post. Start a debate instead.", code="self_challenge",
+                       status_code=422)
+    suggestion = await post_ai.suggest_question(post)
+    author = await db.get(User, post.author_id)
+    return {**suggestion, "author": author.username if author else None}
+
+
+@router.get("/posts/{post_id}/debates")
+async def post_debates(post_id: str, db: DB, viewer: OptionalUser) -> dict:
+    post = await svc.get_visible_post(db, _parse_id(post_id), viewer.id if viewer else None)
+    rows = list((await db.scalars(select(Debate).where(
+        Debate.source_post_id == post.id, Debate.is_hidden.is_(False),
+        Debate.status.not_in(["cancelled", "abandoned"])).order_by(Debate.created_at.desc()).limit(20))).all())
+    return {"items": await build_cards(db, rows)}
+
+
+@router.post("/posts/{post_id}/factcheck")
+async def factcheck(post_id: str, user: VerifiedUser, db: DB) -> dict:
+    post = await svc.get_visible_post(db, _parse_id(post_id), user.id)
+    fc, start = await post_ai.request_factcheck(db, post, user.id)
+    if start:
+        await enforce("factcheck", str(user.id), get_settings().rl_factcheck_user,
+                      "You've asked for a lot of fact-checks today. Try again tomorrow.")
+    await db.commit()
+    if start:
+        await enqueue("factcheck_post", str(post.id), job_id=f"factcheck:{post.id}:{int(fc.updated_at.timestamp())}")
+    return post_ai.factcheck_view(fc) or {}
+
+
+@router.get("/posts/{post_id}/factcheck")
+async def get_factcheck(post_id: str, db: DB, viewer: OptionalUser) -> dict:
+    post = await svc.get_visible_post(db, _parse_id(post_id), viewer.id if viewer else None)
+    from backend.app.models import PostFactCheck
+    return post_ai.factcheck_view(await db.get(PostFactCheck, post.id)) or {"status": None}
+
+
+@router.post("/posts/{post_id}/translate")
+async def translate(post_id: str, user: CurrentUser, db: DB, to: Literal["en", "hi"] = "en") -> dict:
+    await enforce("translate", str(user.id), get_settings().rl_translate_user)
+    post = await svc.get_visible_post(db, _parse_id(post_id), user.id)
+    out = await post_ai.translate(db, post, to)
+    await db.commit()
+    return out
 
 
 # ── Reactions ──────────────────────────────────────────────────────────────

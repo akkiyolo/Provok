@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { openCompose } from "@/components/posts/compose-store";
+import { ChallengeSheet, FactCheckNote, Translate, useFactCheck } from "@/components/posts/post-ai";
 import { PostText } from "@/components/posts/post-text";
 import { ReportButton } from "@/components/report";
 import { useShare } from "@/components/share";
@@ -59,6 +60,7 @@ const I = {
   repost: <svg viewBox="0 0 20 20" className="size-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M5 8V6h9l-2-2M15 12v2H6l2 2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   like: (on: boolean) => <svg viewBox="0 0 20 20" className="size-[17px]" fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M10 16.5S3.5 12.6 3.5 8A3.5 3.5 0 0 1 10 6.2 3.5 3.5 0 0 1 16.5 8c0 4.6-6.5 8.5-6.5 8.5z" strokeLinejoin="round" /></svg>,
   bookmark: (on: boolean) => <svg viewBox="0 0 20 20" className="size-[17px]" fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M5.5 3.5h9v13L10 13.5l-4.5 3z" strokeLinejoin="round" /></svg>,
+  challenge: <svg viewBox="0 0 20 20" className="size-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M4 16 15.5 4.5M15.5 4.5V8M15.5 4.5H12M16 16 4.5 4.5M4.5 4.5V8M4.5 4.5H8" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   share: <svg viewBox="0 0 20 20" className="size-[17px]" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M10 13V3.5M6.5 7 10 3.5 13.5 7M4 11v5h12v-5" strokeLinecap="round" strokeLinejoin="round" /></svg>,
   more: <svg viewBox="0 0 20 20" className="size-[17px]" fill="currentColor" aria-hidden><circle cx="4.5" cy="10" r="1.5" /><circle cx="10" cy="10" r="1.5" /><circle cx="15.5" cy="10" r="1.5" /></svg>,
 };
@@ -105,6 +107,8 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
   // Local, optimistic copy of the counters and the viewer's reactions; the server's answer replaces it.
   const [view, setView] = useState(p);
   const [removed, setRemoved] = useState(false);
+  const [challenging, setChallenging] = useState(false);
+  const factcheck = useFactCheck(view);
   const author = view.author;
   const href = `/p/${view.id}`;
 
@@ -183,6 +187,10 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
                 <Link href={`/u/${author.username}`} className="font-semibold hover:underline">{author.display_name}</Link>
               ) : <span className="font-semibold">Deleted user</span>}
               {author && <span className="text-faint"> @{author.username}</span>}
+              {author && (author.debates ?? 0) > 0 && author.rating !== null && (
+                <span title={`Debate rating ${author.rating} from ${author.debates} debate${author.debates === 1 ? "" : "s"}`}
+                  className="ml-1.5 rounded-full border border-line px-1.5 py-px align-[1px] font-mono text-[10.5px] text-dim">◆ {author.rating}</span>
+              )}
               <span className="text-faint"> · </span>
               <Link href={href} className="text-faint hover:underline"><time dateTime={view.created_at}>{timeAgo(view.created_at)}</time></Link>
             </p>
@@ -193,6 +201,9 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
                 <button role="menuitem" className={cx(menuItem, "text-danger")} onClick={() => { close(); void remove(); }}>Delete post</button>
               ) : (
                 <>
+                  {view.text && !factcheck.fc && (
+                    <button role="menuitem" className={menuItem} onClick={() => { close(); void factcheck.request(); }}>Fact-check with AI</button>
+                  )}
                   <div className={menuItem}><ReportButton targetType="post" targetId={view.id} label="Report post" /></div>
                   {author && <button role="menuitem" className={menuItem} onClick={() => { close(); void relationship("mute"); }}>Mute @{author.username}</button>}
                   {author && <button role="menuitem" className={cx(menuItem, "text-danger")} onClick={() => { close(); void relationship("block"); }}>Block @{author.username}</button>}
@@ -204,6 +215,8 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
             <p className="text-[13px] text-faint">Replying to <Link href={`/u/${view.reply_to.username}`} className="text-dim hover:underline">@{view.reply_to.username}</Link></p>
           )}
           {view.text && <PostText text={view.text} className={cx("mt-0.5 whitespace-pre-wrap break-words leading-relaxed", focus ? "text-[18px]" : "text-[15px]")} />}
+          {!embedded && <Translate p={view} />}
+          {!embedded && factcheck.fc && <FactCheckNote fc={factcheck.fc} />}
           <MediaGrid media={view.media} />
           {!embedded && view.quote && (isPost(view.quote) ? (
             <div className="mt-3 overflow-hidden rounded-2xl border border-line" onClick={(e) => e.stopPropagation()}>
@@ -229,12 +242,20 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
             </Menu>
             <Action label={view.viewer.liked ? "Unlike" : "Like"} count={view.counts.likes} active={view.viewer.liked} tone="like"
               onClick={() => void react("like", !view.viewer.liked)}>{I.like(view.viewer.liked)}</Action>
+            {view.viewer.is_author ? (
+              view.debates > 0 && <Link href={href} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1.5 py-1.5 pl-1.5 pr-2 text-[13px] text-faint hover:text-text" title="Debates started from this post">
+                <span className="grid size-7 place-items-center">{I.challenge}</span>{view.debates}
+              </Link>
+            ) : (
+              <Action label="Challenge to a debate" count={view.debates} onClick={() => requireAuth("Sign in to challenge.") && setChallenging(true)}>{I.challenge}</Action>
+            )}
             <Action label={view.viewer.bookmarked ? "Remove bookmark" : "Bookmark"} active={view.viewer.bookmarked}
               onClick={() => void react("bookmark", !view.viewer.bookmarked)}>{I.bookmark(view.viewer.bookmarked)}</Action>
             <Action label="Share" onClick={() => void share({ title: `${author?.display_name ?? "Someone"} on Provok`, text: (view.text ?? "").slice(0, 120), path: href, kind: "post" })}>
               {I.share}
             </Action>
           </div>}
+          {challenging && <ChallengeSheet p={view} open={challenging} onClose={() => setChallenging(false)} />}
         </div>
       </div>
     </article>

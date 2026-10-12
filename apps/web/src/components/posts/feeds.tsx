@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
+import { DebateCard } from "@/components/debate-card";
 import { InfiniteSentinel } from "@/components/feed";
 import { Composer } from "@/components/posts/composer";
 import { openCompose } from "@/components/posts/compose-store";
@@ -12,7 +13,7 @@ import { PostCard, PostSkeleton } from "@/components/posts/post-card";
 import { Button, Empty, ErrorBlock, PageTitle, Tabs } from "@/components/ui";
 import { ApiError, errorMessage, get } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import type { Page, PostView, Trend } from "@/lib/types";
+import type { DebateCard as Card, Page, PostView, Trend } from "@/lib/types";
 
 /** Every post list lives under the ["posts", ...] query key, so a new post or deletion refreshes them all. */
 export function usePosts(key: string[], path: string, enabled = true) {
@@ -124,6 +125,17 @@ export function BookmarksView() {
   );
 }
 
+function PostDebates({ id }: { id: string }) {
+  const q = useQuery({ queryKey: ["posts", "debates", id], queryFn: () => get<{ items: Card[] }>(`/posts/${id}/debates`) });
+  if (!q.data?.items.length) return null;
+  return (
+    <section aria-labelledby={`debates-${id}`} className="border-b border-line px-4 py-4 sm:px-5">
+      <h2 id={`debates-${id}`} className="mb-3 font-mono text-[11px] font-bold tracking-[0.18em] text-faint">SETTLED IN THE ARENA</h2>
+      <div className="flex flex-col gap-3">{q.data.items.map((d) => <DebateCard key={d.id} d={d} />)}</div>
+    </section>
+  );
+}
+
 export function PostThread({ id }: { id: string }) {
   const { status } = useAuth();
   const q = useQuery({
@@ -143,6 +155,7 @@ export function PostThread({ id }: { id: string }) {
           <>
             {q.data.ancestors.map((a) => <PostCard key={a.id} p={a} />)}
             <PostCard key={q.data.post.id} p={q.data.post} linked={false} focus />
+            {q.data.post.debates > 0 && <PostDebates id={q.data.post.id} />}
             {status === "authed" && (
               <div className="border-b border-line px-4 py-3 sm:px-5">
                 <Composer replyTo={q.data.post} placeholder="Post your reply" />

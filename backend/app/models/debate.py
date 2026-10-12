@@ -58,6 +58,9 @@ class Debate(Base):
                                                        index=True)
     is_featured: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     is_hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+    # The post this debate was started from ("Challenge" on a post), if any.
+    source_post_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True),
+                                                            ForeignKey("posts.id", ondelete="SET NULL"), index=True)
     word_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=200, server_default="200")
     # Monetisation snapshot (what the creator paid, so refunds are exact).
     credit_cost: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")

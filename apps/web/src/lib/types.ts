@@ -34,6 +34,8 @@ export interface PublicUser {
   display_name: string;
   avatar_url: string | null;
   rating: number | null;
+  /** Finished debates; the rating means something only once this is above zero. */
+  debates?: number;
 }
 
 export interface ModelRef {
@@ -276,6 +278,11 @@ export interface PostView {
   author: PublicUser | null;
   text: string | null;
   created_at: string;
+  /** Detected script: en, hi, bn, ta, … (null for photo-only posts). */
+  lang: string | null;
+  /** Debates started from this post with "Challenge". */
+  debates: number;
+  factcheck: FactCheck | null;
   media: PostMedia[];
   reply_to: { id: string; username: string | null } | null;
   counts: { replies: number; reposts: number; quotes: number; likes: number };
@@ -283,6 +290,15 @@ export interface PostView {
   reposted_by: PublicUser | null;
   /** Embedded quoted post; `{ unavailable: true }` when it was deleted or hidden. */
   quote?: PostView | { unavailable: true } | null;
+}
+
+export type FactCheckRating = "accurate" | "mostly_accurate" | "missing_context" | "misleading" | "false" | "unverifiable";
+
+export interface FactCheck {
+  status: "pending" | "done" | "opinion" | "failed" | null;
+  rating: FactCheckRating | null;
+  summary: string | null;
+  sources: { title: string; url: string }[];
 }
 
 export interface Trend {

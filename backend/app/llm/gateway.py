@@ -41,6 +41,9 @@ class Role(StrEnum):
     MODERATION = "moderation"
     TOPIC_CHECK = "topic_check"
     INJECTION_CHECK = "injection_check"
+    POST_QUESTION = "post_question"
+    FACT_CHECK = "fact_check"
+    TRANSLATE = "translate"
 
 
 DEBATER_ROLES = {Role.STRATEGIST, Role.WRITER, Role.CRITIC}

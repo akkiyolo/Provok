@@ -28,7 +28,7 @@ def public_user(u: User | None) -> dict[str, Any] | None:
         return None if u is None else {"id": None, "username": "deleted", "display_name": "Deleted user",
                                        "avatar_url": None, "rating": None}
     return {"id": str(u.id), "username": u.username, "display_name": u.display_name, "avatar_url": u.avatar_url,
-            "rating": u.rating}
+            "rating": u.rating, "debates": u.wins + u.losses + u.draws}
 
 
 async def viewer_counts(debate_ids: list[uuid.UUID]) -> dict[uuid.UUID, int]:

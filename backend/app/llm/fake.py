@@ -24,6 +24,13 @@ class FakeLLM:
         prompt = messages[-1]["content"] if isinstance(messages[-1]["content"], str) else ""
         if role is Role.TOPIC_CHECK:
             return {"category": "technology", "debatable": True, "abusive": False, "suggestion": None, "reason": "ok"}
+        if role is Role.FACT_CHECK:
+            return {"checkable": True, "rating": "mostly_accurate", "summary": "Broadly right, per source 1.",
+                    "sources": [1]}
+        if role is Role.TRANSLATE:
+            return {"text": "अनुवादित पाठ"}
+        if role is Role.POST_QUESTION:
+            return {"question": "Is this take right?", "author_side": "for", "debatable": True}
         if role is Role.MODERATION:
             return {"flagged": False, "categories": [], "severity": "low", "reason": "fine"}
         if role is Role.RESEARCHER:

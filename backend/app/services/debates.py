@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import secrets
+import uuid
 from dataclasses import dataclass
 from typing import Literal
 
@@ -40,6 +41,8 @@ class CreateDebateIn(BaseModel):
     word_limit: int | None = Field(default=None, ge=20, le=2000)
     for_side: SideSpec = Field(alias="for")
     against_side: SideSpec = Field(alias="against")
+    # "Challenge" on a post: the debate links back to it.
+    source_post_id: uuid.UUID | None = None
 
     model_config = {"populate_by_name": True}
 
@@ -139,8 +142,14 @@ async def create_debate(db: AsyncSession, creator: User, body: CreateDebateIn) -
     creator = await db.scalar(select(User).where(User.id == creator.id).with_for_update(key_share=True))
     assert creator is not None
 
+    source_post_id = None
+    if body.source_post_id:
+        from backend.app.services.posts import get_visible_post
+        source_post_id = (await get_visible_post(db, body.source_post_id, creator.id)).id
+
     debate = Debate(question=question, topic_category=topic.category, mode=mode.value, timing=body.timing.value,
-                    status="waiting_for_opponent", created_by=creator.id, word_limit=word_limit)
+                    status="waiting_for_opponent", created_by=creator.id, word_limit=word_limit,
+                    source_post_id=source_post_id)
     db.add(debate)
     await db.flush()
 
@@ -164,6 +173,9 @@ async def create_debate(db: AsyncSession, creator: User, body: CreateDebateIn) -
                 raise NotFound("We couldn't find that user.", code="invitee_not_found")
             if invited_user.id == creator.id:
                 raise AppError("You can't challenge yourself.", code="self_invite", status_code=422)
+            from backend.app.services.posts import is_blocked
+            if await is_blocked(db, creator.id, invited_user.id):
+                raise Forbidden("You can't challenge this person.", code="blocked")
             side.invited_user_id = invited_user.id
         elif spec.type == "link":
             side.invite_token = secrets.token_urlsafe(16)

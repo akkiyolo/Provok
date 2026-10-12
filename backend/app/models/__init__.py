@@ -23,12 +23,22 @@ from backend.app.models.platform import (
     Report,
     VideoSession,
 )
-from backend.app.models.social import Bookmark, Post, PostHashtag, PostLike, PostMedia, UserBlock, UserMute
+from backend.app.models.social import (
+    Bookmark,
+    Post,
+    PostFactCheck,
+    PostHashtag,
+    PostLike,
+    PostMedia,
+    PostTranslation,
+    UserBlock,
+    UserMute,
+)
 from backend.app.models.user import AuthSession, EmailToken, OAuthAccount, User
 
 __all__ = [
     "AnalyticsEvent", "AuditLog", "AuthSession", "Bookmark", "Claim", "Clip", "CreditLedger", "Debate",
     "DebateRound", "EmailToken", "FeatureFlag", "Follow", "LLMCall", "ModelRegistry", "Notification", "OAuthAccount",
-    "Payment", "Post", "PostHashtag", "PostLike", "PostMedia", "Report", "ResearchCache", "Side", "Turn", "User",
-    "UserBlock", "UserMute", "Verdict", "VideoSession", "Vote",
+    "Payment", "Post", "PostFactCheck", "PostHashtag", "PostLike", "PostMedia", "PostTranslation", "Report",
+    "ResearchCache", "Side", "Turn", "User", "UserBlock", "UserMute", "Verdict", "VideoSession", "Vote",
 ]

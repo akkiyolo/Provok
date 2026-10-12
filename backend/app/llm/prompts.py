@@ -19,6 +19,9 @@ VERSIONS: dict[str, int] = {
     "citation_check": 1,
     "moderation": 1,
     "topic_check": 1,
+    "post_question": 1,
+    "fact_check": 1,
+    "translate": 1,
 }
 
 

@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { DebateCard } from "@/components/debate-card";
+import { PostList, usePosts } from "@/components/posts/feeds";
 import { useToast } from "@/components/toast";
-import { Avatar, Button, Empty, ErrorBlock, PageTitle, Spinner } from "@/components/ui";
-import { ApiError, del, errorMessage, get, post } from "@/lib/api";
+import { Avatar, Button, Empty, ErrorBlock, PageTitle, Spinner, Tabs } from "@/components/ui";
+import { ApiError, api, del, errorMessage, get, post } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { cx, timeAgo } from "@/lib/format";
@@ -17,11 +18,36 @@ import type { NotificationItem, Profile, Wallet } from "@/lib/types";
 
 // ── Profile ────────────────────────────────────────────────────────────────
 
+type ProfileTab = "posts" | "replies" | "media" | "likes" | "debates";
+const PROFILE_TABS: { value: ProfileTab; label: string }[] = [
+  { value: "posts", label: "Posts" }, { value: "replies", label: "Replies" }, { value: "media", label: "Photos" },
+  { value: "likes", label: "Likes" }, { value: "debates", label: "Debates" },
+];
+
+function ProfilePosts({ username, tab }: { username: string; tab: Exclude<ProfileTab, "debates"> }) {
+  const q = usePosts(["user", username, tab], `/users/${encodeURIComponent(username)}/posts?tab=${tab}`);
+  const empty: Record<typeof tab, string> = {
+    posts: "No posts yet.", replies: "No replies yet.", media: "No photos yet.", likes: "No liked posts yet.",
+  };
+  return <PostList q={q} empty={<Empty title={empty[tab]} />} />;
+}
+
 export function ProfileView({ username }: { username: string }) {
   const { requireAuth } = useAuth();
   const router = useRouter();
   const qc = useQueryClient();
   const toast = useToast();
+  const [tab, setTab] = useState<ProfileTab>("posts");
+  const relation = useMutation({
+    mutationFn: ({ kind, on }: { kind: "mute" | "block"; on: boolean }) =>
+      api(`/users/${username}/${kind}`, { method: on ? "POST" : "DELETE" }),
+    onSuccess: (_d, { kind, on }) => {
+      toast(`${on ? (kind === "mute" ? "Muted" : "Blocked") : kind === "mute" ? "Unmuted" : "Unblocked"} @${username}.`, "success");
+      void qc.invalidateQueries({ queryKey: ["profile", username] });
+      void qc.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (e) => toast(errorMessage(e), "error"),
+  });
   const q = useQuery({ queryKey: ["profile", username], queryFn: () => get<Profile>(`/users/${encodeURIComponent(username)}`) });
   const follow = useMutation({
     mutationFn: (following: boolean) => following ? del(`/users/${username}/follow`) : post(`/users/${username}/follow`),
@@ -47,6 +73,8 @@ export function ProfileView({ username }: { username: string }) {
             <span><b className="font-mono text-lg">{p.wins}</b><span className="text-dim">W </span><b className="font-mono text-lg">{p.losses}</b><span className="text-dim">L </span><b className="font-mono text-lg">{p.draws}</b><span className="text-dim">D</span></span>
             {total > 0 && <span className="text-dim">{Math.round((p.wins / total) * 100)}% win rate</span>}
             <span><b className="font-mono">{p.followers}</b> <span className="text-dim">followers</span></span>
+            <span><b className="font-mono">{p.following}</b> <span className="text-dim">following</span></span>
+            <span><b className="font-mono">{p.posts_count}</b> <span className="text-dim">posts</span></span>
           </div>
         </div>
         {p.is_me ? <Button variant="outline" href="/settings">Edit profile</Button> : (
@@ -62,12 +90,40 @@ export function ProfileView({ username }: { username: string }) {
             }}>
               Challenge
             </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="ghost" loading={relation.isPending && relation.variables?.kind === "mute"}
+                onClick={() => requireAuth("Sign in first.") && relation.mutate({ kind: "mute", on: !p.is_muted })}>
+                {p.is_muted ? "Unmute" : "Mute"}
+              </Button>
+              <Button size="sm" variant="ghost" className="text-danger" loading={relation.isPending && relation.variables?.kind === "block"}
+                onClick={() => {
+                  if (!requireAuth("Sign in first.")) return;
+                  if (!p.is_blocked && !window.confirm(`Block @${p.username}? They won't be able to follow you or reply to your posts.`)) return;
+                  relation.mutate({ kind: "block", on: !p.is_blocked });
+                }}>
+                {p.is_blocked ? "Unblock" : "Block"}
+              </Button>
+            </div>
           </div>
         )}
       </section>
-      <h2 className="font-display mb-4 mt-10 text-2xl font-bold">Debates</h2>
-      {p.debates.length === 0 ? <Empty title="No debates yet." /> : (
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{p.debates.map((d) => <DebateCard key={d.id} d={d} />)}</div>
+      {p.blocks_you ? (
+        <div className="mt-8"><Empty title={`@${p.username} blocked you.`} body="You can't see their posts or reply to them." /></div>
+      ) : p.is_blocked ? (
+        <div className="mt-8"><Empty title={`You blocked @${p.username}.`} body="Unblock them to see their posts again." /></div>
+      ) : (
+        <>
+          <div className="sticky top-14 z-20 -mx-4 mt-8 bg-bg/85 px-4 py-3 backdrop-blur-xl sm:top-16 sm:mx-0 sm:px-0">
+            <Tabs value={tab} onChange={setTab} items={PROFILE_TABS} className="w-fit max-w-full" />
+          </div>
+          {tab === "debates" ? (
+            p.debates.length === 0 ? <Empty title="No debates yet." /> : (
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{p.debates.map((d) => <DebateCard key={d.id} d={d} />)}</div>
+            )
+          ) : (
+            <div className="-mx-4 border-line sm:mx-0 sm:rounded-3xl sm:border"><ProfilePosts key={tab} username={p.username} tab={tab} /></div>
+          )}
+        </>
       )}
     </div>
   );

@@ -11,6 +11,7 @@ export default function PrivacyPage() {
       <h2>What we collect</h2>
       <ul>
         <li><b>Account data:</b> email, username, display name, optional photo and bio; a hashed password (never stored in plain text) or your Google account identifier.</li>
+        <li><b>Posts:</b> what you post, reply, quote or repost, the photos you attach, and your likes, bookmarks, blocks and mutes.</li>
         <li><b>Debate data:</b> the turns you write or speak, transcripts of video debates (and recordings, if recording is enabled for a debate), your votes, reports and reactions.</li>
         <li><b>Payment data:</b> order and payment identifiers from Razorpay. Card/UPI details are handled by Razorpay, never by us.</li>
         <li><b>Technical data:</b> IP address, device and browser information, error reports, and first-party usage events used for security, abuse prevention and product analytics.</li>
@@ -44,7 +45,7 @@ export default function PrivacyPage() {
       <h2>The Android app</h2>
       <p>The app shows the {BUSINESS.brand} website and collects nothing beyond what the website does. It does not read your contacts, location or files. The camera and microphone are used only when you join a video debate, after Chrome asks for your permission.</p>
       <h2>Retention</h2>
-      <p>We keep account data while your account is active. When you delete your account we erase your profile, sign-ins, follows and notifications; debate content is kept but de-identified, because each debate belongs to both sides and its audience. Payment records are kept as long as tax law requires. Server logs and error reports are kept for up to 90 days.</p>
+      <p>We keep account data while your account is active. When you delete your account we erase your profile, sign-ins, follows, notifications, posts, likes, bookmarks, blocks and mutes; debate content is kept but de-identified, because each debate belongs to both sides and its audience. Payment records are kept as long as tax law requires. Server logs and error reports are kept for up to 90 days.</p>
       <h2>Your rights</h2>
       <ul>
         <li><b>Access:</b> download your data from Settings → Download my data.</li>

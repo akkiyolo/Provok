@@ -5,6 +5,7 @@ import { LazyMotion, MotionConfig } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { AuthGateSheet } from "@/components/auth-forms";
+import { ComposeSheet } from "@/components/posts/composer";
 import { ToastProvider } from "@/components/toast";
 import { ApiError } from "@/lib/api";
 import { AuthProvider } from "@/lib/auth";
@@ -36,6 +37,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <AuthProvider>
               {children}
               <AuthGateSheet />
+              <ComposeSheet />
             </AuthProvider>
           </ToastProvider>
         </MotionConfig>

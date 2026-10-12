@@ -7,12 +7,13 @@ import { useEffect, useState } from "react";
 
 import { CardSkeleton, DebateCard } from "@/components/debate-card";
 import { useFeed } from "@/components/feed";
+import { PostCard } from "@/components/posts/post-card";
 import { Avatar, Button, Empty, ErrorBlock, ModelBadge, PageTitle, Tabs } from "@/components/ui";
 import { errorMessage, get } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { cx } from "@/lib/format";
 import { useMeta } from "@/lib/meta";
-import type { DebateCard as Card, PublicUser } from "@/lib/types";
+import type { DebateCard as Card, PostView, PublicUser } from "@/lib/types";
 
 export function ChallengesView() {
   const q = useFeed("challenges");
@@ -115,13 +116,13 @@ export function SearchView() {
   }, [text, q, router]);
   const res = useQuery({
     queryKey: ["search", q],
-    queryFn: () => get<{ debates: Card[]; users: PublicUser[] }>(`/search?q=${encodeURIComponent(q)}`),
+    queryFn: () => get<{ debates: Card[]; users: PublicUser[]; posts: PostView[] }>(`/search?q=${encodeURIComponent(q)}`),
     enabled: q.length > 0,
   });
   return (
     <div className="mx-auto max-w-5xl px-4 pt-8 sm:px-6">
-      <label htmlFor="search" className="sr-only">Search debates and people</label>
-      <input id="search" value={text} onChange={(e) => setText(e.target.value)} autoFocus placeholder="Search debates and people…"
+      <label htmlFor="search" className="sr-only">Search posts, debates and people</label>
+      <input id="search" value={text} onChange={(e) => setText(e.target.value)} autoFocus placeholder="Search posts, debates, people…"
         className="font-display h-16 w-full rounded-3xl border border-line bg-surface px-6 text-2xl font-bold outline-none placeholder:text-faint focus:border-text/50" />
       {res.isLoading && q && <div className="mt-8 grid gap-5 md:grid-cols-2"><CardSkeleton /><CardSkeleton /></div>}
       {res.data && (
@@ -135,6 +136,14 @@ export function SearchView() {
                     <Avatar user={u} size={28} /><span className="text-sm font-semibold">{u.display_name}</span><span className="text-[12px] text-faint">@{u.username}</span>
                   </Link>
                 ))}
+              </div>
+            </section>
+          )}
+          {res.data.posts.length > 0 && (
+            <section>
+              <h2 className="mb-3 font-mono text-[11px] font-bold tracking-[0.18em] text-faint">POSTS</h2>
+              <div className="-mx-4 border-line sm:mx-0 sm:rounded-3xl sm:border">
+                {res.data.posts.map((p) => <PostCard key={p.feed_id} p={p} />)}
               </div>
             </section>
           )}

@@ -19,7 +19,7 @@ const REASONS: { value: string; label: string }[] = [
   { value: "other", label: "Something else" },
 ];
 
-export function ReportButton({ targetType, targetId, label }: { targetType: "debate" | "turn" | "user"; targetId: string; label?: string }) {
+export function ReportButton({ targetType, targetId, label }: { targetType: "debate" | "turn" | "user" | "post"; targetId: string; label?: string }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");

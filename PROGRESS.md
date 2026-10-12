@@ -202,6 +202,36 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
+### Social network, phase S1: the social core (2026-10-12)
+
+Direction (founder, 2026-10-12): grow Provok from a debate app into a **debate-first social network for India**.
+Defaults taken where the founder didn't choose (CLAUDE.md rule 9): debates stay the differentiator, politics,
+religion and caste stay blocked at launch, Hindi comes in phase S2. Plan: S1 social core → S2 post→debate
+"Challenge", AI fact-checks, credibility, Hindi + translation → S3 ranking, communities, live rooms.
+
+- **Data** (migration `0004`): `posts` (post/reply/quote/repost; reposts are rows so they sit in timelines at
+  repost time; `root_id` for threads; denormalised counters), `post_media`, `post_likes`, `bookmarks`,
+  `post_hashtags`, `user_blocks`, `user_mutes`; reports can target posts.
+- **API** (`api/posts.py`, `services/posts.py`): create/delete posts with up to 4 images (re-encoded to WebP, EXIF
+  stripped, ≤2048px), replies/quotes/reposts, likes, bookmarks, hashtags incl. Indian scripts, @mentions; feeds
+  `Following` (cursor) and `For you` (engagement / age^1.5, follow boost, 72h window, 8 pages); user tabs
+  (posts/replies/media/likes), threads (ancestors + replies), tag pages, trends (≥2 distinct people in 24h),
+  search; blocks (hide both ways, end follows, stop replies/quotes/follows) and mutes (silent). Following and
+  notifications for like/reply/quote/repost/mention/follow skip blocked and muted users.
+- **Timelines are fan-out on read** from indexed Postgres. Simple and correct at our scale; a Redis fan-out cache
+  can sit in front later without API changes.
+- **Safety:** topic blocklist and link-spam check at write time; an async `moderate_post` job hides flagged posts
+  and tells the author and admins; admin `hide_post`/`unhide_post`; rate limits `RL_POST_USER*`,
+  `RL_REACTION_USER`, `RL_MEDIA_USER`. Posting/liking/reposting require a verified, non-restricted account.
+  Account deletion deletes posts, likes, bookmarks, blocks and mutes; export includes posts and likes.
+- **Web:** `/home` (For you / Following, inline composer, Trends), `/p/[id]` (thread + reply box, share metadata),
+  `/tag/[tag]`, `/bookmarks`; profile tabs Posts/Replies/Photos/Likes/Debates with mute/block; search shows
+  posts; app-wide compose sheet (+ on mobile offers Post or Debate). The Android app gets all of it with no
+  release (TWA). `/` is still the Arena; making `/home` the root is a later call.
+- **Infra:** media bucket makes `posts/*` public (Terraform; apply before images load).
+- Tests: 14 backend (`test_posts.py`), browser journey "social: post, follow, like, reply…". 194 backend tests,
+  42 e2e pass.
+
 ### Accounts and wiring (2026-10-12)
 
 - Legal pages show the founder's details (GitHub variables `NEXT_PUBLIC_LEGAL_*`, `NEXT_PUBLIC_GRIEVANCE_OFFICER`).

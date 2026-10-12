@@ -146,3 +146,41 @@ test("inside the Android app the wallet shows balance and history but no purchas
   await expect(page.getByRole("heading", { name: "Top up" })).toHaveCount(0);
   await expect(page.getByText(/Razorpay/)).toHaveCount(0);
 });
+
+test("social: post, follow, like, reply, and the author is notified", async ({ browser }) => {
+  const alice = await newUserPage(browser, "al");
+  const bob = await newUserPage(browser, "bo");
+  const take = `Chai beats coffee, every single morning ${Date.now() % 10000} #chai`;
+
+  await alice.page.goto("/home");
+  const home = alice.page.locator("section[aria-labelledby='home-heading']");
+  await home.getByLabel("Write a post").fill(take);
+  await home.getByRole("button", { name: "Post", exact: true }).click();
+  await expect(home.getByText(take)).toBeVisible();
+
+  await bob.page.goto(`/u/${alice.username}`);
+  await bob.page.getByRole("button", { name: "Follow", exact: true }).click();
+  await expect(bob.page.getByRole("button", { name: "Following" })).toBeVisible();
+  await bob.page.goto("/home?tab=following");
+  const card = bob.page.locator("article", { hasText: take });
+  await expect(card).toBeVisible();
+  await card.getByRole("button", { name: "Like", exact: true }).click();
+  await expect(card.getByRole("button", { name: "Unlike" })).toBeVisible();
+  await card.getByRole("button", { name: "Reply", exact: true }).click();
+  const dialog = bob.page.getByRole("dialog");
+  await dialog.getByLabel("Write your reply").fill("Filter coffee says hello");
+  await dialog.getByRole("button", { name: "Reply", exact: true }).click();
+  await expect(dialog).toBeHidden();
+
+  await alice.page.goto("/notifications");
+  await expect(alice.page.getByText(/liked your post/)).toBeVisible();
+  await expect(alice.page.getByText(/replied to you/)).toBeVisible();
+  await expect(alice.page.getByText(/followed you/)).toBeVisible();
+  await alice.page.getByText(/replied to you/).click();
+  await expect(alice.page).toHaveURL(/\/p\//);
+  // Next keeps the previous page (notifications) mounted but hidden, so look inside the post itself.
+  await expect(alice.page.locator("article", { hasText: "Filter coffee says hello" })).toBeVisible();
+
+  await alice.page.goto("/tag/chai");
+  await expect(alice.page.locator("article", { hasText: take })).toBeVisible();
+});

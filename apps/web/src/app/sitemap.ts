@@ -6,7 +6,7 @@ const API = (process.env.API_INTERNAL_URL ?? "http://localhost:8000").replace(/\
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   "use cache";
   const now = new Date();
-  const fixed: MetadataRoute.Sitemap = ["", "/challenges", "/leaderboard", "/about", "/terms", "/privacy", "/refunds", "/contact"]
+  const fixed: MetadataRoute.Sitemap = ["", "/home", "/challenges", "/leaderboard", "/about", "/terms", "/privacy", "/refunds", "/contact"]
     .map((p) => ({ url: `${SITE}${p}`, lastModified: now, changeFrequency: p ? "weekly" : "hourly", priority: p ? 0.5 : 1 }));
   try {
     const res = await fetch(`${API}/api/v1/debates/feed?tab=completed&limit=50`, { signal: AbortSignal.timeout(4000) });

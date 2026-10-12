@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Avatar, Button } from "@/components/ui";
+import { openCompose } from "@/components/posts/compose-store";
+import { Avatar, Button, Sheet } from "@/components/ui";
 import { get } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { cx } from "@/lib/format";
@@ -93,6 +94,7 @@ function AccountMenu() {
           </div>
           <div className="my-1 h-px bg-line" />
           <Link role="menuitem" className={item} href={`/u/${user.username}`}>Profile</Link>
+          <Link role="menuitem" className={item} href="/bookmarks">Bookmarks</Link>
           <Link role="menuitem" className={item} href="/wallet">Wallet · {user.credits} credits</Link>
           <Link role="menuitem" className={item} href="/settings">Settings</Link>
           {user.role === "admin" && <Link role="menuitem" className={item} href="/admin">Admin</Link>}
@@ -107,6 +109,7 @@ function AccountMenu() {
 }
 
 const LINKS = [
+  { href: "/home", label: "Home" },
   { href: "/", label: "Arena" },
   { href: "/challenges", label: "Challenges" },
   { href: "/leaderboard", label: "Leaderboard" },
@@ -137,6 +140,9 @@ export function TopNav() {
           <ThemeToggle />
           {status === "authed" && <Bell />}
           <span className="hidden sm:inline-flex">
+            <Button size="sm" variant="primary" onClick={() => requireAuth("Sign in to post.") && openCompose()}>Post</Button>
+          </span>
+          <span className="hidden lg:inline-flex">
             <Button size="sm" variant="for" onClick={() => requireAuth("Sign in to start a debate.") && router.push("/new")}>
               Start a debate
             </Button>
@@ -150,10 +156,33 @@ export function TopNav() {
   );
 }
 
+function CreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const router = useRouter();
+  const option = "flex w-full items-center gap-4 rounded-2xl border border-line p-4 text-left transition hover:bg-surface-2";
+  return (
+    <Sheet open={open} onClose={onClose} title="Create">
+      <div className="flex flex-col gap-3">
+        <button className={option} onClick={() => { onClose(); openCompose(); }}>
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-text text-bg">
+            <svg viewBox="0 0 20 20" className="size-5" fill="currentColor" aria-hidden><path d="M13.6 3.3a1.5 1.5 0 0 1 2.1 0l1 1a1.5 1.5 0 0 1 0 2.1L8 15.1 4 16l.9-4z" /></svg>
+          </span>
+          <span><span className="block font-semibold">Post</span><span className="text-sm text-dim">Share a take, a photo or a question.</span></span>
+        </button>
+        <button className={option} onClick={() => { onClose(); router.push("/new"); }}>
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-for text-[#0a0a0b]">
+            <svg viewBox="0 0 20 20" className="size-5" fill="currentColor" aria-hidden><path d="M3 4h6v12H3zm8 0h6v12h-6z" /></svg>
+          </span>
+          <span><span className="block font-semibold">Debate</span><span className="text-sm text-dim">Argue it out against a person or an AI.</span></span>
+        </button>
+      </div>
+    </Sheet>
+  );
+}
+
 export function BottomNav() {
   const path = usePathname();
   const { user, requireAuth } = useAuth();
-  const router = useRouter();
+  const [creating, setCreating] = useState(false);
   if (path?.startsWith("/d/")) return null; // the arena owns the bottom of the screen
   const tab = (href: string, label: string, icon: React.ReactNode) => (
     <Link href={href} className={cx("flex flex-1 flex-col items-center gap-0.5 py-2 text-[10.5px] font-medium", path === href ? "text-text" : "text-faint")}>
@@ -163,9 +192,9 @@ export function BottomNav() {
   );
   return (
     <nav aria-label="Mobile" className="fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-      {tab("/", "Arena", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M3 4h14v2H3zm0 5h14v2H3zm0 5h9v2H3z" /></svg>)}
-      {tab("/challenges", "Challenges", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M4 3h2v14H4zm3 1h9l-2 3 2 3H7z" /></svg>)}
-      <button onClick={() => requireAuth("Sign in to start a debate.") && router.push("/new")} aria-label="Start a debate" className="flex flex-1 items-center justify-center">
+      {tab("/home", "Home", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M10 2.5 2.5 9v8.5h5v-5h5v5h5V9z" /></svg>)}
+      {tab("/", "Arena", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M3 4h6v12H3zm8 0h6v12h-6z" /></svg>)}
+      <button onClick={() => requireAuth("Sign in to post or start a debate.") && setCreating(true)} aria-label="Create a post or debate" className="flex flex-1 items-center justify-center">
         <span className="grid size-11 place-items-center rounded-full bg-for text-[#0a0a0b] shadow-[0_0_24px_var(--for-glow)]">
           <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M9 4h2v5h5v2h-5v5H9v-5H4V9h5z" /></svg>
         </span>
@@ -173,6 +202,7 @@ export function BottomNav() {
       {tab("/leaderboard", "Ranks", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M3 11h4v6H3zm5-7h4v13H8zm5 4h4v9h-4z" /></svg>)}
       {tab(user ? `/u/${user.username}` : "/login", user ? "You" : "Sign in",
         <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M10 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm-6 7c0-3.3 2.7-5 6-5s6 1.7 6 5z" /></svg>)}
+      <CreateSheet open={creating} onClose={() => setCreating(false)} />
     </nav>
   );
 }

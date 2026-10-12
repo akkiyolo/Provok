@@ -29,7 +29,7 @@ export function useFeed(tab: string, category?: string) {
   });
 }
 
-function InfiniteSentinel({ onVisible, disabled }: { onVisible: () => void; disabled: boolean }) {
+export function InfiniteSentinel({ onVisible, disabled }: { onVisible: () => void; disabled: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (disabled || !ref.current) return;

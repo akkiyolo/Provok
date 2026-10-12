@@ -253,6 +253,42 @@ export interface Profile {
   is_following: boolean;
   is_me: boolean;
   debates: DebateCard[];
+  posts_count: number;
+  is_blocked: boolean;
+  blocks_you: boolean;
+  is_muted: boolean;
+}
+
+// ── Social layer (backend/app/services/posts.py build_views) ───────────────
+
+export interface PostMedia {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  alt: string | null;
+}
+
+export interface PostView {
+  id: string;
+  /** The row this item came from: the post itself, or the repost that put it in a feed. */
+  feed_id: string;
+  author: PublicUser | null;
+  text: string | null;
+  created_at: string;
+  media: PostMedia[];
+  reply_to: { id: string; username: string | null } | null;
+  counts: { replies: number; reposts: number; quotes: number; likes: number };
+  viewer: { liked: boolean; reposted: boolean; bookmarked: boolean; is_author: boolean };
+  reposted_by: PublicUser | null;
+  /** Embedded quoted post; `{ unavailable: true }` when it was deleted or hidden. */
+  quote?: PostView | { unavailable: true } | null;
+}
+
+export interface Trend {
+  tag: string;
+  people: number;
+  posts: number;
 }
 
 export interface Wallet {

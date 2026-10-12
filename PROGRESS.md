@@ -202,6 +202,16 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
+### Accounts and wiring (2026-10-12)
+
+- Legal pages show the founder's details (GitHub variables `NEXT_PUBLIC_LEGAL_*`, `NEXT_PUBLIC_GRIEVANCE_OFFICER`).
+- Inbound mail: ImprovMX forwards `*@provok.in` (catch-all) to the founder's Gmail. MX + apex SPF via
+  `extra_dns_records` in `staging.tfvars` (the staging stack owns the zone).
+- Sentry (US region): backend DSN in the server env; a test event from the server arrived tagged staging + release.
+  Web DSN: GitHub variable `NEXT_PUBLIC_SENTRY_DSN`.
+- AWS credits covered all usage so far ($1.18 by 2026-10-11); Bedrock charges not yet in Cost Explorer.
+- AWS Activate (Founders tier) application in progress; SES production access still under review.
+
 ### AI models on Amazon Bedrock (2026-10-11)
 
 - The AWS account's promotional credits (~$120 would otherwise expire unused on 2027-01-17) pay for Bedrock. LiteLLM

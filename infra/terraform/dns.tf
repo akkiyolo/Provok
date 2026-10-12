@@ -72,3 +72,14 @@ resource "aws_route53_record" "dmarc" {
   ttl     = 1800
   records = ["v=DMARC1; p=none;"]
 }
+
+# ── Other records (e.g. inbound mail forwarding, site verifications), from extra_dns_records ──
+
+resource "aws_route53_record" "extra" {
+  for_each = var.dns_zone == "" ? {} : { for r in var.extra_dns_records : "${r.name}|${r.type}" => r }
+  zone_id  = local.zone_id
+  name     = each.value.name
+  type     = each.value.type
+  ttl      = each.value.ttl
+  records  = each.value.records
+}

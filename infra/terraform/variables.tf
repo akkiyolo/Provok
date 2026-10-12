@@ -115,3 +115,14 @@ variable "db_backup_retention_days" {
   type        = number
   default     = 7
 }
+
+variable "extra_dns_records" {
+  description = "Additional records in dns_zone, e.g. MX for inbound mail forwarding. One entry per name+type (TXT values go in one entry's records list)."
+  type = list(object({
+    name    = string
+    type    = string
+    ttl     = optional(number, 3600)
+    records = list(string)
+  }))
+  default = []
+}

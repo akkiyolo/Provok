@@ -20,15 +20,18 @@ interface Suggestion {
   author: string | null;
 }
 
-export function ChallengeSheet({ p, open, onClose }: { p: PostView; open: boolean; onClose: () => void }) {
+export function ChallengeSheet({ p, open, onClose, mode = "invite" }: {
+  p: PostView; open: boolean; onClose: () => void; mode?: "invite" | "open";
+}) {
   const router = useRouter();
   const toast = useToast();
   const [question, setQuestion] = useState<string | null>(null);
+  const [side, setSide] = useState<"for" | "against">("for");
   const [timing, setTiming] = useState<"async" | "live">("async");
   const [busy, setBusy] = useState(false);
   const s = useQuery({
-    queryKey: ["challenge-question", p.id],
-    queryFn: () => post<Suggestion>(`/posts/${p.id}/challenge-question`),
+    queryKey: ["challenge-question", p.id, mode],
+    queryFn: () => post<Suggestion>(`/posts/${p.id}/challenge-question?mode=${mode}`),
     enabled: open,
     staleTime: Infinity,
     retry: false,
@@ -37,17 +40,18 @@ export function ChallengeSheet({ p, open, onClose }: { p: PostView; open: boolea
   const author = p.author?.username;
 
   const start = async () => {
-    if (!s.data || !author) return;
+    if (!s.data || (mode === "invite" && !author)) return;
     setBusy(true);
     try {
       const mine = { type: "me" };
-      const theirs = { type: "invite", username: author };
+      const theirs = mode === "open" ? { type: "open" } : { type: "invite", username: author };
+      const my = mode === "open" ? side : s.data.challenger_side;
       const d = await post<DebateView>("/debates", {
         question: text.trim(), timing, source_post_id: p.id,
-        for: s.data.challenger_side === "for" ? mine : theirs,
-        against: s.data.challenger_side === "against" ? mine : theirs,
+        for: my === "for" ? mine : theirs,
+        against: my === "against" ? mine : theirs,
       });
-      toast(`Challenge sent to @${author}.`, "success");
+      toast(mode === "open" ? "Debate posted. Anyone can take the other side." : `Challenge sent to @${author}.`, "success");
       onClose();
       router.push(`/d/${d.id}`);
     } catch (e) {
@@ -68,6 +72,18 @@ export function ChallengeSheet({ p, open, onClose }: { p: PostView; open: boolea
             <textarea id={`cq-${p.id}`} value={text} onChange={(e) => setQuestion(e.target.value)} rows={2} maxLength={400}
               className="font-display w-full resize-none rounded-2xl border border-line bg-surface-2 px-4 py-3 text-xl font-bold leading-snug outline-none focus:border-text/50" />
           </div>
+          {mode === "open" ? (
+            <fieldset className="grid grid-cols-2 gap-2 text-sm">
+              <legend className="mb-1.5 text-[13px] font-medium text-dim">Your side</legend>
+              {(["for", "against"] as const).map((sd) => (
+                <button key={sd} type="button" aria-pressed={side === sd} onClick={() => setSide(sd)}
+                  className={cx("rounded-2xl border p-3 text-left", side === sd ? (sd === "for" ? "border-for bg-for-soft" : "border-against bg-against-soft") : "border-line hover:bg-surface-2")}>
+                  <span className="font-mono text-[11px] font-bold tracking-[0.14em]">{sd === "for" ? "FOR" : "AGAINST"}</span>
+                  <span className="block text-[12px] text-dim">{side === sd ? "You" : "Open to anyone"}</span>
+                </button>
+              ))}
+            </fieldset>
+          ) : (
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className={cx("rounded-2xl border p-3", s.data.author_side === "for" ? "border-for/60" : "border-against/60")}>
               <p className="font-mono text-[11px] font-bold tracking-[0.14em] text-faint">{s.data.author_side === "for" ? "FOR" : "AGAINST"}</p>
@@ -78,6 +94,7 @@ export function ChallengeSheet({ p, open, onClose }: { p: PostView; open: boolea
               <p className="font-semibold">You</p>
             </div>
           </div>
+          )}
           <fieldset className="flex gap-2">
             <legend className="mb-1.5 text-[13px] font-medium text-dim">Format</legend>
             {(["async", "live"] as const).map((t) => (
@@ -88,8 +105,10 @@ export function ChallengeSheet({ p, open, onClose }: { p: PostView; open: boolea
               </button>
             ))}
           </fieldset>
-          <p className="text-[13px] text-dim">@{author} gets a challenge. If they accept, the crowd votes every round and an AI judge gives the verdict. Free.</p>
-          <Button onClick={start} loading={busy} disabled={text.trim().length < 10}>Send the challenge ⚔</Button>
+          <p className="text-[13px] text-dim">{mode === "open"
+            ? "It goes to Open Challenges: the first person to take the other side starts the debate. The crowd votes every round and an AI judge gives the verdict. Free."
+            : `@${author} gets a challenge. If they accept, the crowd votes every round and an AI judge gives the verdict. Free.`}</p>
+          <Button onClick={start} loading={busy} disabled={text.trim().length < 10}>{mode === "open" ? "Post the debate ⚔" : "Send the challenge ⚔"}</Button>
         </div>
       )}
     </Sheet>

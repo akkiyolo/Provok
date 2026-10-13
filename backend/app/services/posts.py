@@ -23,16 +23,24 @@ from backend.app.models import (
     Bookmark,
     Debate,
     Follow,
+    PollVote,
     Post,
     PostFactCheck,
     PostHashtag,
     PostLike,
     PostMedia,
+    PostPoll,
     User,
     UserBlock,
     UserMute,
 )
-from backend.app.models.social import POST_MAX_CHARS, POST_MAX_MEDIA
+from backend.app.models.social import (
+    POLL_MAX_OPTIONS,
+    POLL_MIN_OPTIONS,
+    POLL_OPTION_MAX_CHARS,
+    POST_MAX_CHARS,
+    POST_MAX_MEDIA,
+)
 from backend.app.moderation.content import URL_RE, heuristic_blocked_category
 from backend.app.services.debate_view import public_user
 from backend.app.services.notify import notify
@@ -154,10 +162,30 @@ async def get_visible_post(db: AsyncSession, post_id: uuid.UUID, viewer_id: uuid
 # ── Creating ───────────────────────────────────────────────────────────────
 
 
+def clean_poll(options: list[str] | None, hours: int | None) -> tuple[list[str], int] | None:
+    if options is None:
+        return None
+    opts = [" ".join(o.split()) for o in options]
+    if not POLL_MIN_OPTIONS <= len(opts) <= POLL_MAX_OPTIONS or any(not o for o in opts):
+        raise AppError(f"A poll needs {POLL_MIN_OPTIONS} to {POLL_MAX_OPTIONS} options.", code="bad_poll", status_code=422)
+    if any(len(o) > POLL_OPTION_MAX_CHARS for o in opts):
+        raise AppError(f"Poll options can be up to {POLL_OPTION_MAX_CHARS} characters.", code="bad_poll", status_code=422)
+    if len({o.lower() for o in opts}) != len(opts):
+        raise AppError("Poll options must be different.", code="bad_poll", status_code=422)
+    hours = hours or 24
+    if not 1 <= hours <= 24 * 7:
+        raise AppError("Polls can run from 1 hour to 7 days.", code="bad_poll", status_code=422)
+    return opts, hours
+
+
 async def create_post(db: AsyncSession, outbox: Outbox, author: User, *, text: str | None,
                       media_ids: list[uuid.UUID], reply_to_id: uuid.UUID | None,
-                      quote_of_id: uuid.UUID | None) -> Post:
+                      quote_of_id: uuid.UUID | None, poll: list[str] | None = None,
+                      poll_hours: int | None = None) -> Post:
     body = clean_text(text)
+    poll_spec = clean_poll(poll, poll_hours)
+    if poll_spec and (media_ids or not body):
+        raise AppError("A poll needs a question, and can't have photos.", code="bad_poll", status_code=422)
     if not body and not media_ids:
         raise AppError("Write something or add a photo.", code="empty_post", status_code=422)
     if len(body) > POST_MAX_CHARS:
@@ -195,6 +223,8 @@ async def create_post(db: AsyncSession, outbox: Outbox, author: User, *, text: s
                 quote_of_id=quoted.id if quoted else None)
     db.add(post)
     await db.flush()
+    if poll_spec:
+        db.add(PostPoll(post_id=post.id, options=poll_spec[0], ends_at=utcnow() + timedelta(hours=poll_spec[1])))
     order = {mid: i for i, mid in enumerate(media_ids)}
     for m in media:
         m.post_id, m.position = post.id, order[m.id]
@@ -296,6 +326,22 @@ async def set_repost(db: AsyncSession, outbox: Outbox, user: User, post_id: uuid
         await db.flush()
         await db.refresh(original)
     return original
+
+
+async def vote_poll(db: AsyncSession, user: User, post_id: uuid.UUID, option: int) -> Post:
+    post = await get_visible_post(db, post_id, user.id)
+    poll = await db.get(PostPoll, _original(post))
+    if poll is None:
+        raise NotFound("This post has no poll.")
+    if poll.ends_at <= utcnow():
+        raise AppError("This poll has ended.", code="poll_closed", status_code=409)
+    if not 0 <= option < len(poll.options):
+        raise AppError("Pick one of the options.", code="bad_option", status_code=422)
+    res = await db.execute(insert(PollVote).values(post_id=poll.post_id, user_id=user.id, option=option)
+                           .on_conflict_do_nothing().returning(PollVote.option))
+    if res.scalar() is None:
+        raise AppError("You've already voted in this poll.", code="already_voted", status_code=409)
+    return await get_visible_post(db, poll.post_id, user.id)
 
 
 async def set_bookmark(db: AsyncSession, user: User, post_id: uuid.UUID, on: bool) -> None:
@@ -454,6 +500,61 @@ async def bookmarks(db: AsyncSession, user: User, cursor: str | None, limit: int
     return rows, nxt
 
 
+async def likers(db: AsyncSession, post: Post, viewer: User | None, cursor: str | None, limit: int = 50):
+    """People who liked a post, newest first, minus anyone hidden from the viewer."""
+    hidden = await hidden_authors(db, viewer.id if viewer else None)
+    c = decode_cursor(cursor)
+    q = (select(User, PostLike.created_at).join(PostLike, PostLike.user_id == User.id)
+         .where(PostLike.post_id == post.id, User.status.in_(VISIBLE_AUTHOR_STATUSES),
+                tuple_(PostLike.created_at, User.id) < (c[0], c[1]) if c else literal(True))
+         .order_by(desc(PostLike.created_at), desc(User.id)).limit(limit + 1))
+    if hidden:
+        q = q.where(User.id.not_in(hidden))
+    rows = (await db.execute(q)).all()
+    users = [r[0] for r in rows[:limit]]
+    nxt = encode_cursor(rows[limit - 1][1], rows[limit - 1][0].id) if len(rows) > limit else None
+    return users, nxt
+
+
+async def new_posts_count(db: AsyncSession, viewer: User, since: datetime) -> int:
+    """How many Following-timeline posts arrived after `since` (the newest one the viewer has)."""
+    hidden = await hidden_authors(db, viewer.id)
+    followees = select(Follow.followee_id).where(Follow.follower_id == viewer.id)
+    n = await db.scalar(select(func.count()).select_from(Post).join(User, User.id == Post.author_id).where(
+        _visible(hidden), Post.author_id.in_(followees), Post.reply_to_id.is_(None), Post.created_at > since))
+    return n or 0
+
+
+async def suggested_people(db: AsyncSession, viewer: User | None, limit: int = 6) -> list[dict[str, Any]]:
+    """Who to follow: people your follows follow (most mutuals first), then the most-followed active accounts."""
+    exclude: set[uuid.UUID] = set()
+    out: list[dict[str, Any]] = []
+    if viewer is not None:
+        exclude = await hidden_authors(db, viewer.id) | {viewer.id} | set((await db.scalars(
+            select(Follow.followee_id).where(Follow.follower_id == viewer.id))).all())
+        followees = select(Follow.followee_id).where(Follow.follower_id == viewer.id)
+        q = (select(User, func.count().label("n")).join(Follow, Follow.followee_id == User.id)
+             .where(Follow.follower_id.in_(followees), User.status == "active")
+             .group_by(User.id).order_by(desc("n"), desc(User.rating)).limit(limit))
+        if exclude:
+            q = q.where(User.id.not_in(exclude))
+        for u, n in (await db.execute(q)).all():
+            reason = "Followed by someone you follow" if n == 1 else f"Followed by {n} people you follow"
+            out.append({"user": public_user(u), "reason": reason})
+            exclude.add(u.id)
+    if len(out) < limit:
+        followers = (select(Follow.followee_id, func.count().label("f")).group_by(Follow.followee_id).subquery())
+        q = (select(User).outerjoin(followers, followers.c.followee_id == User.id)
+             .where(User.status == "active", User.email_verified_at.is_not(None))
+             .order_by(desc(User.is_official), desc(func.coalesce(followers.c.f, 0)), desc(User.rating))
+             .limit(limit - len(out)))
+        if exclude:
+            q = q.where(User.id.not_in(exclude))
+        out += [{"user": public_user(u), "reason": "Official account" if u.is_official else "Popular on Provok"}
+                for u in (await db.scalars(q)).all()]
+    return out
+
+
 async def search_posts(db: AsyncSession, term_like: str, viewer: User | None, limit: int = 20) -> list[Post]:
     hidden = await hidden_authors(db, viewer.id if viewer else None)
     return list((await db.scalars(
@@ -511,6 +612,32 @@ async def build_views(db: AsyncSession, posts: list[Post], viewer: User | None) 
             Debate.status.not_in(["cancelled", "abandoned"])).group_by(Debate.source_post_id))).all())
     checks = {fc.post_id: fc for fc in (await db.scalars(select(PostFactCheck).where(
         PostFactCheck.post_id.in_(every.keys())))).all()}
+    polls = {pl.post_id: pl for pl in (await db.scalars(select(PostPoll).where(
+        PostPoll.post_id.in_(every.keys())))).all()}
+    tallies: dict[uuid.UUID, dict[int, int]] = {}
+    if polls:
+        for pid, opt, n in (await db.execute(select(PollVote.post_id, PollVote.option, func.count())
+                                             .where(PollVote.post_id.in_(polls.keys()))
+                                             .group_by(PollVote.post_id, PollVote.option))).all():
+            tallies.setdefault(pid, {})[opt] = n
+    my_votes: dict[uuid.UUID, int] = {}
+    if polls and viewer is not None:
+        my_votes = dict((await db.execute(select(PollVote.post_id, PollVote.option).where(
+            PollVote.user_id == viewer.id, PollVote.post_id.in_(polls.keys())))).all())
+    now = utcnow()
+
+    def poll_view(p: Post) -> dict[str, Any] | None:
+        pl = polls.get(p.id)
+        if pl is None:
+            return None
+        counts = tallies.get(p.id, {})
+        closed = pl.ends_at <= now
+        # Results show once you've voted, when the poll ends, or to its author, so nobody votes with the herd.
+        show = closed or p.id in my_votes or bool(viewer and viewer.id == p.author_id)
+        return {"options": [{"label": o, "votes": counts.get(i, 0) if show else None} for i, o in enumerate(pl.options)],
+                "total": sum(counts.values()), "ends_at": pl.ends_at, "closed": closed,
+                "viewer_vote": my_votes.get(p.id)}
+
     liked = reposted = saved = set()
     if viewer is not None:
         ids = list(every.keys())
@@ -531,7 +658,9 @@ async def build_views(db: AsyncSession, posts: list[Post], viewer: User | None) 
             "reply_to": ({"id": str(p.reply_to_id), "username": parents.get(p.reply_to_id)} if p.reply_to_id
                          else None),
             "counts": {"replies": p.reply_count, "reposts": p.repost_count, "quotes": p.quote_count,
-                       "likes": p.like_count},
+                       "likes": p.like_count, "views": p.view_count},
+            "link_preview": p.link_preview, "poll": poll_view(p),
+            "pinned": bool(authors.get(p.author_id) and authors[p.author_id].pinned_post_id == p.id),
             "viewer": {"liked": p.id in liked, "reposted": p.id in reposted, "bookmarked": p.id in saved,
                        "is_author": bool(viewer and viewer.id == p.author_id)},
         }

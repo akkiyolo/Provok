@@ -25,11 +25,16 @@ from backend.app.models.platform import (
 )
 from backend.app.models.social import (
     Bookmark,
+    Conversation,
+    DailyDebate,
+    DirectMessage,
+    PollVote,
     Post,
     PostFactCheck,
     PostHashtag,
     PostLike,
     PostMedia,
+    PostPoll,
     PostTranslation,
     UserBlock,
     UserMute,
@@ -37,8 +42,9 @@ from backend.app.models.social import (
 from backend.app.models.user import AuthSession, EmailToken, OAuthAccount, User
 
 __all__ = [
-    "AnalyticsEvent", "AuditLog", "AuthSession", "Bookmark", "Claim", "Clip", "CreditLedger", "Debate",
-    "DebateRound", "EmailToken", "FeatureFlag", "Follow", "LLMCall", "ModelRegistry", "Notification", "OAuthAccount",
-    "Payment", "Post", "PostFactCheck", "PostHashtag", "PostLike", "PostMedia", "PostTranslation", "Report",
-    "ResearchCache", "Side", "Turn", "User", "UserBlock", "UserMute", "Verdict", "VideoSession", "Vote",
+    "AnalyticsEvent", "AuditLog", "AuthSession", "Bookmark", "Claim", "Clip", "Conversation", "CreditLedger",
+    "DailyDebate", "Debate", "DebateRound", "DirectMessage", "EmailToken", "FeatureFlag", "Follow", "LLMCall",
+    "ModelRegistry", "Notification", "OAuthAccount", "Payment", "PollVote", "Post", "PostFactCheck", "PostHashtag",
+    "PostLike", "PostMedia", "PostPoll", "PostTranslation", "Report", "ResearchCache", "Side", "Turn", "User",
+    "UserBlock", "UserMute", "Verdict", "VideoSession", "Vote",
 ]

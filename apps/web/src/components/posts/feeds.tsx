@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -13,7 +13,7 @@ import { PostCard, PostSkeleton } from "@/components/posts/post-card";
 import { Button, Empty, ErrorBlock, PageTitle, Tabs } from "@/components/ui";
 import { ApiError, errorMessage, get } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import type { DebateCard as Card, Page, PostView, Trend } from "@/lib/types";
+import type { DailyDebate, DebateCard as Card, Page, PostView, Trend } from "@/lib/types";
 
 /** Every post list lives under the ["posts", ...] query key, so a new post or deletion refreshes them all. */
 export function usePosts(key: string[], path: string, enabled = true) {
@@ -66,6 +66,47 @@ function Trends() {
   );
 }
 
+/** Today's question from @provok: vote in the poll, watch the AI debate, or take a side yourself. */
+export function DailyDebateCard() {
+  const q = useQuery({ queryKey: ["posts", "daily"], queryFn: () => get<{ daily: DailyDebate | null }>("/daily"), staleTime: 60_000 });
+  const d = q.data?.daily;
+  if (!d?.post) return null;
+  return (
+    <section aria-labelledby="daily-heading" className="stage-duel grain border-b border-line">
+      <div className="px-4 pt-4 sm:px-5">
+        <p id="daily-heading" className="font-mono text-[11px] font-bold tracking-[0.2em] text-faint">TODAY&apos;S DEBATE</p>
+        <p className="font-display mt-1 text-[clamp(1.4rem,4vw,1.9rem)] font-extrabold leading-tight">{d.question}</p>
+        {d.debate && (
+          <Link href={`/d/${d.debate.id}`} className="mt-2 inline-block text-sm font-semibold hover:underline">Watch the AI debate it live →</Link>
+        )}
+      </div>
+      <PostCard p={d.post} />
+    </section>
+  );
+}
+
+/** "N new posts" on the Following timeline: polls for newer posts and shows them on tap. */
+function NewPostsBanner({ newest }: { newest: string | undefined }) {
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["feed-new", newest],
+    queryFn: () => get<{ count: number }>(`/feed/new?since=${encodeURIComponent(newest!)}`),
+    enabled: !!newest,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
+  });
+  const n = q.data?.count ?? 0;
+  if (!n) return null;
+  return (
+    <div className="sticky top-[7.5rem] z-10 flex justify-center sm:top-[8.5rem]">
+      <button type="button" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); void qc.invalidateQueries({ queryKey: ["posts", "feed", "following"] }); }}
+        className="my-2 rounded-full bg-text px-4 py-1.5 text-[13px] font-semibold text-bg shadow-xl">
+        ↑ {n} new post{n === 1 ? "" : "s"}
+      </button>
+    </div>
+  );
+}
+
 type HomeTab = "for_you" | "following";
 
 export function HomeFeed() {
@@ -83,7 +124,9 @@ export function HomeFeed() {
         <div className="sticky top-14 z-20 border-b border-line bg-bg/85 px-4 py-3 backdrop-blur-xl sm:top-16 sm:rounded-t-3xl sm:px-5">
           <Tabs value={tab} onChange={setTab} items={[{ value: "for_you", label: "For you" }, { value: "following", label: "Following" }]} className="w-fit" />
         </div>
+        {tab === "for_you" && <DailyDebateCard />}
         {status === "authed" && <div className="border-b border-line px-4 py-3 sm:px-5"><Composer /></div>}
+        {tab === "following" && status === "authed" && <NewPostsBanner newest={q.data?.pages[0]?.items.find((i) => !i.reposted_by)?.created_at} />}
         {tab === "following" && status === "anon" ? (
           <div className="p-4"><Empty title="Follow people to fill this." body="Sign in and follow debaters to see their posts here." action={<Button href="/login?next=/home%3Ftab%3Dfollowing">Sign in</Button>} /></div>
         ) : (

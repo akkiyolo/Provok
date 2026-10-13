@@ -202,6 +202,8 @@ class Settings(BaseSettings):
     rl_media_user: str = "60/3600"
     rl_factcheck_user: str = "20/86400"
     rl_translate_user: str = "120/3600"
+    rl_dm_user: str = "120/3600"
+    rl_dm_new_user: str = "30/86400"
     rl_topic_check_user: str = "30/60"
     rl_general_ip: str = "300/60"
     rl_ws_reactions: str = "10/10"
@@ -216,6 +218,8 @@ class Settings(BaseSettings):
     embedded_worker: bool = False
     # Featured AI-vs-AI debates created automatically (UTC hours; empty disables).
     featured_ava_hours_utc: str = "4,13"
+    # Daily Debate: "H:MM" in UTC (00:30 = 06:00 IST). Empty disables it.
+    daily_debate_utc: str = "0:30"
     featured_ava_per_run: int = 1
     sweeper_interval_seconds: int = 5
     # Debates paused by an AI provider failure retry themselves after this delay (max attempts per day).

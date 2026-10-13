@@ -65,11 +65,12 @@ def html_to_text(raw: str) -> str:
     return _WS_RE.sub(" ", html_lib.unescape(raw)).strip()
 
 
-async def fetch_text(url: str, *, max_chars: int = 12_000) -> str:
+async def _fetch(url: str, *, max_bytes: int, user_agent: str) -> tuple[str, str, str]:
+    """GET a public URL, re-validating every redirect hop (SSRF). Returns (body, content type, final URL)."""
     s = get_settings()
     current = url
     async with httpx.AsyncClient(timeout=s.citation_fetch_timeout_seconds, follow_redirects=False,
-                                 headers={"User-Agent": "ProvokCitationCheck/1.0 (+https://provok.app)"}) as client:
+                                 headers={"User-Agent": user_agent}) as client:
         for _ in range(4):
             await validate_url(current)
             async with client.stream("GET", current) as resp:
@@ -89,9 +90,22 @@ async def fetch_text(url: str, *, max_chars: int = 12_000) -> str:
                 async for chunk in resp.aiter_bytes():
                     size += len(chunk)
                     chunks.append(chunk)
-                    if size >= s.citation_fetch_max_bytes:
+                    if size >= max_bytes:
                         break
-                body = b"".join(chunks)[: s.citation_fetch_max_bytes].decode(resp.encoding or "utf-8", "replace")
-                text = html_to_text(body) if "html" in ctype or not ctype else body
-                return text[:max_chars]
+                return b"".join(chunks)[:max_bytes].decode(resp.encoding or "utf-8", "replace"), ctype, current
     raise FetchBlocked("too many redirects")
+
+
+async def fetch_text(url: str, *, max_chars: int = 12_000) -> str:
+    body, ctype, _ = await _fetch(url, max_bytes=get_settings().citation_fetch_max_bytes,
+                                  user_agent="ProvokCitationCheck/1.0 (+https://provok.app)")
+    text = html_to_text(body) if "html" in ctype or not ctype else body
+    return text[:max_chars]
+
+
+async def fetch_html(url: str, *, max_bytes: int = 300_000) -> tuple[str, str]:
+    """The start of an HTML page (enough for its <head>) and the URL it ended at, for link previews."""
+    body, ctype, final = await _fetch(url, max_bytes=max_bytes, user_agent="ProvokLinkPreview/1.0 (+https://provok.in)")
+    if ctype and "html" not in ctype:
+        raise FetchBlocked(f"content-type {ctype}")
+    return body, final

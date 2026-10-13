@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+import re
 import secrets
 import uuid
 
@@ -20,8 +21,10 @@ from backend.app.engine.types import UserStatus
 from backend.app.models import (
     AuthSession,
     Bookmark,
+    Conversation,
     CreditLedger,
     Debate,
+    DirectMessage,
     Follow,
     Notification,
     OAuthAccount,
@@ -65,6 +68,11 @@ async def profile(username: str, db: DB, viewer: OptionalUser) -> dict:
         UserBlock.blocker_id == user.id, UserBlock.blocked_id == viewer.id)))
     muted = bool(viewer and await db.scalar(select(UserMute.muter_id).where(
         UserMute.muter_id == viewer.id, UserMute.muted_id == user.id)))
+    pinned = None
+    if user.pinned_post_id and not blocks_me:
+        pinned_post = await db.scalar(select(Post).where(Post.id == user.pinned_post_id, Post.status == "visible"))
+        if pinned_post is not None:
+            pinned = (await posts_svc.build_views(db, [pinned_post], viewer) or [None])[0]
     posts_count = await db.scalar(select(func.count()).select_from(Post).where(
         Post.author_id == user.id, Post.status == "visible", Post.kind == "post"))
     debate_ids = select(Side.debate_id).where(Side.user_id == user.id)
@@ -79,6 +87,8 @@ async def profile(username: str, db: DB, viewer: OptionalUser) -> dict:
         "followers": followers or 0, "following": following or 0, "is_following": is_following,
         "is_me": bool(viewer and viewer.id == user.id), "debates": await build_cards(db, recent),
         "posts_count": posts_count or 0, "is_blocked": blocked_by_me, "blocks_you": blocks_me, "is_muted": muted,
+        "banner_url": user.banner_url, "website": user.website, "location": user.location,
+        "verified": user.is_official, "pinned": pinned,
     }
 
 
@@ -126,6 +136,8 @@ class ProfileIn(BaseModel):
     bio: str | None = Field(default=None, max_length=280)
     onboarded: bool | None = None
     email_notifications: bool | None = None
+    website: str | None = Field(default=None, max_length=200)
+    location: str | None = Field(default=None, max_length=60)
 
 
 @router.patch("/me")
@@ -148,6 +160,15 @@ async def update_me(body: ProfileIn, user: CurrentUser, db: DB) -> dict:
         user.onboarded = body.onboarded
     if body.email_notifications is not None:
         user.email_notifications = body.email_notifications
+    if body.website is not None:
+        site = body.website.strip()
+        if site and not site.lower().startswith(("http://", "https://")):
+            site = f"https://{site}"
+        if site and not re.fullmatch(r"https?://[^\s/$.?#][^\s]*", site):
+            raise AppError("That doesn't look like a web address.", code="invalid_website", status_code=422)
+        user.website = site or None
+    if body.location is not None:
+        user.location = auth_svc.clean_display_name(body.location)[:60] or None
     await db.commit()
     return me_payload(user)
 
@@ -196,6 +217,34 @@ async def upload_avatar(user: CurrentUser, db: DB, file: UploadFile = File(...))
     return {"avatar_url": url}
 
 
+@router.post("/me/banner")
+async def upload_banner(user: CurrentUser, db: DB, file: UploadFile = File(...)) -> dict:
+    """Profile cover photo: centre-cropped to 3:1 and re-encoded (strips metadata)."""
+    await enforce("avatar", str(user.id), "10/3600")
+    s = get_settings()
+    data = await file.read(s.max_upload_bytes + 1)
+    if len(data) > s.max_upload_bytes:
+        raise AppError("Images must be under 5 MB.", code="file_too_large", status_code=413)
+    from PIL import Image, ImageOps, UnidentifiedImageError
+    Image.MAX_IMAGE_PIXELS = 40_000_000
+    try:
+        img = Image.open(io.BytesIO(data))
+        if img.format not in ALLOWED_IMAGE_FORMATS:
+            raise AppError("Upload a JPEG, PNG, WebP or GIF.", code="bad_image", status_code=415)
+        img.seek(0)
+        img = ImageOps.exif_transpose(img).convert("RGB")
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+        raise AppError("That file isn't a valid image.", code="bad_image", status_code=415) from exc
+    img = ImageOps.fit(img, (1500, 500), Image.Resampling.LANCZOS)
+    out = io.BytesIO()
+    img.save(out, format="WEBP", quality=82)
+    # Under avatars/ so it's publicly readable alongside the profile photo.
+    url = await storage.put_bytes(f"avatars/{user.id}/banner-{secrets.token_hex(8)}.webp", out.getvalue(), "image/webp")
+    user.banner_url = url
+    await db.commit()
+    return {"banner_url": url}
+
+
 @router.get("/me/export")
 async def export_my_data(user: CurrentUser, db: DB) -> dict:
     await enforce("export", str(user.id), "3/86400")
@@ -208,6 +257,8 @@ async def export_my_data(user: CurrentUser, db: DB) -> dict:
     my_posts = (await db.scalars(select(Post).where(Post.author_id == user.id, Post.status != "deleted")
                                  .order_by(Post.created_at))).all()
     likes = (await db.scalars(select(PostLike).where(PostLike.user_id == user.id))).all()
+    sent = (await db.scalars(select(DirectMessage).where(DirectMessage.sender_id == user.id)
+                             .order_by(DirectMessage.created_at))).all()
     return {
         "profile": me_payload(user),
         "debates_created": [str(d) for d in (await db.scalars(select(Debate.id).where(
@@ -222,6 +273,8 @@ async def export_my_data(user: CurrentUser, db: DB) -> dict:
                    "quote_of_id": str(x.quote_of_id or "") or None, "repost_of_id": str(x.repost_of_id or "") or None,
                    "created_at": x.created_at} for x in my_posts],
         "likes": [{"post_id": str(x.post_id), "created_at": x.created_at} for x in likes],
+        "messages_sent": [{"conversation_id": str(m.conversation_id), "text": m.text, "created_at": m.created_at}
+                          for m in sent],
         "exported_at": utcnow(),
     }
 
@@ -257,6 +310,7 @@ async def delete_account(body: DeleteIn, user: CurrentUser, db: DB) -> dict:
     await db.execute(delete(Bookmark).where(Bookmark.user_id == user.id))
     await db.execute(delete(UserBlock).where(or_(UserBlock.blocker_id == user.id, UserBlock.blocked_id == user.id)))
     await db.execute(delete(UserMute).where(or_(UserMute.muter_id == user.id, UserMute.muted_id == user.id)))
+    await db.execute(delete(Conversation).where(or_(Conversation.user_a == user.id, Conversation.user_b == user.id)))
     await db.commit()
     return {"ok": True}
 

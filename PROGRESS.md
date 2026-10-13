@@ -202,6 +202,33 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
+### Social network, phase S3: a full social app (2026-10-14)
+
+Founder feedback after testing S1–S2: "could have been better with way more features". S3 adds (migration `0006`):
+- **Profiles:** cover photo (`/me/banner`, 3:1 WebP under `avatars/`), location, website (validated, http(s)),
+  pinned post (`/posts/{id}/pin`, shown first on the Posts tab), official accounts (`users.is_official`, ✓ badge).
+- **Posts:** view counts (one per person/IP per post per hour via Redis `SET NX`; authors' own views don't count),
+  "Liked by" list (`/posts/{id}/likes`), link preview cards (first URL; `link_preview` job fetches the page head
+  through the SSRF-safe fetcher, `safe_fetch.fetch_html`; text-only values, http(s) images only).
+- **Polls:** 2–4 options, 1h–7d; one final vote per person; results hidden until you vote, the poll ends, or you're
+  the author. A close poll (≥4 votes, top option ≤65%) offers **Poll → Debate**: an open challenge from the post
+  (`challenge-question?mode=open`).
+- **Daily Debate:** every day at `DAILY_DEBATE_UTC` (default 00:30 = 06:00 IST) the official **@provok** account
+  (reserved username, created on first run) posts a question from the bank with a Yes/No poll, and an AI-vs-AI
+  featured debate starts on it, linked to the post. `/daily`; shown atop Home (For you) and Explore.
+  `cli daily-debate` runs it now (idempotent per day).
+- **Explore** (`/explore`): search, Daily Debate, live debates, top posts today, who to follow (people your follows
+  follow, then popular accounts), trends. **New posts banner** on Following (`/feed/new?since=`, polled every 30s).
+- **Direct messages** (`/messages`): one conversation per pair; anyone verified can message anyone not blocked;
+  strangers land in **Requests** until you reply and don't light the unread badge; threads poll every 5s; account
+  deletion removes the user's conversations; export includes sent messages. Not end-to-end encrypted (privacy
+  page says so). `RL_DM_USER`, `RL_DM_NEW_USER`.
+- Navigation: top Home · Explore · Arena · Challenges · Leaderboard + Messages and Notifications icons; mobile
+  Home · Explore · + · Messages · You (Arena and the leaderboard are linked from Explore).
+- Tests: `test_social_more.py` (13) and browser journey "polls, explore and direct messages".
+- Later: realtime push over the existing user websocket instead of polling, GIF/video, threads (multi-post),
+  edit window, communities, Hindi UI, voice posts, live debate rooms, DM reports.
+
 ### Social network, phase S2: what X can't do (2026-10-12)
 
 - **Challenge a post** (⚔ on every post): the utility model turns the post into a neutral motion and says which

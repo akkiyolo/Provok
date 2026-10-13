@@ -94,6 +94,7 @@ def me_payload(user) -> dict:
         "wins": user.wins, "losses": user.losses, "draws": user.draws, "credits": user.credits,
         "free_ai_debates_left": max(0, s.free_ai_debates - user.free_ai_debates_used),
         "has_password": user.password_hash is not None, "onboarded": user.onboarded,
+        "banner_url": user.banner_url, "website": user.website, "location": user.location,
         "email_notifications": user.email_notifications,
         "created_at": user.created_at,
     }

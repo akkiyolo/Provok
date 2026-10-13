@@ -206,6 +206,11 @@ async def moderate_turn(ctx: dict, turn_id: str) -> None:
         await publish_debate(debate_id, "state_changed", {"reason": "moderation"})
 
 
+async def link_preview(ctx: dict, post_id: str) -> None:
+    from backend.app.services.link_preview import attach_preview
+    await attach_preview(uuid.UUID(post_id))
+
+
 async def factcheck_post(ctx: dict, post_id: str) -> None:
     from backend.app.services.post_ai import run_factcheck
     await run_factcheck(uuid.UUID(post_id))
@@ -319,6 +324,11 @@ async def spend_check(ctx: dict) -> None:
                 sentry_sdk.capture_message(f"LLM spend kill switch tripped: ${spent:.2f}", level="fatal")
             except Exception:
                 pass
+
+
+async def daily_debate_job(ctx: dict) -> None:
+    from backend.app.services.daily import create_daily
+    await create_daily()
 
 
 async def featured_job(ctx: dict) -> None:

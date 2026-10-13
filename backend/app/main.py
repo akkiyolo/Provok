@@ -110,12 +110,13 @@ def create_app() -> FastAPI:
                        expose_headers=["X-Request-ID", "Retry-After"], max_age=600)
     app.add_middleware(BodySizeLimitMiddleware)
 
-    from backend.app.api import admin, auth, debates, posts, public, realtime, users, video, wallet
+    from backend.app.api import admin, auth, debates, messages, posts, public, realtime, users, video, wallet
     p = s.api_prefix
     app.include_router(auth.router, prefix=f"{p}/auth", tags=["auth"])
     app.include_router(debates.router, prefix=f"{p}/debates", tags=["debates"])
     app.include_router(users.router, prefix=p, tags=["users"])
     app.include_router(posts.router, prefix=p, tags=["posts"])
+    app.include_router(messages.router, prefix=p, tags=["messages"])
     app.include_router(wallet.router, prefix=p, tags=["wallet"])
     app.include_router(public.router, prefix=p, tags=["public"])
     app.include_router(video.router, prefix=p, tags=["video"])

@@ -38,6 +38,8 @@ os.environ.update({
     "RL_MEDIA_USER": "1000/3600",
     "RL_FACTCHECK_USER": "1000/86400",
     "RL_TRANSLATE_USER": "1000/3600",
+    "RL_DM_USER": "10000/3600",
+    "RL_DM_NEW_USER": "1000/86400",
     "RL_GENERAL_IP": "100000/60",
     "RL_SIGNUP_IP": "1000/3600",
     "STORAGE_LOCAL_DIR": os.path.join(os.path.dirname(__file__), ".media"),
@@ -109,7 +111,7 @@ def fake_llm() -> AsyncIterator[FakeLLM]:
 
 JOB_FUNCS = {
     "deadline_check": tasks.deadline_check, "swarm_turn": tasks.swarm_turn, "ledger_extract": tasks.ledger_extract,
-    "moderate_turn": tasks.moderate_turn, "moderate_post": tasks.moderate_post, "factcheck_post": tasks.factcheck_post, "judge_debate": tasks.judge_job, "close_vote": tasks.close_vote_job,
+    "moderate_turn": tasks.moderate_turn, "moderate_post": tasks.moderate_post, "factcheck_post": tasks.factcheck_post, "link_preview": tasks.link_preview, "judge_debate": tasks.judge_job, "close_vote": tasks.close_vote_job,
     "video_sync": None, "generate_clips": None,
 }
 

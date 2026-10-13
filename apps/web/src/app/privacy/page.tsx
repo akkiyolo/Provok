@@ -12,9 +12,10 @@ export default function PrivacyPage() {
       <ul>
         <li><b>Account data:</b> email, username, display name, optional photo and bio; a hashed password (never stored in plain text) or your Google account identifier.</li>
         <li><b>Posts:</b> what you post, reply, quote or repost, the photos you attach, and your likes, bookmarks, blocks and mutes.</li>
+        <li><b>Direct messages:</b> the messages you send and receive. They are stored on our servers (not end-to-end encrypted) so we can deliver them; we don&apos;t read them except to investigate a report or when the law requires.</li>
         <li><b>Debate data:</b> the turns you write or speak, transcripts of video debates (and recordings, if recording is enabled for a debate), your votes, reports and reactions.</li>
         <li><b>Payment data:</b> order and payment identifiers from Razorpay. Card/UPI details are handled by Razorpay, never by us.</li>
-        <li><b>Technical data:</b> IP address, device and browser information, error reports, and first-party usage events used for security, abuse prevention and product analytics.</li>
+        <li><b>Technical data:</b> IP address, device and browser information, error reports, and first-party usage events used for security, abuse prevention and product analytics. To count post views once per person, we keep a short-lived (one hour) record of who viewed a post.</li>
       </ul>
       <h2>Why we use it</h2>
       <ul>
@@ -35,6 +36,7 @@ export default function PrivacyPage() {
         <li><b>Sentry</b> (United States): error reports, with passwords, tokens and cookies removed before sending.</li>
         <li><b>Google</b>: &ldquo;Continue with Google&rdquo; sign-in, if you choose it.</li>
       </ul>
+      <p>When a post contains a link, our server visits that page once to build a preview card (title, description, image); the image is then loaded by your browser from the linked site.</p>
       <p>Some of these providers process data outside India. We only transfer data to countries the Government of India has not restricted under the DPDP Act.</p>
       <h2>Who else sees it</h2>
       <p>Debates, usernames, profiles, ratings and vote counts are public. Otherwise we share data only with the providers above, and with authorities when legally required.</p>
@@ -45,7 +47,7 @@ export default function PrivacyPage() {
       <h2>The Android app</h2>
       <p>The app shows the {BUSINESS.brand} website and collects nothing beyond what the website does. It does not read your contacts, location or files. The camera and microphone are used only when you join a video debate, after Chrome asks for your permission.</p>
       <h2>Retention</h2>
-      <p>We keep account data while your account is active. When you delete your account we erase your profile, sign-ins, follows, notifications, posts, likes, bookmarks, blocks and mutes; debate content is kept but de-identified, because each debate belongs to both sides and its audience. Payment records are kept as long as tax law requires. Server logs and error reports are kept for up to 90 days.</p>
+      <p>We keep account data while your account is active. When you delete your account we erase your profile, sign-ins, follows, notifications, posts, likes, bookmarks, blocks, mutes and conversations; debate content is kept but de-identified, because each debate belongs to both sides and its audience. Payment records are kept as long as tax law requires. Server logs and error reports are kept for up to 90 days.</p>
       <h2>Your rights</h2>
       <ul>
         <li><b>Access:</b> download your data from Settings → Download my data.</li>

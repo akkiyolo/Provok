@@ -31,6 +31,13 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(60), nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String(1000))
     bio: Mapped[str | None] = mapped_column(String(280))
+    banner_url: Mapped[str | None] = mapped_column(String(1000))
+    website: Mapped[str | None] = mapped_column(String(200))
+    location: Mapped[str | None] = mapped_column(String(60))
+    pinned_post_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("posts.id", ondelete="SET NULL",
+                                                                                         use_alter=True))
+    # Provok's own accounts (e.g. @provok, which posts the Daily Debate). Shown with a badge.
+    is_official: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     role: Mapped[str] = mapped_column(String(16), nullable=False, default=UserRole.USER, server_default=UserRole.USER)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default=UserStatus.ACTIVE,
                                         server_default=UserStatus.ACTIVE)

@@ -2,17 +2,19 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import (
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Index,
     Integer,
     SmallInteger,
     String,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy import text as sql_text
@@ -53,6 +55,9 @@ class Post(Base):
     repost_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     quote_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     like_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    view_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    # {"url", "title", "description", "image", "site"} for the first link, fetched after posting.
+    link_preview: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = created_at_col()
 
     __table_args__ = (
@@ -191,3 +196,84 @@ class PostFactCheck(Base):
         CheckConstraint("rating IS NULL OR rating IN ('accurate', 'mostly_accurate', 'missing_context', 'misleading', "
                         "'false', 'unverifiable')", name="rating_valid"),
     )
+
+
+POLL_MIN_OPTIONS, POLL_MAX_OPTIONS, POLL_OPTION_MAX_CHARS = 2, 4, 40
+
+
+class PostPoll(Base):
+    __tablename__ = "post_polls"
+
+    post_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("posts.id", ondelete="CASCADE"),
+                                               primary_key=True)
+    options: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = created_at_col()
+
+
+class PollVote(Base):
+    """One vote per person per poll; final once cast (as on X)."""
+    __tablename__ = "poll_votes"
+
+    post_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("post_polls.post_id", ondelete="CASCADE"),
+                                               primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+                                               primary_key=True)
+    option: Mapped[int] = mapped_column(SmallInteger, nullable=False)
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (CheckConstraint(f"option >= 0 AND option < {POLL_MAX_OPTIONS}", name="option_range"),)
+
+
+class DailyDebate(Base):
+    """One question a day: an official post with a Yes/No poll, plus an AI-vs-AI debate on it."""
+    __tablename__ = "daily_debates"
+
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    question: Mapped[str] = mapped_column(String(400), nullable=False)
+    post_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("posts.id", ondelete="SET NULL"))
+    debate_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True),
+                                                       ForeignKey("debates.id", ondelete="SET NULL"))
+    created_at: Mapped[datetime] = created_at_col()
+
+
+# ── Direct messages ────────────────────────────────────────────────────────
+
+
+class Conversation(Base):
+    """A one-to-one conversation. The pair is stored ordered (user_a < user_b) so it's unique either way round."""
+    __tablename__ = "conversations"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_a: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+                                              nullable=False)
+    user_b: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+                                              nullable=False)
+    a_read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    b_read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (
+        CheckConstraint("user_a < user_b", name="ordered_pair"),
+        UniqueConstraint("user_a", "user_b", name="uq_conversations_pair"),
+        Index("ix_conversations_a_last", "user_a", "last_message_at"),
+        Index("ix_conversations_b_last", "user_b", "last_message_at"),
+    )
+
+
+DM_MAX_CHARS = 1000
+
+
+class DirectMessage(Base):
+    __tablename__ = "direct_messages"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    conversation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True),
+                                                       ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False)
+    sender_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+                                                 nullable=False)
+    text: Mapped[str] = mapped_column(String(DM_MAX_CHARS), nullable=False)
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (Index("ix_direct_messages_conversation_created", "conversation_id", "created_at"),)

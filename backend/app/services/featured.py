@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import random
+import uuid
 from pathlib import Path
 
 from sqlalchemy import select
@@ -28,7 +29,9 @@ def load_questions(path: Path = QUESTIONS_PATH) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-async def create_featured(count: int = 1) -> list[str]:
+async def create_featured(count: int = 1, *, items: list[dict] | None = None,
+                          source_post_id: uuid.UUID | None = None) -> list[str]:
+    """AI-vs-AI featured debates, from the question bank (or the given `items`, e.g. today's Daily Debate)."""
     if not await flags.is_enabled(flags.AI_DEBATES):
         return []
     models = await selectable_debaters()
@@ -37,8 +40,11 @@ async def create_featured(count: int = 1) -> list[str]:
         return []
     async with session_scope() as db:
         used = set((await db.scalars(select(Debate.question).where(Debate.is_featured.is_(True)))).all())
-    pool = [q for q in load_questions() if q["question"] not in used] or load_questions()
-    random.shuffle(pool)
+    if items is not None:
+        pool = list(items)
+    else:
+        pool = [q for q in load_questions() if q["question"] not in used] or load_questions()
+        random.shuffle(pool)
     created: list[str] = []
     personas = list(Persona)
     for item in pool[:count]:
@@ -48,7 +54,8 @@ async def create_featured(count: int = 1) -> list[str]:
         outbox = Outbox()
         async with session_scope() as db:
             debate = Debate(question=item["question"], topic_category=item.get("category", "other"), mode=Mode.AVA.value,
-                            timing=Timing.LIVE.value, status="opening", is_featured=True, word_limit=180)
+                            timing=Timing.LIVE.value, status="opening", is_featured=True, word_limit=180,
+                            source_post_id=source_post_id)
             db.add(debate)
             await db.flush()
             sides = {}

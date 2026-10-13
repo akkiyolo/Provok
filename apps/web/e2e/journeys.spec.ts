@@ -212,3 +212,42 @@ test("challenge: a post becomes a debate with its author, and posts translate", 
   await expect(alice.page).toHaveURL(/\/p\//);
   await expect(alice.page.getByText("SETTLED IN THE ARENA")).toBeVisible();
 });
+
+test("polls, explore and direct messages", async ({ browser }) => {
+  const alice = await newUserPage(browser, "pa");
+  const bob = await newUserPage(browser, "pb");
+  const question = `Best time for chai? ${Date.now() % 10000}`;
+
+  await alice.page.goto("/home");
+  const home = alice.page.locator("section[aria-labelledby='home-heading']");
+  await home.getByLabel("Write a post").fill(question);
+  await home.getByRole("button", { name: "Add a poll" }).click();
+  await home.getByLabel("Poll choice 1").fill("Morning");
+  await home.getByLabel("Poll choice 2").fill("Evening");
+  await home.getByRole("button", { name: "Post", exact: true }).click();
+  await expect(home.locator("article", { hasText: question })).toBeVisible();
+
+  await bob.page.goto("/home");
+  const card = bob.page.locator("article", { hasText: question });
+  await card.getByRole("button", { name: "Evening" }).click();
+  await expect(card.getByText("100%")).toBeVisible();
+  await expect(card.getByText(/1 vote/)).toBeVisible();
+
+  await bob.page.goto("/explore");
+  await expect(bob.page.getByRole("heading", { name: "Who to follow" })).toBeVisible();
+  await expect(bob.page.getByText("TOP POSTS TODAY")).toBeVisible();
+
+  await bob.page.goto(`/u/${alice.username}`);
+  await bob.page.getByRole("button", { name: "Message", exact: true }).click();
+  await expect(bob.page).toHaveURL(/\/messages\//);
+  await bob.page.getByLabel("Message", { exact: true }).fill("Evening chai is the best chai");
+  await bob.page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(bob.page.getByText("Evening chai is the best chai")).toBeVisible();
+
+  await alice.page.goto("/messages");
+  await alice.page.getByRole("tab", { name: /Requests/ }).click();
+  await alice.page.getByText("Evening chai is the best chai").click();
+  await alice.page.getByLabel("Message", { exact: true }).fill("Morning, always");
+  await alice.page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(alice.page.getByText("Morning, always")).toBeVisible();
+});

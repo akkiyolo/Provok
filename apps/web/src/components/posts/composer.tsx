@@ -48,10 +48,13 @@ export function Composer({ replyTo, quote, onPosted, autoFocus, placeholder }: {
   const [text, setText] = useState("");
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [busy, setBusy] = useState(false);
+  const [poll, setPoll] = useState<string[] | null>(null);
+  const [pollHours, setPollHours] = useState(24);
   const fileRef = useRef<HTMLInputElement>(null);
   const uploading = uploads.some((u) => !u.id && !u.error);
   const count = [...text.trim()].length;
-  const canPost = !busy && !uploading && count <= POST_MAX_CHARS && (count > 0 || uploads.some((u) => u.id));
+  const pollOk = !poll || (count > 0 && poll.filter((o) => o.trim()).length >= 2 && poll.every((o) => o.trim().length <= 40));
+  const canPost = !busy && !uploading && pollOk && count <= POST_MAX_CHARS && (count > 0 || uploads.some((u) => u.id));
 
   const addFiles = (files: FileList | null) => {
     if (!files?.length || !requireAuth("Sign in to post.")) return;
@@ -87,10 +90,13 @@ export function Composer({ replyTo, quote, onPosted, autoFocus, placeholder }: {
         media_ids: uploads.filter((u) => u.id).map((u) => u.id),
         reply_to_id: replyTo?.id ?? null,
         quote_of_id: quote?.id ?? null,
+        poll: poll ? poll.map((o) => o.trim()).filter(Boolean) : null,
+        poll_hours: poll ? pollHours : null,
       });
       uploads.forEach((u) => URL.revokeObjectURL(u.preview));
       setText("");
       setUploads([]);
+      setPoll(null);
       await qc.invalidateQueries({ queryKey: ["posts"] });
       toast(replyTo ? "Reply posted." : "Posted.", "success");
       onPosted?.(created);
@@ -135,13 +141,48 @@ export function Composer({ replyTo, quote, onPosted, autoFocus, placeholder }: {
             ))}
           </div>
         )}
+        {poll && (
+          <fieldset className="mt-2 flex flex-col gap-2 rounded-2xl border border-line p-3">
+            <legend className="sr-only">Poll options</legend>
+            {poll.map((o, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input value={o} maxLength={40} placeholder={`Choice ${i + 1}`} aria-label={`Poll choice ${i + 1}`}
+                  onChange={(e) => setPoll((pl) => pl!.map((x, j) => (j === i ? e.target.value : x)))}
+                  className="h-10 flex-1 rounded-xl border border-line bg-surface-2 px-3 text-[14.5px] outline-none focus:border-text/50" />
+                {poll.length > 2 && (
+                  <button type="button" aria-label={`Remove choice ${i + 1}`} onClick={() => setPoll((pl) => pl!.filter((_, j) => j !== i))}
+                    className="grid size-8 place-items-center rounded-full text-faint hover:bg-surface-2 hover:text-text">×</button>
+                )}
+              </div>
+            ))}
+            <div className="flex flex-wrap items-center gap-2 text-[13px]">
+              {poll.length < 4 && <button type="button" onClick={() => setPoll((pl) => [...pl!, ""])} className="font-semibold hover:underline">+ Add choice</button>}
+              <label className="ml-auto flex items-center gap-1.5 text-dim">
+                Runs for
+                <select value={pollHours} onChange={(e) => setPollHours(Number(e.target.value))}
+                  className="rounded-lg border border-line bg-surface-2 px-2 py-1 text-text">
+                  <option value={1}>1 hour</option><option value={6}>6 hours</option><option value={24}>1 day</option>
+                  <option value={72}>3 days</option><option value={168}>7 days</option>
+                </select>
+              </label>
+              <button type="button" onClick={() => setPoll(null)} className="text-danger hover:underline">Remove poll</button>
+            </div>
+          </fieldset>
+        )}
         <div className="mt-2 flex items-center gap-2 border-t border-line pt-2">
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden"
             onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploads.length >= MAX_MEDIA}
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={uploads.length >= MAX_MEDIA || !!poll}
             aria-label="Add photos" className="grid size-9 place-items-center rounded-full text-dim transition hover:bg-surface-2 hover:text-text disabled:opacity-40">
             <svg viewBox="0 0 20 20" className="size-5" fill="currentColor" aria-hidden><path d="M3 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v7.6l3.5-3.6 2.6 2.6L13 9.7l3 3V6zm3 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" /></svg>
           </button>
+          {!replyTo && !quote && (
+            <button type="button" onClick={() => setPoll((pl) => (pl ? null : ["", ""]))} disabled={uploads.length > 0}
+              aria-label={poll ? "Remove poll" : "Add a poll"} aria-pressed={!!poll}
+              className={cx("grid size-9 place-items-center rounded-full transition hover:bg-surface-2 disabled:opacity-40", poll ? "text-text" : "text-dim hover:text-text")}>
+              <svg viewBox="0 0 20 20" className="size-5" fill="currentColor" aria-hidden><path d="M3 4h9v2.4H3zm0 4.8h14v2.4H3zm0 4.8h6V16H3z" /></svg>
+            </button>
+          )}
           <span className="ml-auto" />
           {count > 0 && <CharRing count={count} />}
           <Button size="sm" onClick={submit} loading={busy} disabled={!canPost}>{replyTo ? "Reply" : "Post"}</Button>

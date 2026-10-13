@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 
 import { DebateCard } from "@/components/debate-card";
 import { PostList, usePosts } from "@/components/posts/feeds";
+import { PostCard } from "@/components/posts/post-card";
+import { VerifiedBadge } from "@/components/posts/post-extras";
 import { useToast } from "@/components/toast";
 import { Avatar, Button, Empty, ErrorBlock, PageTitle, Spinner, Tabs } from "@/components/ui";
 import { ApiError, api, del, errorMessage, get, post } from "@/lib/api";
@@ -62,12 +64,26 @@ export function ProfileView({ username }: { username: string }) {
   const total = p.wins + p.losses + p.draws;
   return (
     <div className="mx-auto max-w-5xl px-4 pt-8 sm:px-6">
-      <section className="stage grain flex flex-col gap-6 rounded-[2rem] border border-line p-6 sm:flex-row sm:items-center sm:p-8">
+      {p.banner_url && (
+        // eslint-disable-next-line @next/next/no-img-element -- user-uploaded cover photo
+        <img src={p.banner_url} alt="" className="mb-[-3rem] aspect-[3/1] w-full rounded-[2rem] border border-line object-cover" />
+      )}
+      <section className={cx("stage grain relative flex flex-col gap-6 rounded-[2rem] border border-line p-6 sm:flex-row sm:items-center sm:p-8", p.banner_url && "mx-3 sm:mx-6")}>
         <Avatar user={p} size={96} />
         <div className="flex-1">
-          <h1 className="font-display text-4xl font-extrabold leading-none">{p.display_name}</h1>
+          <h1 className="font-display text-4xl font-extrabold leading-none">{p.display_name}{p.verified && <VerifiedBadge />}</h1>
           <p className="mt-1 text-dim">@{p.username} · joined {new Date(p.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</p>
           {p.bio && <p className="mt-3 max-w-lg text-[15px]">{p.bio}</p>}
+          {(p.location || p.website) && (
+            <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[14px] text-dim">
+              {p.location && <span>📍 {p.location}</span>}
+              {p.website && (
+                <a href={p.website} target="_blank" rel="noopener noreferrer nofollow ugc" className="text-text underline decoration-line-strong underline-offset-2 hover:decoration-text">
+                  🔗 {p.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+                </a>
+              )}
+            </p>
+          )}
           <div className="mt-4 flex flex-wrap gap-5 text-sm">
             <span><b className="font-mono text-lg">{p.rating}</b> <span className="text-dim">rating · #{p.rank}</span></span>
             <span><b className="font-mono text-lg">{p.wins}</b><span className="text-dim">W </span><b className="font-mono text-lg">{p.losses}</b><span className="text-dim">L </span><b className="font-mono text-lg">{p.draws}</b><span className="text-dim">D</span></span>
@@ -83,6 +99,13 @@ export function ProfileView({ username }: { username: string }) {
               onClick={() => requireAuth("Sign in to follow debaters.") && follow.mutate(p.is_following)}>
               {p.is_following ? "Following" : "Follow"}
             </Button>
+            {!p.is_blocked && !p.blocks_you && (
+              <Button variant="outline" onClick={() => {
+                if (!requireAuth("Sign in to send messages.")) return;
+                void post<{ id: string }>(`/conversations/with/${p.username}`).then((c) => router.push(`/messages/${c.id}`))
+                  .catch((e) => toast(errorMessage(e), "error"));
+              }}>Message</Button>
+            )}
             <Button variant="for" onClick={() => {
               if (!requireAuth("Sign in to challenge someone.")) return;
               sessionStorage.setItem("provok:challenge", p.username);
@@ -116,6 +139,9 @@ export function ProfileView({ username }: { username: string }) {
           <div className="sticky top-14 z-20 -mx-4 mt-8 bg-bg/85 px-4 py-3 backdrop-blur-xl sm:top-16 sm:mx-0 sm:px-0">
             <Tabs value={tab} onChange={setTab} items={PROFILE_TABS} className="w-fit max-w-full" />
           </div>
+          {tab === "posts" && p.pinned && (
+            <div className="-mx-4 mb-3 border-line sm:mx-0 sm:rounded-3xl sm:border"><PostCard p={p.pinned} showPinned /></div>
+          )}
           {tab === "debates" ? (
             p.debates.length === 0 ? <Empty title="No debates yet." /> : (
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{p.debates.map((d) => <DebateCard key={d.id} d={d} />)}</div>

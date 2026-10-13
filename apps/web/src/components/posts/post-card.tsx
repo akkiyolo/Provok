@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { openCompose } from "@/components/posts/compose-store";
 import { ChallengeSheet, FactCheckNote, Translate, useFactCheck } from "@/components/posts/post-ai";
+import { LikersSheet, LinkCard, PollView, VerifiedBadge } from "@/components/posts/post-extras";
 import { PostText } from "@/components/posts/post-text";
 import { ReportButton } from "@/components/report";
 import { useShare } from "@/components/share";
@@ -96,8 +97,8 @@ const menuItem = "block w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-s
 
 // ── Card ───────────────────────────────────────────────────────────────────
 
-export function PostCard({ p, linked = true, focus = false, embedded = false }: {
-  p: PostView; linked?: boolean; focus?: boolean; embedded?: boolean;
+export function PostCard({ p, linked = true, focus = false, embedded = false, showPinned = false }: {
+  p: PostView; linked?: boolean; focus?: boolean; embedded?: boolean; showPinned?: boolean;
 }) {
   const { requireAuth } = useAuth();
   const router = useRouter();
@@ -107,7 +108,8 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
   // Local, optimistic copy of the counters and the viewer's reactions; the server's answer replaces it.
   const [view, setView] = useState(p);
   const [removed, setRemoved] = useState(false);
-  const [challenging, setChallenging] = useState(false);
+  const [challenging, setChallenging] = useState<false | "invite" | "open">(false);
+  const [likersOpen, setLikersOpen] = useState(false);
   const factcheck = useFactCheck(view);
   const author = view.author;
   const href = `/p/${view.id}`;
@@ -131,6 +133,18 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
       }
     } catch (e) {
       setView(before);
+      toast(errorMessage(e), "error");
+    }
+  };
+
+  const pin = async (on: boolean) => {
+    try {
+      if (on) await post(`/posts/${view.id}/pin`);
+      else await del(`/posts/${view.id}/pin`);
+      setView((v) => ({ ...v, pinned: on }));
+      toast(on ? "Pinned to your profile." : "Unpinned.", "success");
+      void qc.invalidateQueries({ queryKey: ["profile"] });
+    } catch (e) {
       toast(errorMessage(e), "error");
     }
   };
@@ -170,6 +184,9 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
     <article onClick={open} aria-labelledby={`post-${view.feed_id}-author`}
       className={cx("px-4 pt-3 transition sm:px-5", embedded ? "pb-3" : "border-b border-line pb-1",
         linked && "cursor-pointer hover:bg-surface/60")}>
+      {showPinned && view.pinned && (
+        <p className="mb-1 pl-[52px] text-[12.5px] font-semibold text-faint">📌 Pinned</p>
+      )}
       {view.reposted_by && (
         <p className="mb-1 flex items-center gap-1.5 pl-[52px] text-[12.5px] font-semibold text-faint">
           {I.repost}
@@ -186,6 +203,7 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
               {author ? (
                 <Link href={`/u/${author.username}`} className="font-semibold hover:underline">{author.display_name}</Link>
               ) : <span className="font-semibold">Deleted user</span>}
+              {author?.verified && <VerifiedBadge />}
               {author && <span className="text-faint"> @{author.username}</span>}
               {author && (author.debates ?? 0) > 0 && author.rating !== null && (
                 <span title={`Debate rating ${author.rating} from ${author.debates} debate${author.debates === 1 ? "" : "s"}`}
@@ -198,7 +216,14 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
               <button type="button" aria-label="More options" onClick={toggle} className="-mr-1.5 -mt-1 grid size-8 place-items-center rounded-full text-faint hover:bg-surface-2 hover:text-text">{I.more}</button>
             )}>
               {(close) => view.viewer.is_author ? (
-                <button role="menuitem" className={cx(menuItem, "text-danger")} onClick={() => { close(); void remove(); }}>Delete post</button>
+                <>
+                  {!view.reply_to && (
+                    <button role="menuitem" className={menuItem} onClick={() => { close(); void pin(!view.pinned); }}>
+                      {view.pinned ? "Unpin from profile" : "Pin to your profile"}
+                    </button>
+                  )}
+                  <button role="menuitem" className={cx(menuItem, "text-danger")} onClick={() => { close(); void remove(); }}>Delete post</button>
+                </>
               ) : (
                 <>
                   {view.text && !factcheck.fc && (
@@ -217,7 +242,10 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
           {view.text && <PostText text={view.text} className={cx("mt-0.5 whitespace-pre-wrap break-words leading-relaxed", focus ? "text-[18px]" : "text-[15px]")} />}
           {!embedded && <Translate p={view} />}
           {!embedded && factcheck.fc && <FactCheckNote fc={factcheck.fc} />}
+          {view.poll && !embedded && <PollView p={view} onVoted={(fresh) => setView((v) => ({ ...fresh, feed_id: v.feed_id, reposted_by: v.reposted_by }))}
+            onDebate={() => requireAuth("Sign in to start a debate.") && setChallenging("open")} />}
           <MediaGrid media={view.media} />
+          {view.link_preview && view.media.length === 0 && !view.quote && <LinkCard lp={view.link_preview} />}
           {!embedded && view.quote && (isPost(view.quote) ? (
             <div className="mt-3 overflow-hidden rounded-2xl border border-line" onClick={(e) => e.stopPropagation()}>
               <PostCard p={view.quote} embedded />
@@ -247,7 +275,7 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
                 <span className="grid size-7 place-items-center">{I.challenge}</span>{view.debates}
               </Link>
             ) : (
-              <Action label="Challenge to a debate" count={view.debates} onClick={() => requireAuth("Sign in to challenge.") && setChallenging(true)}>{I.challenge}</Action>
+              <Action label="Challenge to a debate" count={view.debates} onClick={() => requireAuth("Sign in to challenge.") && setChallenging("invite")}>{I.challenge}</Action>
             )}
             <Action label={view.viewer.bookmarked ? "Remove bookmark" : "Bookmark"} active={view.viewer.bookmarked}
               onClick={() => void react("bookmark", !view.viewer.bookmarked)}>{I.bookmark(view.viewer.bookmarked)}</Action>
@@ -255,7 +283,19 @@ export function PostCard({ p, linked = true, focus = false, embedded = false }: 
               {I.share}
             </Action>
           </div>}
-          {challenging && <ChallengeSheet p={view} open={challenging} onClose={() => setChallenging(false)} />}
+          {focus && (view.counts.likes > 0 || view.counts.views > 0) && (
+            <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 border-t border-line py-2.5 text-[14px] text-dim">
+              {view.counts.likes > 0 && (
+                <button type="button" onClick={() => setLikersOpen(true)} className="hover:underline">
+                  <b className="text-text">{compact(view.counts.likes)}</b> Like{view.counts.likes === 1 ? "" : "s"}
+                </button>
+              )}
+              {view.counts.reposts > 0 && <span><b className="text-text">{compact(view.counts.reposts)}</b> Repost{view.counts.reposts === 1 ? "" : "s"}</span>}
+              <span><b className="text-text">{compact(view.counts.views)}</b> View{view.counts.views === 1 ? "" : "s"}</span>
+            </p>
+          )}
+          {challenging && <ChallengeSheet p={view} mode={challenging} open onClose={() => setChallenging(false)} />}
+          {likersOpen && <LikersSheet postId={view.id} open={likersOpen} onClose={() => setLikersOpen(false)} />}
         </div>
       </div>
     </article>

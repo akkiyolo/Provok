@@ -23,7 +23,8 @@ export function SettingsView() {
   const toast = useToast();
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ display_name: "", username: "", bio: "" });
+  const [form, setForm] = useState({ display_name: "", username: "", bio: "", location: "", website: "" });
+  const bannerRef = useRef<HTMLInputElement>(null);
   const [pw, setPw] = useState({ current_password: "", new_password: "" });
   const [busy, setBusy] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -33,7 +34,8 @@ export function SettingsView() {
     if (status === "anon") requireAuth("Sign in to manage your account.");
   }, [status, requireAuth]);
   useEffect(() => {
-    if (user) setTimeout(() => setForm({ display_name: user.display_name, username: user.username, bio: user.bio ?? "" }), 0);
+    if (user) setTimeout(() => setForm({ display_name: user.display_name, username: user.username, bio: user.bio ?? "",
+      location: user.location ?? "", website: user.website ?? "" }), 0);
   }, [user]);
 
   if (!user) return <div className="grid min-h-[50dvh] place-items-center"><Spinner className="size-6" /></div>;
@@ -88,6 +90,32 @@ export function SettingsView() {
             <label htmlFor="bio" className="text-[13px] font-medium text-dim">Bio</label>
             <textarea id="bio" value={form.bio} maxLength={280} rows={3} onChange={(e) => setForm({ ...form, bio: e.target.value })}
               className="rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[15px] outline-none focus:border-text/60" />
+          </div>
+          <Field label="Location" value={form.location} maxLength={60} placeholder="City, India" onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          <Field label="Website" value={form.website} maxLength={200} placeholder="yourblog.in" onChange={(e) => setForm({ ...form, website: e.target.value })} />
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-medium text-dim">Cover photo</span>
+            {user.banner_url && (
+              // eslint-disable-next-line @next/next/no-img-element -- user-uploaded cover photo
+              <img src={user.banner_url} alt="" className="aspect-[3/1] w-full rounded-2xl border border-line object-cover" />
+            )}
+            <Button type="button" size="sm" variant="outline" className="w-fit" loading={busy === "banner"} onClick={() => bannerRef.current?.click()}>
+              {user.banner_url ? "Change cover photo" : "Add a cover photo"}
+            </Button>
+            <input ref={bannerRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                const fd = new FormData();
+                fd.append("file", f);
+                void run("banner", async () => {
+                  const r = await api<{ banner_url: string }>("/me/banner", { method: "POST", form: fd });
+                  setUser({ ...user, banner_url: r.banner_url });
+                  toast("Cover photo updated.", "success");
+                });
+                e.target.value = "";
+              }} />
+            <span className="text-[12px] text-faint">Wide images work best (3:1, e.g. 1500 × 500).</span>
           </div>
           <Button type="submit" loading={busy === "profile"} className="w-fit">Save profile</Button>
         </form>

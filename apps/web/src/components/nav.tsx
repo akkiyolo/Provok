@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { useUnreadMessages } from "@/components/messages";
 import { openCompose } from "@/components/posts/compose-store";
 import { Avatar, Button, Sheet } from "@/components/ui";
 import { get } from "@/lib/api";
@@ -68,6 +69,20 @@ function Bell() {
   );
 }
 
+function MessagesLink() {
+  const unread = useUnreadMessages();
+  return (
+    <Link href="/messages" aria-label={`Messages${unread ? `, ${unread} unread` : ""}`} className="relative hidden size-9 place-items-center rounded-full text-dim transition hover:bg-surface-2 hover:text-text sm:grid">
+      <svg viewBox="0 0 20 20" className="size-[18px]" fill="currentColor" aria-hidden><path d="M3 4.5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm.6 1.6 6.4 4.6 6.4-4.6z" /></svg>
+      {unread > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 grid min-w-[18px] place-items-center rounded-full bg-live px-1 font-mono text-[10px] font-bold text-white">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </Link>
+  );
+}
+
 function AccountMenu() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
@@ -110,6 +125,7 @@ function AccountMenu() {
 
 const LINKS = [
   { href: "/home", label: "Home" },
+  { href: "/explore", label: "Explore" },
   { href: "/", label: "Arena" },
   { href: "/challenges", label: "Challenges" },
   { href: "/leaderboard", label: "Leaderboard" },
@@ -138,6 +154,7 @@ export function TopNav() {
             <svg viewBox="0 0 20 20" className="size-[18px]" fill="currentColor" aria-hidden><path d="M8.5 3a5.5 5.5 0 1 0 3.3 9.9l3.6 3.6 1.1-1.1-3.6-3.6A5.5 5.5 0 0 0 8.5 3zm0 1.6a3.9 3.9 0 1 1 0 7.8 3.9 3.9 0 0 1 0-7.8z" /></svg>
           </Link>
           <ThemeToggle />
+          {status === "authed" && <MessagesLink />}
           {status === "authed" && <Bell />}
           <span className="hidden sm:inline-flex">
             <Button size="sm" variant="primary" onClick={() => requireAuth("Sign in to post.") && openCompose()}>Post</Button>
@@ -193,13 +210,13 @@ export function BottomNav() {
   return (
     <nav aria-label="Mobile" className="fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
       {tab("/home", "Home", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M10 2.5 2.5 9v8.5h5v-5h5v5h5V9z" /></svg>)}
-      {tab("/", "Arena", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M3 4h6v12H3zm8 0h6v12h-6z" /></svg>)}
+      {tab("/explore", "Explore", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M8.5 3a5.5 5.5 0 1 0 3.3 9.9l3.6 3.6 1.1-1.1-3.6-3.6A5.5 5.5 0 0 0 8.5 3zm0 1.6a3.9 3.9 0 1 1 0 7.8 3.9 3.9 0 0 1 0-7.8z" /></svg>)}
       <button onClick={() => requireAuth("Sign in to post or start a debate.") && setCreating(true)} aria-label="Create a post or debate" className="flex flex-1 items-center justify-center">
         <span className="grid size-11 place-items-center rounded-full bg-for text-[#0a0a0b] shadow-[0_0_24px_var(--for-glow)]">
           <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M9 4h2v5h5v2h-5v5H9v-5H4V9h5z" /></svg>
         </span>
       </button>
-      {tab("/leaderboard", "Ranks", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M3 11h4v6H3zm5-7h4v13H8zm5 4h4v9h-4z" /></svg>)}
+      {tab("/messages", "Messages", <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M3 4.5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm.6 1.6 6.4 4.6 6.4-4.6z" /></svg>)}
       {tab(user ? `/u/${user.username}` : "/login", user ? "You" : "Sign in",
         <svg viewBox="0 0 20 20" className="size-5" fill="currentColor"><path d="M10 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm-6 7c0-3.3 2.7-5 6-5s6 1.7 6 5z" /></svg>)}
       <CreateSheet open={creating} onClose={() => setCreating(false)} />

@@ -36,6 +36,8 @@ export interface PublicUser {
   rating: number | null;
   /** Finished debates; the rating means something only once this is above zero. */
   debates?: number;
+  /** Provok's own accounts (e.g. @provok). */
+  verified?: boolean;
 }
 
 export interface ModelRef {
@@ -191,6 +193,9 @@ export interface Me {
   has_password: boolean;
   onboarded: boolean;
   email_notifications: boolean;
+  banner_url: string | null;
+  website: string | null;
+  location: string | null;
   created_at: string;
 }
 
@@ -259,6 +264,11 @@ export interface Profile {
   is_blocked: boolean;
   blocks_you: boolean;
   is_muted: boolean;
+  banner_url: string | null;
+  website: string | null;
+  location: string | null;
+  verified: boolean;
+  pinned: PostView | null;
 }
 
 // ── Social layer (backend/app/services/posts.py build_views) ───────────────
@@ -285,11 +295,61 @@ export interface PostView {
   factcheck: FactCheck | null;
   media: PostMedia[];
   reply_to: { id: string; username: string | null } | null;
-  counts: { replies: number; reposts: number; quotes: number; likes: number };
+  counts: { replies: number; reposts: number; quotes: number; likes: number; views: number };
+  link_preview: LinkPreview | null;
+  poll: Poll | null;
+  /** Pinned to its author's profile. */
+  pinned: boolean;
   viewer: { liked: boolean; reposted: boolean; bookmarked: boolean; is_author: boolean };
   reposted_by: PublicUser | null;
   /** Embedded quoted post; `{ unavailable: true }` when it was deleted or hidden. */
   quote?: PostView | { unavailable: true } | null;
+}
+
+export interface LinkPreview {
+  url: string;
+  title: string;
+  description: string | null;
+  image: string | null;
+  site: string;
+}
+
+export interface Poll {
+  /** `votes` is null until you've voted (or the poll has ended), so nobody votes with the herd. */
+  options: { label: string; votes: number | null }[];
+  total: number;
+  ends_at: string;
+  closed: boolean;
+  viewer_vote: number | null;
+}
+
+export interface Suggestion {
+  user: PublicUser;
+  reason: string;
+}
+
+export interface DailyDebate {
+  day: string;
+  question: string;
+  post: PostView | null;
+  debate: DebateCard | null;
+}
+
+export interface Conversation {
+  id: string;
+  with: PublicUser;
+  last: DirectMessage | null;
+  last_message_at: string | null;
+  unread: boolean;
+  /** From someone you don't follow and you haven't replied yet. */
+  request: boolean;
+}
+
+export interface DirectMessage {
+  id: string;
+  text: string;
+  mine: boolean;
+  created_at: string;
 }
 
 export type FactCheckRating = "accurate" | "mostly_accurate" | "missing_context" | "misleading" | "false" | "unverifiable";

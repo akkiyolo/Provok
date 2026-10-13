@@ -65,6 +65,13 @@ async def seed_featured(count: int) -> None:
     print("created:", ", ".join(ids) or "none (no enabled models or AI debates paused)")
 
 
+async def daily_debate() -> None:
+    """Create today's Daily Debate now (the worker does this every morning; this is for the first run or a retry)."""
+    from backend.app.services.daily import create_daily
+    row = await create_daily()
+    print("created:", row.question if row else "already exists for today")
+
+
 def main() -> None:
     setup_logging()
     p = argparse.ArgumentParser(prog="provok")
@@ -79,6 +86,7 @@ def main() -> None:
     sub.add_parser("seed-models")
     f = sub.add_parser("seed-featured")
     f.add_argument("--count", type=int, default=1)
+    sub.add_parser("daily-debate")
     args = p.parse_args()
     if args.cmd == "migrate":
         raise SystemExit(migrate())
@@ -87,6 +95,7 @@ def main() -> None:
         "promote": lambda: promote(args.username),
         "seed-models": seed_models,
         "seed-featured": lambda: seed_featured(args.count),
+        "daily-debate": daily_debate,
     }[args.cmd]()
     asyncio.run(coro)
 

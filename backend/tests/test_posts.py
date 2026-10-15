@@ -27,7 +27,7 @@ async def notifications(actor) -> list[dict]:
 async def test_create_post_with_hashtags_and_mentions(client, make_user, jobs):
     alice, bob = await make_user("alice"), await make_user("bob")
     p = await post(alice, "Cricket beats football. @bob agree? #Cricket #IPL2027 #1 #क्रिकेट")
-    assert p["author"]["username"] == "alice" and p["counts"] == {"replies": 0, "reposts": 0, "quotes": 0, "likes": 0}
+    assert p["author"]["username"] == "alice" and p["counts"] == {"replies": 0, "reposts": 0, "quotes": 0, "likes": 0, "views": 0}
     assert p["viewer"]["is_author"] is True and p["reposted_by"] is None
     tags = (await client.get(f"{A}/tags/cricket")).json()
     assert [i["id"] for i in tags["items"]] == [p["id"]]

@@ -496,6 +496,42 @@ async def test_paused_debate_auto_resumes_after_outage(client, make_user, jobs, 
     assert (await alice.get(f"{D}/{did}")).json()["status"] == "completed"
 
 
+async def test_auto_resume_backs_off_and_gives_up_for_the_day(client, make_user, jobs, fake_llm):
+    from backend.app.core.redis import get_redis
+    from backend.app.llm.gateway import LLMError
+
+    def boom(_m):
+        raise LLMError("provider down", transient=True)
+
+    alice = await make_user("alice")
+    fake_llm.overrides[Role.WRITER] = boom
+    did = (await alice.post(D, ava_body())).json()["id"]
+    await jobs.run()
+
+    async def sweep_after_pause() -> bool:
+        """Pretend the pause is old, sweep, and say whether the debate was resumed."""
+        async with SessionFactory() as db:
+            await db.execute(update(Debate).where(Debate.id == uuid.UUID(did))
+                             .values(updated_at=utcnow() - timedelta(minutes=10)))
+            await db.commit()
+        await tasks.sweeper({})
+        resumed = (await alice.get(f"{D}/{did}")).json()["status"] != "paused"
+        await jobs.run()  # the provider is still down: paused again
+        return resumed
+
+    r = get_redis()
+    assert await sweep_after_pause()
+    assert not await sweep_after_pause()  # backing off
+    for _ in range(2):
+        await r.delete(f"autoresume:wait:{did}")  # the back-off has passed
+        assert await sweep_after_pause()
+    await r.delete(f"autoresume:wait:{did}")
+    assert not await sweep_after_pause()  # 3 tries used up: waits for tomorrow or an admin
+    assert 0 < await r.ttl(f"autoresume:{did}") <= 86400  # and tomorrow does come
+    await r.delete(f"autoresume:{did}")
+    assert await sweep_after_pause()
+
+
 async def test_engine_lock_does_not_block_child_inserts(client, make_user):
     """Regression: FOR UPDATE on debates blocked FK inserts (llm_calls, claims) for minutes during judging."""
     import asyncio

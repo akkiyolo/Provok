@@ -112,12 +112,18 @@ async def _auto_resume(now: datetime) -> None:
                                     Debate.updated_at <= now - timedelta(seconds=s.auto_resume_after_seconds))
             .where(Debate.paused_reason.in_(AUTO_RESUMABLE) | Debate.paused_reason.like("judge%"))
             .limit(20))).all()
+    r = get_redis()
     for debate_id in candidates:
-        key = f"autoresume:{debate_id}"
-        attempts = await get_redis().incr(key)
-        await get_redis().expire(key, 86400)
+        key, wait_key = f"autoresume:{debate_id}", f"autoresume:wait:{debate_id}"
+        if await r.exists(wait_key):
+            continue
+        attempts = await r.incr(key)
+        if attempts == 1:  # the day starts at the first retry; refreshing it on every sweep made it never end
+            await r.expire(key, 86400)
         if attempts > s.auto_resume_max_attempts:
             continue
+        # Back off (5, 15, 45 min with the defaults): a provider that failed twice in a row is rarely back in 5.
+        await r.set(wait_key, 1, ex=s.auto_resume_after_seconds * 3 ** attempts)
         log.info("debate_auto_resume", debate_id=str(debate_id), attempt=attempts)
         await _apply_and_flush(debate_id, lambda d: tx.Resumed(utcnow()))
 

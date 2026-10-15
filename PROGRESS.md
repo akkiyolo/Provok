@@ -214,6 +214,9 @@ Walked every page (98 views: logged out, user, admin × desktop and Pixel 7) on 
 - Verdict: "Judged by" shows the model's name (was the internal key); the scorecard scrolls cleanly on phones.
 - Mobile: the turn composer header wraps whole items; no footer under a chat thread.
 - CI on the S3 commit had failed on one stale test (`views` count), so S3 never deployed; fixed and deployed.
+- Auto-resume of paused debates: the retry counter's 1-day expiry was refreshed on every sweep, so "3×/day" was
+  really "3× ever"; retries now also back off (5, 15, 45 min). Found via a featured AvA on staging paused by a
+  Groq failure on 2026-10-15 (resume it from `/admin → Paused`).
 Android: TWA config checked (asset links, launch URL, in-app purchase hiding); nothing to change.
 
 ### Social network, phase S3: a full social app (2026-10-14)
@@ -376,7 +379,7 @@ religion and caste stay blocked at launch, Hindi comes in phase S2. Plan: S1 soc
 - **Critic before streaming** (spec v1 choice): draft → critique → optional revision → stream.
 - **Judge rotation**: each judging attempt uses one judge for both runs; a retry may rotate to the next
   enabled judge (never mid-verdict).
-- **Auto-resume**: debates paused by provider failures retry after 5 min, up to 3×/day, then wait for an admin.
+- **Auto-resume**: debates paused by provider failures retry after 5, 15 and 45 min (up to 3×/day), then wait for an admin.
 - **Concession** ends the rounds; the conceding side loses without an LLM verdict.
 
 ## Launch checklist

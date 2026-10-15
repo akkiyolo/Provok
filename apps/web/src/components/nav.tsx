@@ -200,7 +200,8 @@ export function BottomNav() {
   const path = usePathname();
   const { user, requireAuth } = useAuth();
   const [creating, setCreating] = useState(false);
-  if (path?.startsWith("/d/")) return null; // the arena owns the bottom of the screen
+  // Full-height screens (a debate, a chat) end at their own composer.
+  if (path?.startsWith("/d/") || path?.startsWith("/messages/")) return null; // the arena owns the bottom of the screen
   const tab = (href: string, label: string, icon: React.ReactNode) => (
     <Link href={href} className={cx("flex flex-1 flex-col items-center gap-0.5 py-2 text-[10.5px] font-medium", path === href ? "text-text" : "text-faint")}>
       {icon}
@@ -226,7 +227,8 @@ export function BottomNav() {
 
 export function Footer() {
   const path = usePathname();
-  if (path?.startsWith("/d/")) return null;
+  // Full-height screens (a debate, a chat) end at their own composer.
+  if (path?.startsWith("/d/") || path?.startsWith("/messages/")) return null;
   return (
     <footer className="mt-20 border-t border-line pb-24 pt-10 md:pb-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 md:flex-row md:items-center md:justify-between">

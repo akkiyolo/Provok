@@ -92,7 +92,7 @@ export function Composer({ debate, offsetMs, onSubmitted, onOpenClaims }: {
   const promptKey = `${debate.current_round}:${exp.kind}`;
   return (
     <div className={cx("rounded-3xl border bg-surface p-4 sm:p-5", exp.position === "for" ? "border-for/60 shadow-[0_0_40px_var(--for-glow)]" : "border-against/60 shadow-[0_0_40px_var(--against-glow)]")}>
-      <div className="mb-2 flex items-center gap-3">
+      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 whitespace-nowrap">
         <span className="font-mono text-[11px] font-bold tracking-[0.16em] text-live">YOUR TURN</span>
         <span className="text-[13px] text-dim">{ROUND_LABEL[debate.current_round!]} · {exp.kind}</span>
         <button type="button" onClick={onOpenClaims} className="rounded-full border border-line px-2.5 py-0.5 text-[12px] text-dim hover:text-text">

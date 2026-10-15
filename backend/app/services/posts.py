@@ -449,6 +449,8 @@ async def user_posts(db: AsyncSession, author: User, viewer: User | None, tab: s
         q = q.where(Post.id.in_(select(PostMedia.post_id).where(PostMedia.post_id.is_not(None))))
     else:
         q = q.where(Post.reply_to_id.is_(None))
+        if author.pinned_post_id:  # the profile shows it on top already
+            q = q.where(Post.id != author.pinned_post_id)
     rows, nxt = _page(list((await db.scalars(q.order_by(desc(Post.created_at), desc(Post.id))
                                              .limit(limit + 1))).all()), limit)
     return await _drop_dead_reposts(db, rows, hidden), nxt

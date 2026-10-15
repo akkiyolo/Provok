@@ -142,6 +142,20 @@ async def judge_debate(db: AsyncSession, debate: Debate, attempt: int = 0) -> Ve
         await db.flush()
         return VerdictResult(verdict, None)
 
+    # Walkover: a side that let every turn run out can't out-argue one that showed up, whatever a judge says.
+    silent = [p for p in ("for", "against") if all(t.is_forfeit for t in turns if side_pos[t.side_id] == p)]
+    if len(silent) == 1:
+        loser = silent[0]
+        winner = Position(loser).other.value
+        verdict = Verdict(debate_id=debate.id, winner_side_id=pos_side[winner].id, is_close=False,
+                          scores={}, per_round={},
+                          reasoning=f"{loser.upper()} didn't make an argument, so {winner.upper()} takes the debate.",
+                          judge_runs=[], judge_model_key=None)
+        db.add(verdict)
+        await db.flush()
+        await _update_ratings(db, debate, winner)
+        return VerdictResult(verdict, None)
+
     models = await all_models()
     debater_providers = {models[s.swarm_config["model_key"]].provider for s in debate.sides
                          if s.swarm_config and s.swarm_config.get("model_key") in models}

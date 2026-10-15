@@ -63,6 +63,15 @@ export function refreshSession(): Promise<TokenResponse | null> {
   return refreshInFlight;
 }
 
+// A page's first queries can fire before AuthProvider restores the session (child effects run before the
+// provider's), and an anonymous answer would stick in the cache: your own profile offering "Follow", posts
+// missing your likes. So the first non-auth request in the browser waits for the session to be restored once.
+let sessionRestored: Promise<unknown> | null = null;
+function restoreSessionOnce(): Promise<unknown> {
+  sessionRestored ??= accessToken ? Promise.resolve() : refreshSession();
+  return sessionRestored;
+}
+
 export interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
@@ -108,6 +117,8 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
       ...(isServer && opts.next ? { next: opts.next } : {}),
     });
   };
+
+  if (!isServer && !path.startsWith("/auth/")) await restoreSessionOnce();
 
   let res: Response;
   try {

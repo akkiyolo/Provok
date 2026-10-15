@@ -231,6 +231,7 @@ export interface VerdictResponse {
     reasoning: string;
     decisive_claims: { id: string; seq: number; position: Position; text: string; status: ClaimStatus }[];
     model_key: string | null;
+    model_name: string | null;
     created_at: string;
   };
   audience: {

@@ -1,6 +1,6 @@
 # PROGRESS
 
-_Last updated: 2026-10-10_
+_Last updated: 2026-10-15_
 
 The v1 codebase (FastAPI + vanilla JS, preserved in `legacy/`) was rebuilt into a production
 architecture. The stack choices were made with the founder: **FastAPI backend (no Supabase) + Next.js
@@ -201,6 +201,20 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - New personal Play accounts need a 12-tester, 14-day closed test before production.
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
+
+### Full app review, web + Android (2026-10-15)
+
+Walked every page (98 views: logged out, user, admin × desktop and Pixel 7) on a seeded local stack. Fixed:
+- **Signed-in data missing on first load** (own profile offered Follow/Block, "Who to follow" suggested yourself,
+  your likes/bookmarks not shown): a page's first queries ran before the session was restored and the anonymous
+  answer stuck in the cache. `api()` now waits for the one-time session restore before its first request.
+- **Pinned post shown twice** on the profile: the Posts tab now leaves it out (it's on top already).
+- **Walkover:** a side that let every turn run out now loses automatically (no judge call, ratings update), so a
+  judge can never hand the win to someone who never argued.
+- Verdict: "Judged by" shows the model's name (was the internal key); the scorecard scrolls cleanly on phones.
+- Mobile: the turn composer header wraps whole items; no footer under a chat thread.
+- CI on the S3 commit had failed on one stale test (`views` count), so S3 never deployed; fixed and deployed.
+Android: TWA config checked (asset links, launch URL, in-app purchase hiding); nothing to change.
 
 ### Social network, phase S3: a full social app (2026-10-14)
 

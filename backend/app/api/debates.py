@@ -31,6 +31,7 @@ from backend.app.engine.types import (
     TurnSource,
     UserStatus,
 )
+from backend.app.llm.registry import all_models
 from backend.app.models import (
     AnalyticsEvent,
     Claim,
@@ -365,6 +366,7 @@ async def verdict(debate_id: uuid.UUID, db: DB, user: OptionalUser) -> dict:
     if totals["for"] != totals["against"]:
         audience_winner = "for" if totals["for"] > totals["against"] else "against"
     view = await build_debate_view(db, debate, user)
+    judge_model = (await all_models()).get(v.judge_model_key) if v.judge_model_key else None
     return {
         "debate": view,
         "judge": {
@@ -373,6 +375,7 @@ async def verdict(debate_id: uuid.UUID, db: DB, user: OptionalUser) -> dict:
             "decisive_claims": [{"id": str(c.id), "seq": c.seq, "position": side_pos.get(c.side_id), "text": c.text,
                                  "status": c.status} for c in claims if str(c.id) in decisive],
             "model_key": v.judge_model_key, "created_at": v.created_at,
+            "model_name": judge_model.display_name if judge_model else None,
         },
         "audience": {"per_round": audience, "totals": totals, "winner_position": audience_winner,
                      "final_vote_open": bool(final_round and final_round.vote_open),

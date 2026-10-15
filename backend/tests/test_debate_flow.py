@@ -286,6 +286,29 @@ async def test_concede_and_cancel(client, make_user, jobs):
     assert v["judge"]["winner_position"] == "for" and "conceded" in v["judge"]["reasoning"]
 
 
+async def test_side_that_never_argued_loses_without_a_judge(client, make_user, jobs, fake_llm):
+    alice, bob = await make_user("alice"), await make_user("bob")
+    did = (await alice.post(D, hvh_body(timing="live"))).json()["id"]
+    await bob.post(f"{D}/{did}/join")
+    for _ in range(10):  # alice (FOR) lets every turn run out; bob argues
+        state = (await bob.get(f"{D}/{did}")).json()
+        if state["status"] != "opening" and not state["expected"]:
+            break
+        if state["expected"]["position"] == "for":
+            await expire_deadline(did)
+            await tasks.sweeper({})
+        else:
+            assert (await bob.post(f"{D}/{did}/turns", {"content": TEXT})).status_code == 200
+    await close_open_votes(did)
+    await jobs.run()
+    v = (await bob.get(f"{D}/{did}/verdict")).json()["judge"]
+    assert v["winner_position"] == "against" and "didn't make an argument" in v["reasoning"]
+    assert Role.JUDGE not in {role for role, _ in fake_llm.calls}  # no judge call needed
+    async with SessionFactory() as db:
+        ratings = dict((await db.execute(select(User.username, User.rating))).all())
+    assert ratings["bob"] > ratings["alice"]
+
+
 async def test_blocked_topic_rejected(client, make_user):
     alice = await make_user("alice")
     r = await alice.post(D, hvh_body("Is the BJP better than the Congress party?"))

@@ -251,9 +251,11 @@ export function VerdictView({ id }: { id: string }) {
           </section>
 
           {rounds.length > 0 && (
-            <section className="mt-8 overflow-x-auto rounded-3xl border border-line bg-surface p-5 sm:p-7">
+            <section className="mt-8 rounded-3xl border border-line bg-surface p-5 sm:p-7">
               <h2 className="font-display text-2xl font-bold">Scorecard</h2>
-              <table className="mt-4 w-full min-w-[520px] text-sm">
+              {/* Seven columns don't fit a phone: the table scrolls sideways inside the card, one line per cell. */}
+              <div className="-mx-5 overflow-x-auto px-5 sm:-mx-7 sm:px-7">
+              <table className="mt-4 w-full min-w-[640px] whitespace-nowrap text-sm [&_td]:pr-4 [&_th]:pr-4">
                 <thead>
                   <tr className="text-left font-mono text-[11px] tracking-[0.1em] text-faint">
                     <th className="py-2 font-semibold">ROUND</th>
@@ -279,6 +281,7 @@ export function VerdictView({ id }: { id: string }) {
                   })}
                 </tbody>
               </table>
+              </div>
               <p className="mt-3 text-[12px] text-faint">Scores 1–10, averaged over two blind judging runs with the sides&apos; labels swapped. The judge never sees names, models or who is human.</p>
             </section>
           )}
@@ -311,7 +314,7 @@ export function VerdictView({ id }: { id: string }) {
 
           <div className="mt-6 flex flex-wrap gap-2 text-[12px] text-faint">
             {d.sides.filter((s) => s.model).map((s) => <ModelBadge key={s.id} model={s.model} position={s.position as Position} />)}
-            {v.judge.model_key && <span>Judged by {v.judge.model_key.replace("_", " ")}</span>}
+            {v.judge.model_name && <span>Judged by {v.judge.model_name.replace(/^Judge \((.*)\)$/, "$1")}</span>}
           </div>
         </div>
       </div>

@@ -40,10 +40,13 @@ async def test_profile_extras_and_pinned_post(client, make_user):
     assert (await alice.post(f"{A}/posts/{p['id']}/pin")).json()["pinned"] is True
     profile = (await client.get(f"{A}/users/alice")).json()
     assert profile["pinned"]["id"] == p["id"] and profile["banner_url"] and profile["website"] == "https://provok.in"
+    listed = lambda: client.get(f"{A}/users/alice/posts")  # noqa: E731
+    assert p["id"] not in [i["id"] for i in (await listed()).json()["items"]]  # shown once, on top
     bob = await make_user("bob")
     assert (await bob.post(f"{A}/posts/{p['id']}/pin")).status_code == 403
     await alice.client.delete(f"{A}/posts/{p['id']}/pin", headers=alice.h)
     assert (await client.get(f"{A}/users/alice")).json()["pinned"] is None
+    assert p["id"] in [i["id"] for i in (await listed()).json()["items"]]
 
 
 async def test_views_count_once_per_person_per_hour(client, make_user):

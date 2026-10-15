@@ -23,13 +23,13 @@ def hvh_body(question="Should remote work be the default for software teams?", t
     return {"question": question, "timing": timing, "for": {"type": "me"}, "against": {"type": "open"}}
 
 
-def hva_body(human="for", model="gemini_flash"):
+def hva_body(human="for", model="bedrock_qwen"):
     ai = {"type": "swarm", "model_key": model, "persona": "economic"}
     return {"question": "Is nuclear power the best path to net zero?", "timing": "live",
             "for": {"type": "me"} if human == "for" else ai, "against": ai if human == "for" else {"type": "me"}}
 
 
-def ava_body(a="gemini_flash", b="groq_qwen"):
+def ava_body(a="bedrock_kimi", b="bedrock_glm"):
     return {"question": "Will AI tutors outperform human tutors by 2030?", "timing": "live",
             "for": {"type": "swarm", "model_key": a, "persona": "data_driven"},
             "against": {"type": "swarm", "model_key": b, "persona": "contrarian"}}
@@ -166,7 +166,7 @@ async def test_challenge_timeout_fallback_to_ai(client, make_user, jobs):
     await expire_deadline(did)
     await tasks.sweeper({})
     assert (await alice.get(f"{D}/{did}")).json()["status"] == "swarm_fallback_offered"
-    r = await alice.post(f"{D}/{did}/fallback", {"model_key": "gemini_flash", "persona": "contrarian"})
+    r = await alice.post(f"{D}/{did}/fallback", {"model_key": "bedrock_qwen", "persona": "contrarian"})
     assert r.status_code == 200, r.text
     assert r.json()["mode"] == "hva"
     me = (await alice.get("/api/v1/auth/me")).json()
@@ -343,14 +343,14 @@ async def test_hva_swarm_turns_and_credits(client, make_user, jobs, fake_llm):
     await jobs.run()
     state = (await alice.get(f"{D}/{did}")).json()
     ai_turn = state["turns"][1]
-    assert ai_turn["source"] == "swarm" and ai_turn["model"]["key"] == "gemini_flash"
+    assert ai_turn["source"] == "swarm" and ai_turn["model"]["key"] == "bedrock_qwen"
     assert state["expected"] == {"position": "for", "kind": "argument"}
     assert {Role.STRATEGIST, Role.WRITER, Role.CRITIC} <= {c[0] for c in fake_llm.calls}
 
 
 async def test_flagship_costs_credits_and_refund_on_cancel(client, make_user):
     alice = await make_user("alice", credits=10)
-    r = await alice.post(D, hva_body(model="claude_opus"))
+    r = await alice.post(D, hva_body(model="bedrock_claude_haiku"))
     assert r.status_code == 201, r.text
     me = (await alice.get("/api/v1/auth/me")).json()
     assert me["credits"] == 6 and me["free_ai_debates_left"] == 3
@@ -373,14 +373,14 @@ async def test_ava_runs_unattended_to_completion(client, make_user, jobs, fake_l
     state = (await carol.get(f"{D}/{did}")).json()
     assert state["status"] == "completed", state["status"]
     assert len(state["turns"]) == 10
-    assert {t["model"]["key"] for t in state["turns"]} == {"gemini_flash", "groq_qwen"}
+    assert {t["model"]["key"] for t in state["turns"]} == {"bedrock_kimi", "bedrock_glm"}
     async with SessionFactory() as db:
         v = await db.scalar(select(Verdict).where(Verdict.debate_id == uuid.UUID(did)))
         assert v is not None and len(v.judge_runs) == 2 and v.judge_model_key
         # Judge must come from a different provider family than both debaters.
-        assert v.judge_model_key == "judge_secondary"
+        assert v.judge_model_key == "judge_deepseek"
     lb = (await client.get("/api/v1/leaderboard?type=model")).json()["items"]
-    assert {m["key"] for m in lb} == {"gemini_flash", "groq_qwen"}
+    assert {m["key"] for m in lb} == {"bedrock_kimi", "bedrock_glm"}
 
 
 async def test_ava_requires_distinct_personas(client, make_user):
@@ -550,7 +550,7 @@ async def test_engine_lock_does_not_block_child_inserts(client, make_user):
 
 async def test_judge_retry_rotates_to_next_judge(client, make_user, jobs, fake_llm):
     from backend.app.llm.gateway import LLMError
-    dead = {"judge_secondary"}
+    dead = {"judge_deepseek"}
 
     def judge(messages):
         raise LLMError("quota", transient=False)
@@ -572,7 +572,7 @@ async def test_judge_retry_rotates_to_next_judge(client, make_user, jobs, fake_l
     await jobs.run()
     state = (await alice.get(f"{D}/{did}")).json()
     assert state["status"] == "completed", state["status"]
-    assert seen[0] == "judge_secondary" and seen[-1] != "judge_secondary"
+    assert seen[0] == "judge_deepseek" and seen[-1] != "judge_deepseek"
 
 
 async def test_meta_default_model_is_free_eligible(client):

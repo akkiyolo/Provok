@@ -217,6 +217,10 @@ Walked every page (98 views: logged out, user, admin × desktop and Pixel 7) on 
 - Auto-resume of paused debates: the retry counter's 1-day expiry was refreshed on every sweep, so "3×/day" was
   really "3× ever"; retries now also back off (5, 15, 45 min). Found via a featured AvA on staging paused by a
   Groq failure on 2026-10-15 (resume it from `/admin → Paused`).
+- **All AI on Amazon Bedrock** (founder's call, 2026-10-15): Groq, Gemini and direct-Anthropic models are gone from
+  the seed and disabled by migration `0007` (rows kept for history); GPT-OSS 120B now debates via Bedrock and
+  unfinished debates moved over. Defaults: debater Qwen3, utility GPT-OSS → Nova Lite, judges DeepSeek → Qwen.
+  `GROQ_API_KEY`/`GEMINI_API_KEY` are no longer read. Tests pin the model settings (a dev `.env` can't change them).
 Android: TWA config checked (asset links, launch URL, in-app purchase hiding); nothing to change.
 
 ### Social network, phase S3: a full social app (2026-10-14)
@@ -304,7 +308,10 @@ religion and caste stay blocked at launch, Hindi comes in phase S2. Plan: S1 soc
 - Sentry (US region): backend DSN in the server env; a test event from the server arrived tagged staging + release.
   Web DSN: GitHub variable `NEXT_PUBLIC_SENTRY_DSN`.
 - AWS credits covered all usage so far ($1.18 by 2026-10-11); Bedrock charges not yet in Cost Explorer.
-- AWS Activate (Founders tier) application in progress; SES production access still under review.
+- AWS Activate (Founders tier) application in progress. **SES production access granted** (checked 2026-10-15:
+  50,000 emails/day, 14/s), so verification and reset emails reach any address.
+- Spend to 2026-10-15: $4.94 of usage (EC2 $2.94, Route 53 $0.71, VPC $0.56, Bedrock $0.69), all paid by credits;
+  $194.97 of credits left.
 
 ### AI models on Amazon Bedrock (2026-10-11)
 

@@ -18,6 +18,11 @@ os.environ.update({
     "REDIS_URL": os.environ.get("TEST_REDIS_URL", "redis://localhost:63799/15"),
     "JWT_SECRET_KEY": "test-secret-key-that-is-long-enough-1234567890",
     "EMAIL_PROVIDER": "console",
+    # The code defaults, whatever a developer's .env routes models to.
+    "UTILITY_MODEL_KEY": "bedrock_gpt_oss",
+    "UTILITY_FALLBACK_MODEL_KEYS": "bedrock_nova_lite",
+    "JUDGE_MODEL_KEYS": "judge_deepseek,judge_qwen",
+    "DEFAULT_SWARM_MODEL_KEY": "bedrock_qwen",
     "CORS_ORIGINS": "http://localhost:3000",
     "WEB_URL": "http://localhost:3000",
     "RAZORPAY_KEY_ID": "rzp_test_key",
@@ -88,7 +93,7 @@ async def _clean(_schema) -> AsyncIterator[None]:
     await get_redis().flushdb()
     async with SessionFactory() as db:
         await registry.seed_registry(db)
-        await db.execute(update(ModelRegistry).where(ModelRegistry.key != "astra").values(enabled=True))
+        await db.execute(update(ModelRegistry).values(enabled=True))
         await db.commit()
     registry.invalidate_cache()
     flags.invalidate()

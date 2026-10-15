@@ -29,38 +29,38 @@ def calls(monkeypatch):
 
 async def test_debater_never_falls_back_to_another_model(calls):
     log, script = calls
-    script["gemini_flash"] = [LLMError("429", transient=True)] * 3
+    script["bedrock_qwen"] = [LLMError("429", transient=True)] * 3
     with pytest.raises(LLMError):
-        await gateway.complete(Role.WRITER, "gemini_flash", [{"role": "user", "content": "x"}])
-    assert {k for k, _ in log} == {"gemini_flash"} and len(log) == 3  # 1 try + 2 backoff retries
+        await gateway.complete(Role.WRITER, "bedrock_qwen", [{"role": "user", "content": "x"}])
+    assert {k for k, _ in log} == {"bedrock_qwen"} and len(log) == 3  # 1 try + 2 backoff retries
 
 
 async def test_debater_recovers_after_rate_limit(calls):
     log, script = calls
-    script["gemini_flash"] = [LLMError("429", transient=True), "ok"]
-    res = await gateway.complete(Role.WRITER, "gemini_flash", [{"role": "user", "content": "x"}])
+    script["bedrock_qwen"] = [LLMError("429", transient=True), "ok"]
+    res = await gateway.complete(Role.WRITER, "bedrock_qwen", [{"role": "user", "content": "x"}])
     assert res.text == "ok" and len(log) == 2
 
 
 async def test_non_transient_error_is_not_retried(calls):
     log, script = calls
-    script["gemini_flash"] = [LLMError("404 model not found")]
+    script["bedrock_qwen"] = [LLMError("404 model not found")]
     with pytest.raises(LLMError):
-        await gateway.complete(Role.JUDGE, "gemini_flash", [{"role": "user", "content": "x"}])
+        await gateway.complete(Role.JUDGE, "bedrock_qwen", [{"role": "user", "content": "x"}])
     assert len(log) == 1
 
 
 async def test_json_mode_rejection_retries_without_json_mode(calls):
     log, script = calls
-    script["gemini_flash"] = [LLMError("json_validate_failed", json_rejected=True), '{"ok": true}']
-    data = await gateway.complete_json(Role.LEDGER, "gemini_flash", [{"role": "user", "content": "x"}])
+    script["bedrock_qwen"] = [LLMError("json_validate_failed", json_rejected=True), '{"ok": true}']
+    data = await gateway.complete_json(Role.LEDGER, "bedrock_qwen", [{"role": "user", "content": "x"}])
     assert data == {"ok": True}
-    assert log == [("gemini_flash", True), ("gemini_flash", False)]
+    assert log == [("bedrock_qwen", True), ("bedrock_qwen", False)]
 
 
 async def test_utility_role_falls_back(calls):
     log, script = calls
-    script["gemini_flash"] = [LLMError("503", transient=True)]
-    script["groq_gpt_oss_small"] = ['{"flagged": false}']
-    data = await gateway.complete_json(Role.MODERATION, "gemini_flash", [{"role": "user", "content": "x"}])
-    assert data == {"flagged": False} and [k for k, _ in log] == ["gemini_flash", "groq_gpt_oss_small"]
+    script["bedrock_qwen"] = [LLMError("503", transient=True)]
+    script["bedrock_nova_lite"] = ['{"flagged": false}']
+    data = await gateway.complete_json(Role.MODERATION, "bedrock_qwen", [{"role": "user", "content": "x"}])
+    assert data == {"flagged": False} and [k for k, _ in log] == ["bedrock_qwen", "bedrock_nova_lite"]

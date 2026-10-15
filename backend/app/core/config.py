@@ -89,17 +89,14 @@ class Settings(BaseSettings):
     # ── LLM providers (LiteLLM reads these from the environment) ────────
     openai_api_key: str = ""
     anthropic_api_key: str = ""
-    gemini_api_key: str = ""
-    google_api_key: str = ""  # legacy alias for gemini_api_key
-    groq_api_key: str = ""
     mistral_api_key: str = ""
     # Amazon Bedrock: many model families through the server's own AWS role (no API key). Empty = off.
     bedrock_region: str = ""
     model_registry_seed_path: str = str(APP_DIR / "llm" / "model_registry.seed.json")
-    utility_model_key: str = "gemini_flash"
-    utility_fallback_model_keys: str = "groq_gpt_oss_small,claude_haiku"
-    judge_model_keys: str = "judge_primary,judge_secondary,judge_groq"  # ordered preference list
-    default_swarm_model_key: str = "gemini_flash"
+    utility_model_key: str = "bedrock_gpt_oss"
+    utility_fallback_model_keys: str = "bedrock_nova_lite"
+    judge_model_keys: str = "judge_deepseek,judge_qwen"  # ordered preference list
+    default_swarm_model_key: str = "bedrock_qwen"
     llm_timeout_seconds: int = 60
     llm_max_output_tokens: int = 900
     langfuse_public_key: str = ""
@@ -314,10 +311,6 @@ class Settings(BaseSettings):
         return self.tavily_api_key or self.search_api_key
 
     @property
-    def gemini_key(self) -> str:
-        return self.gemini_api_key or self.google_api_key
-
-    @property
     def google_oauth_enabled(self) -> bool:
         return bool(self.google_client_id and self.google_client_secret)
 
@@ -334,8 +327,6 @@ class Settings(BaseSettings):
         mapping = {
             "OPENAI_API_KEY": self.openai_api_key,
             "ANTHROPIC_API_KEY": self.anthropic_api_key,
-            "GEMINI_API_KEY": self.gemini_key,
-            "GROQ_API_KEY": self.groq_api_key,
             "MISTRAL_API_KEY": self.mistral_api_key,
             "LANGFUSE_PUBLIC_KEY": self.langfuse_public_key,
             "LANGFUSE_SECRET_KEY": self.langfuse_secret_key,
@@ -357,8 +348,6 @@ class Settings(BaseSettings):
             {
                 "openai": self.openai_api_key,
                 "anthropic": self.anthropic_api_key,
-                "gemini": self.gemini_key,
-                "groq": self.groq_api_key,
                 "mistral": self.mistral_api_key,
             }.get(provider)
         )

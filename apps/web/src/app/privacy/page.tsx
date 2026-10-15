@@ -28,8 +28,7 @@ export default function PrivacyPage() {
       <h2>Service providers we use</h2>
       <p>These companies process data for us, only to provide the Service and under their contractual terms:</p>
       <ul>
-        <li><b>Amazon Web Services</b> (India, Mumbai region): hosting, database, file storage, email delivery and uptime monitoring. Most AI models also run on AWS (Amazon Bedrock), where your debate text stays with AWS (some requests are processed in other AWS regions) and is not shared with the companies that made the models.</li>
-        <li><b>Other AI model providers</b> (Groq, Google, Anthropic, OpenAI; servers mainly in the United States): debate text, when a debate uses one of their models, to generate AI turns, extract claims, moderate content and judge debates.</li>
+        <li><b>Amazon Web Services</b> (India, Mumbai region): hosting, database, file storage, email delivery and uptime monitoring. All AI models also run on AWS (Amazon Bedrock), to generate AI turns, extract claims, moderate content and judge debates. Your debate text stays with AWS (some requests are processed in other AWS regions) and is not shared with the companies that made the models.</li>
         <li><b>Tavily</b> (United States): web searches built from debate topics, so AI debaters can cite sources. Searches do not include your account details.</li>
         <li><b>LiveKit</b> and <b>Deepgram</b> (United States): live audio and video, and speech-to-text, for video debates only.</li>
         <li><b>Razorpay</b> (India): payments.</li>

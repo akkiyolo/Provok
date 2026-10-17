@@ -217,6 +217,11 @@ async def link_preview(ctx: dict, post_id: str) -> None:
     await attach_preview(uuid.UUID(post_id))
 
 
+async def send_push(ctx: dict, user_id: str, payload: dict) -> None:
+    from backend.app.services.push import send_to_user
+    await send_to_user(uuid.UUID(user_id), payload)
+
+
 async def factcheck_post(ctx: dict, post_id: str) -> None:
     from backend.app.services.post_ai import run_factcheck
     await run_factcheck(uuid.UUID(post_id))

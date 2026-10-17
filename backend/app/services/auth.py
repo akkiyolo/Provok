@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 from fastapi import Response
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.config import get_settings
@@ -23,7 +23,7 @@ from backend.app.core.security import (
     utcnow,
 )
 from backend.app.engine.types import UserStatus
-from backend.app.models import AuthSession, EmailToken, OAuthAccount, User
+from backend.app.models import AuthSession, EmailToken, OAuthAccount, PushSubscription, User
 
 log = get_logger("provok.auth")
 
@@ -154,6 +154,8 @@ async def revoke_all(db: AsyncSession, user: User) -> None:
     await db.execute(update(AuthSession).where(AuthSession.user_id == user.id, AuthSession.revoked_at.is_(None))
                      .values(revoked_at=utcnow()))
     user.token_version += 1  # invalidates outstanding access tokens immediately
+    # Signed-out devices stop getting pushes; the device still signed in re-subscribes on its next page load.
+    await db.execute(delete(PushSubscription).where(PushSubscription.user_id == user.id))
 
 
 def set_refresh_cookie(response: Response, token: str) -> None:

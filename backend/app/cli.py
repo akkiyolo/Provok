@@ -6,6 +6,7 @@ Operational CLI.
     python -m backend.app.cli promote --username someone
     python -m backend.app.cli seed-models
     python -m backend.app.cli seed-featured --count 3
+    python -m backend.app.cli vapid-keys          # a key pair for web push (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY)
 """
 from __future__ import annotations
 
@@ -72,6 +73,26 @@ async def daily_debate() -> None:
     print("created:", row.question if row else "already exists for today")
 
 
+def vapid_keys() -> int:
+    """Print a new VAPID key pair. Changing keys later silently breaks every existing push subscription."""
+    import base64
+
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+
+    key = ec.generate_private_key(ec.SECP256R1())
+    raw_private = key.private_numbers().private_value.to_bytes(32, "big")
+    raw_public = key.public_key().public_bytes(serialization.Encoding.X962,
+                                               serialization.PublicFormat.UncompressedPoint)
+
+    def b64(b: bytes) -> str:
+        return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+
+    print(f"VAPID_PUBLIC_KEY={b64(raw_public)}")
+    print(f"VAPID_PRIVATE_KEY={b64(raw_private)}")
+    return 0
+
+
 def main() -> None:
     setup_logging()
     p = argparse.ArgumentParser(prog="provok")
@@ -87,9 +108,12 @@ def main() -> None:
     f = sub.add_parser("seed-featured")
     f.add_argument("--count", type=int, default=1)
     sub.add_parser("daily-debate")
+    sub.add_parser("vapid-keys")
     args = p.parse_args()
     if args.cmd == "migrate":
         raise SystemExit(migrate())
+    if args.cmd == "vapid-keys":
+        raise SystemExit(vapid_keys())
     coro = {
         "create-admin": lambda: create_admin(args.email, args.username.lower(), args.password),
         "promote": lambda: promote(args.username),

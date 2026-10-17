@@ -7,7 +7,7 @@ import secrets
 import uuid
 
 import jwt
-from fastapi import APIRouter, File, Query, UploadFile
+from fastapi import APIRouter, File, Query, Request, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, desc, func, or_, select, update
 
@@ -31,6 +31,7 @@ from backend.app.models import (
     Payment,
     Post,
     PostLike,
+    PushSubscription,
     Side,
     Turn,
     User,
@@ -40,6 +41,7 @@ from backend.app.models import (
 )
 from backend.app.services import auth as auth_svc
 from backend.app.services import posts as posts_svc
+from backend.app.services import push as push_svc
 from backend.app.services import storage
 from backend.app.services.debate_view import build_cards
 from backend.app.services.notify import notify
@@ -305,6 +307,7 @@ async def delete_account(body: DeleteIn, user: CurrentUser, db: DB) -> dict:
     await db.execute(delete(OAuthAccount).where(OAuthAccount.user_id == user.id))
     await db.execute(delete(Follow).where(or_(Follow.follower_id == user.id, Follow.followee_id == user.id)))
     await db.execute(delete(Notification).where(Notification.user_id == user.id))
+    await db.execute(delete(PushSubscription).where(PushSubscription.user_id == user.id))
     await db.execute(update(Post).where(Post.author_id == user.id).values(status="deleted"))
     await db.execute(delete(PostLike).where(PostLike.user_id == user.id))
     await db.execute(delete(Bookmark).where(Bookmark.user_id == user.id))
@@ -339,5 +342,49 @@ async def mark_read(body: ReadIn, user: CurrentUser, db: DB) -> dict:
     if body.ids:
         q = q.where(Notification.id.in_(body.ids))
     await db.execute(q.values(read_at=utcnow()))
+    await db.commit()
+    return {"ok": True}
+
+
+# ── Web push ───────────────────────────────────────────────────────────────
+
+
+@router.get("/push/config")
+async def push_config() -> dict:
+    s = get_settings()
+    return {"enabled": s.push_enabled, "public_key": s.vapid_public_key if s.push_enabled else None}
+
+
+class PushKeys(BaseModel):
+    p256dh: str = Field(min_length=20, max_length=200, pattern=r"^[A-Za-z0-9_-]+=*$")
+    auth: str = Field(min_length=8, max_length=100, pattern=r"^[A-Za-z0-9_-]+=*$")
+
+
+class PushSubscriptionIn(BaseModel):
+    endpoint: str = Field(max_length=1000)
+    keys: PushKeys
+
+
+class PushEndpointIn(BaseModel):
+    endpoint: str = Field(max_length=1000)
+
+
+@router.post("/me/push-subscriptions")
+async def subscribe_push(body: PushSubscriptionIn, request: Request, user: CurrentUser, db: DB) -> dict:
+    if not get_settings().push_enabled:
+        raise AppError("Push notifications aren't available yet.", code="push_disabled", status_code=409)
+    await enforce("push_subscribe", str(user.id), "30/3600")
+    if not push_svc.endpoint_allowed(body.endpoint):
+        raise AppError("This browser's push service isn't supported.", code="push_endpoint_invalid",
+                       status_code=422)
+    await push_svc.save_subscription(db, user.id, endpoint=body.endpoint, p256dh=body.keys.p256dh,
+                                     auth=body.keys.auth, user_agent=request.headers.get("user-agent"))
+    await db.commit()
+    return {"ok": True}
+
+
+@router.delete("/me/push-subscriptions")
+async def unsubscribe_push(body: PushEndpointIn, user: CurrentUser, db: DB) -> dict:
+    await push_svc.remove_subscription(db, user.id, body.endpoint)
     await db.commit()
     return {"ok": True}

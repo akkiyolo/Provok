@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { PushSetting } from "@/components/push";
 import { useToast } from "@/components/toast";
 import { Avatar, Button, Field, PageTitle, Sheet, Spinner } from "@/components/ui";
 import { api, errorMessage, get, patch, post } from "@/lib/api";
@@ -137,7 +138,7 @@ export function SettingsView() {
         </form>
       </Section>
 
-      <Section title="Email">
+      <Section title="Notifications">
         <label className="flex cursor-pointer items-start justify-between gap-4">
           <span className="flex flex-col gap-1">
             <span className="text-[15px] font-medium">Debate emails</span>
@@ -155,6 +156,7 @@ export function SettingsView() {
               user.email_notifications ? "translate-x-[22px] bg-surface" : "translate-x-0.5 bg-dim"}`} />
           </button>
         </label>
+        <PushSetting />
       </Section>
 
       <Section title="Sessions & data">

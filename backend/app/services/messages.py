@@ -18,8 +18,10 @@ from backend.app.models import Conversation, DirectMessage, Follow, User
 from backend.app.models.social import DM_MAX_CHARS
 from backend.app.realtime.publish import publish_user
 from backend.app.services.debate_view import public_user
+from backend.app.services.notify import queue_push
 from backend.app.services.outbox import Outbox
 from backend.app.services.posts import VISIBLE_AUTHOR_STATUSES, clean_text, decode_cursor, encode_cursor, is_blocked
+from backend.app.services.push import make_payload
 
 PAGE = 30
 
@@ -87,6 +89,9 @@ async def send(db: AsyncSession, outbox: Outbox, me: User, convo: Conversation, 
         await publish_user(other, "dm", payload)
 
     outbox.add(_push)
+    queue_push(outbox, other, make_payload("dm", f"{me.display_name} sent you a message", body,
+                                           f"/messages/{convo.id}", tag=f"dm-{convo.id}"[:32]),
+               job_id=f"push:{msg.id}")
     return msg
 
 

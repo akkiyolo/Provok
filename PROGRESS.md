@@ -1,6 +1,6 @@
 # PROGRESS
 
-_Last updated: 2026-10-15_
+_Last updated: 2026-10-17_
 
 The v1 codebase (FastAPI + vanilla JS, preserved in `legacy/`) was rebuilt into a production
 architecture. The stack choices were made with the founder: **FastAPI backend (no Supabase) + Next.js
@@ -25,7 +25,7 @@ frontend, video included, Google + email/password auth (no phone OTP).** Everyth
 
 ## Verified
 
-- **172 backend tests pass** (real Postgres/Redis), ruff clean, migrations round-trip with no drift.
+- **230 backend tests pass** (real Postgres/Redis, 2026-10-17), ruff clean, migrations round-trip with no drift.
 - **Frontend**: typecheck, lint (React Compiler rules) and production build all pass.
 - **Live end-to-end run with real models** (Qwen vs GPT-OSS on Groq): a full 10-turn AvA debate ran to
   a judged verdict through the real worker, surviving free-tier rate limits via backoff + auto-resume,
@@ -201,6 +201,34 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - New personal Play accounts need a 12-tester, 14-day closed test before production.
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
+
+### Web push notifications (2026-10-17)
+
+- Every in-app notification (your turn, challenge, opponent joined, verdict, replies, mentions, quotes, follows,
+  moderation) and every direct message is also sent as a **web push** to the user's devices. One choke point:
+  `services/notify.py` → ARQ job `send_push` → `services/push.py`.
+- Table `push_subscriptions` (migration `0008`), newest `PUSH_MAX_SUBSCRIPTIONS_PER_USER` (10) kept per user.
+  Endpoints: `GET /push/config`, `POST`/`DELETE /me/push-subscriptions`.
+- **SSRF-safe:** the server only POSTs to https endpoints on known push services (`PUSH_ENDPOINT_HOSTS`: FCM, Mozilla,
+  Apple, Microsoft), checked at subscribe time and before every send; no redirects. Links in pushes are site-relative.
+- Payloads are end-to-end encrypted (aes128gcm, RFC 8291) and VAPID-signed (pywebpush/py-vapid). `404`/`410` from
+  the push service deletes the subscription. Your turn/challenge/DM go out as `Urgency: high`.
+- Push is off until `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` are set (`python -m backend.app.cli vapid-keys`).
+  **Never change the keys once people subscribe** (every subscription would break; the web app re-subscribes on the
+  next visit, but closed tabs miss pushes until then). Staging keys are in the local `.env.staging`.
+- Web: `public/sw.js` (push + click only, no offline cache), `lib/push.ts`, a switch in Settings → Notifications and
+  a one-time "Don't miss your turn" card on the Notifications page. Signing out removes this device (server and
+  browser); "sign out everywhere" and account deletion remove every device, and the still-signed-in device
+  re-registers on its next page load. iPhone/iPad need the site added to the Home Screen first (the UI says so).
+- Android app: notification delegation (`DelegationService`, `POST_NOTIFICATIONS`, Android 13 permission activity,
+  status-bar icon `ic_notification`). Needs a new app build/upload to reach phones; checked by the Android CI only
+  (Gradle can't download on the founder's network).
+- Verified: 7 new tests (allowlist, upsert/ownership, real encryption decrypted on a fake device, 410 cleanup,
+  deletion, device cap); a real Chrome subscription → **FCM accepted Provok's signed, encrypted push (201)**, same as
+  pywebpush's reference sender. Display could not be checked in automated Chrome (it doesn't receive FCM traffic):
+  **do one real-device check on staging** (Settings → Notifications → turn on, then have someone follow you).
+- Privacy page lists the browser push services. Play "Data safety" may need "Device or other IDs" (push endpoint)
+  when the app is submitted.
 
 ### Full app review, web + Android (2026-10-15)
 
@@ -391,8 +419,8 @@ religion and caste stay blocked at launch, Hindi comes in phase S2. Plan: S1 soc
 
 ## Launch checklist
 
-1. **Paid LLM keys.** Free tiers (Groq 8k TPM, Gemini 20 req/day) cannot sustain real traffic.
-   Add Anthropic/OpenAI keys; enable models in `/admin → Models`. Fill in the real GPT-6 Astra id or leave it disabled.
+1. **AI models** run on Amazon Bedrock (paid from AWS credits). Check Cost Explorer shows the charges offset by
+   credits, and enable more models in `/admin → Models` as the account gets access.
 2. **Verify model ids** in `model_registry.seed.json` against provider docs (the old `.env`'s Groq id was invalid).
 3. Set `DAILY_LLM_SPEND_ALERT_USD` (auto kill-switch) and Sentry DSN.
 4. Production env: strong `JWT_SECRET_KEY`, `COOKIE_SECURE=true`, `TRUSTED_PROXY_COUNT`, `CORS_ORIGINS`, `EMAIL_PROVIDER=resend`.
@@ -404,9 +432,9 @@ religion and caste stay blocked at launch, Hindi comes in phase S2. Plan: S1 soc
 8. Storage bucket (`STORAGE_BACKEND=s3`) and, for video, LiveKit + Deepgram + webhook.
 9. Create an admin (`cli create-admin`), seed a few featured debates (`cli seed-featured`).
 10. Uptime monitor on `/health/ready`; check the worker heartbeat shows `ok`.
+    Web push: production needs its own `VAPID_*` keys (generate once, back them up).
 11. Manual QA pass in real browsers (iOS Safari, Android Chrome, desktop).
 
 ## Known gaps / next up
 
 - `npm audit` reports advisories in the ESLint toolchain (dev-only, not shipped).
-- Push notifications (web push) are not implemented; in-app + email only.

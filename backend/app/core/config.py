@@ -162,6 +162,17 @@ class Settings(BaseSettings):
     clip_min_seconds: int = 30
     clip_max_seconds: int = 60
 
+    # ── Web push (VAPID). Both keys empty = push off. `python -m backend.app.cli vapid-keys` makes a pair.
+    vapid_public_key: str = ""   # base64url uncompressed P-256 point (given to browsers)
+    vapid_private_key: str = ""  # base64url raw private key (server only)
+    vapid_subject: str = "mailto:support@provok.in"
+    push_ttl_seconds: int = 24 * 3600
+    push_max_subscriptions_per_user: int = 10
+    # Browsers' push services. The server POSTs to a subscription's endpoint, so only these hosts are accepted.
+    push_endpoint_hosts: str = (
+        "fcm.googleapis.com,*.push.services.mozilla.com,*.notify.windows.com,web.push.apple.com,*.push.apple.com"
+    )
+
     # ── Android app (Trusted Web Activity) ──────────────────────────────
     # Served as /.well-known/assetlinks.json so Android opens the site full-screen inside the app.
     android_package: str = ""  # e.g. in.provok.app (staging builds use in.provok.app.staging)
@@ -317,6 +328,14 @@ class Settings(BaseSettings):
     @property
     def razorpay_enabled(self) -> bool:
         return bool(self.razorpay_key_id and self.razorpay_key_secret)
+
+    @property
+    def push_enabled(self) -> bool:
+        return bool(self.vapid_public_key and self.vapid_private_key)
+
+    @property
+    def push_hosts(self) -> list[str]:
+        return [h.strip().lower() for h in self.push_endpoint_hosts.split(",") if h.strip()]
 
     @property
     def livekit_enabled(self) -> bool:

@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { api, onTokenChange, post, refreshSession, setAccessToken } from "./api";
+import { forgetPushDevice, syncPush } from "./push";
 import type { Me, TokenResponse } from "./types";
 
 type Status = "loading" | "authed" | "anon";
@@ -46,6 +47,14 @@ const useAuthSnap = () => useSyncExternalStore(subscribe, () => snap, () => SERV
 const setUserState = (u: Me | null) => setSnap({ user: u });
 const setStatus = (st: Status) => setSnap({ status: st });
 
+// Once per signed-in account per page load, re-register this device for push (see syncPush).
+let pushSyncedFor: string | null = null;
+function syncPushOnce(userId: string) {
+  if (pushSyncedFor === userId) return;
+  pushSyncedFor = userId;
+  void syncPush().catch(() => undefined);
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [gateOpen, setGateOpen] = useState(false);
   const [gateReason, setGateReason] = useState<string | null>(null);
@@ -64,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserState(t.user);
       setStatus("authed");
       schedule(t.expires_in);
+      syncPushOnce(t.user.id);
     },
     [schedule],
   );
@@ -74,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserState(t.user);
         setStatus("authed");
         schedule(t.expires_in);
+        syncPushOnce(t.user.id);
       } else {
         setUserState(null);
         setStatus("anon");
@@ -125,6 +136,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
+      await forgetPushDevice().catch(() => undefined);
+      pushSyncedFor = null;
       await api("/auth/logout", { method: "POST" });
     } finally {
       setAccessToken(null);

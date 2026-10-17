@@ -9,6 +9,7 @@ import { DebateCard } from "@/components/debate-card";
 import { PostList, usePosts } from "@/components/posts/feeds";
 import { PostCard } from "@/components/posts/post-card";
 import { VerifiedBadge } from "@/components/posts/post-extras";
+import { PushPrompt } from "@/components/push";
 import { useToast } from "@/components/toast";
 import { Avatar, Button, Empty, ErrorBlock, PageTitle, Spinner, Tabs } from "@/components/ui";
 import { ApiError, api, del, errorMessage, get, post } from "@/lib/api";
@@ -305,6 +306,7 @@ export function NotificationsView() {
       <PageTitle eyebrow="INBOX" title="Notifications">
         {!!q.data?.unread && <div><Button size="sm" variant="outline" onClick={() => readAll.mutate()}>Mark all read</Button></div>}
       </PageTitle>
+      {status === "authed" && <PushPrompt />}
       {q.isLoading && <div className="flex flex-col gap-2">{[0, 1, 2].map((i) => <div key={i} className="skeleton h-16" />)}</div>}
       {q.data?.items.length === 0 && <Empty title="All quiet." body="Challenges, your-turn pings and verdicts land here." />}
       <ul className="flex flex-col gap-2">

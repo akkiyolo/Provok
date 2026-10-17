@@ -116,7 +116,7 @@ def fake_llm() -> AsyncIterator[FakeLLM]:
 
 JOB_FUNCS = {
     "deadline_check": tasks.deadline_check, "swarm_turn": tasks.swarm_turn, "ledger_extract": tasks.ledger_extract,
-    "moderate_turn": tasks.moderate_turn, "moderate_post": tasks.moderate_post, "factcheck_post": tasks.factcheck_post, "link_preview": tasks.link_preview, "judge_debate": tasks.judge_job, "close_vote": tasks.close_vote_job,
+    "moderate_turn": tasks.moderate_turn, "moderate_post": tasks.moderate_post, "factcheck_post": tasks.factcheck_post, "link_preview": tasks.link_preview, "send_push": tasks.send_push, "judge_debate": tasks.judge_job, "close_vote": tasks.close_vote_job,
     "video_sync": None, "generate_clips": None,
 }
 

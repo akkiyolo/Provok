@@ -144,6 +144,21 @@ class Notification(Base):
     __table_args__ = (Index("ix_notifications_user_created", "user_id", "created_at"),)
 
 
+class PushSubscription(Base):
+    """One browser/device that accepted web push for a user. Removed when the push service says it's gone."""
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"),
+                                               nullable=False, index=True)
+    endpoint: Mapped[str] = mapped_column(String(1000), nullable=False, unique=True)
+    p256dh: Mapped[str] = mapped_column(String(200), nullable=False)
+    auth: Mapped[str] = mapped_column(String(100), nullable=False)
+    user_agent: Mapped[str | None] = mapped_column(String(300))
+    created_at: Mapped[datetime] = created_at_col()
+    last_success_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 # ── Moderation / admin ─────────────────────────────────────────────────────
 
 

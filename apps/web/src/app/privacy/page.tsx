@@ -34,6 +34,7 @@ export default function PrivacyPage() {
         <li><b>Razorpay</b> (India): payments.</li>
         <li><b>Sentry</b> (United States): error reports, with passwords, tokens and cookies removed before sending.</li>
         <li><b>Google</b>: &ldquo;Continue with Google&rdquo; sign-in, if you choose it.</li>
+        <li><b>Your browser&rsquo;s push service</b> (Google, Apple, Mozilla or Microsoft, depending on your browser), if you turn on push notifications: notifications travel through it end-to-end encrypted, so it can&rsquo;t read them. Turning push off in Settings, or signing out, removes your device.</li>
       </ul>
       <p>When a post contains a link, our server visits that page once to build a preview card (title, description, image); the image is then loaded by your browser from the linked site.</p>
       <p>Some of these providers process data outside India. We only transfer data to countries the Government of India has not restricted under the DPDP Act.</p>

@@ -202,6 +202,14 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
 
+### provok.in redirects to staging (2026-10-18)
+
+- Until production is live, `provok.in` and `www.provok.in` point at the staging server and redirect (302, path kept)
+  to `https://staging.provok.in`: Terraform `redirect_domains` (A records) + Caddy `REDIRECT_DOMAINS`. Needed because
+  the bare domain showed nothing (AWS Activate checks the website against the founder's `@provok.in` email).
+- Tested with Caddy 2.11.4 locally: redirect works over HTTPS, staging's own HTTP→HTTPS redirect is unchanged, and an
+  unset list changes nothing. **Remove both before applying production** (`infra/README.md` → Production).
+
 ### Web push notifications (2026-10-17)
 
 - Every in-app notification (your turn, challenge, opponent joined, verdict, replies, mentions, quotes, follows,
@@ -380,8 +388,7 @@ religion and caste stay blocked at launch, Hindi comes in phase S2. Plan: S1 soc
 - Business details were never passed into the web build (the live site showed placeholders). The deploy now passes
   `NEXT_PUBLIC_LEGAL_NAME/ADDRESS/CITY`, `NEXT_PUBLIC_SUPPORT_EMAIL/PHONE`, `NEXT_PUBLIC_GRIEVANCE_OFFICER` from
   GitHub repository variables, and the image tag hashes every baked-in value so a change triggers a rebuild.
-- Support email default is now `support@provok.in`, but **no mailbox receives it yet** (needs forwarding or a
-  mail host + MX records). **Have a lawyer review the pages before launch.**
+- Support email default is now `support@provok.in` (forwarded to the founder's Gmail by ImprovMX since 2026-10-12). **Have a lawyer review the pages before launch.**
 
 ### Email unsubscribe (2026-10-11)
 
@@ -397,7 +404,8 @@ religion and caste stay blocked at launch, Hindi comes in phase S2. Plan: S1 soc
 - **Video**: needs LiveKit + Deepgram keys and S3 storage; never exercised against real services.
 - **Razorpay**: tested with mocked API + real signature math; do one test-mode purchase before launch.
 - **Google sign-in**: needs an OAuth client; flow is standard but untested live.
-- **Email**: only the console provider was exercised; set up Resend/SMTP and send a real reset email.
+- **Email**: SES (production access, DKIM, `noreply@provok.in`) and ImprovMX inbound forwarding are set up; confirm a reset
+  email reaches a non-Gmail inbox (not spam) and a mail to `support@provok.in` reaches the founder's Gmail.
 - **Real devices**: automated Chromium (desktop + Pixel 7) passes; still do a manual pass on iOS Safari.
 
 ## Decisions (spec ambiguities resolved)

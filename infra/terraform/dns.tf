@@ -27,6 +27,16 @@ resource "aws_route53_record" "site" {
   records = [aws_eip.app.public_ip]
 }
 
+# Extra names that land on this server and are redirected to `domain` by Caddy (REDIRECT_DOMAINS in the server env).
+resource "aws_route53_record" "redirect" {
+  for_each = var.dns_zone == "" ? toset([]) : toset(var.redirect_domains)
+  zone_id  = local.zone_id
+  name     = each.value
+  type     = "A"
+  ttl      = 300
+  records  = [aws_eip.app.public_ip]
+}
+
 # ── Email authentication for the SES domain: DKIM, SPF (via a custom MAIL FROM) and DMARC ──
 
 resource "aws_route53_record" "ses_dkim" {

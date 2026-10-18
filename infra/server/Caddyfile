@@ -16,3 +16,10 @@
 		reverse_proxy web:3000
 	}
 }
+
+# Other names sent to the main site (REDIRECT_DOMAINS, comma-separated; e.g. provok.in while only staging is live).
+# Temporary (302) so browsers don't remember it once that name gets its own site. When unset, compose passes a
+# plain-HTTP placeholder name: no certificate is requested and nothing real is redirected.
+{$REDIRECT_DOMAINS} {
+	redir https://{$SITE_DOMAIN}{uri} 302
+}

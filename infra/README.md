@@ -87,6 +87,9 @@ database                    = "rds"
 alert_email                 = "you@example.com"
 ```
 
+1. While staging redirects `provok.in`, first remove `redirect_domains` from `staging.tfvars` and run
+   `infra/scripts/tf.sh staging apply` (and drop `REDIRECT_DOMAINS` from the staging env), or production's
+   `provok.in` record will clash with staging's.
 1. `infra/scripts/tf.sh production plan`, check it, then `infra/scripts/tf.sh production apply`.
    Confirm the uptime-alert subscription email.
 2. Server env: start from `.env.staging` and change: `SITE_DOMAIN=provok.in` and the URLs, `APP_ENV=production`,

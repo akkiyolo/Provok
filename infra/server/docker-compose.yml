@@ -16,6 +16,7 @@ services:
       ACME_EMAIL: ${ACME_EMAIL:-}
       # Search engines are kept out unless an environment opts in (production sets ROBOTS_TAG=all).
       ROBOTS_TAG: ${ROBOTS_TAG:-noindex, nofollow}
+      REDIRECT_DOMAINS: ${REDIRECT_DOMAINS:-http://redirect.invalid}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

@@ -116,6 +116,12 @@ variable "db_backup_retention_days" {
   default     = 7
 }
 
+variable "redirect_domains" {
+  description = "Names in dns_zone pointed at this server and redirected (302) to `domain`, e.g. the bare domain while only staging is live. Remove before another stack takes them."
+  type        = list(string)
+  default     = []
+}
+
 variable "extra_dns_records" {
   description = "Additional records in dns_zone, e.g. MX for inbound mail forwarding. One entry per name+type (TXT values go in one entry's records list)."
   type = list(object({

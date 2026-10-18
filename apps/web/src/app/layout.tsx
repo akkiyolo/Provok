@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 
 import { VerifyBanner } from "@/components/auth-pages";
+import { InviteBanner } from "@/components/invite";
 import { BottomNav, Footer, TopNav } from "@/components/nav";
 import { Providers } from "@/components/providers";
 
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Suspense fallback={<div className="h-14 border-b border-line sm:h-16" />}>
             <TopNav />
             <VerifyBanner />
+            <InviteBanner />
           </Suspense>
           <main id="main">{children}</main>
           <Suspense>

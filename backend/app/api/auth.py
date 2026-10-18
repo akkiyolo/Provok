@@ -31,7 +31,8 @@ from backend.app.engine.types import UserStatus
 from backend.app.models import AnalyticsEvent, User
 from backend.app.services import auth as svc
 from backend.app.services import email as mail
-from backend.app.services import flags
+from backend.app.services import flags, referrals
+from backend.app.services.outbox import Outbox
 
 router = APIRouter()
 log = get_logger("provok.api.auth")
@@ -126,11 +127,13 @@ async def register(body: RegisterIn, request: Request, response: Response, db: D
         raise AppError(problem, code="weak_password", status_code=422)
     user = await svc.create_user(db, email=body.email, username=username,
                                  display_name=body.display_name or username, password=body.password)
+    await referrals.attach(db, user, request.cookies.get(referrals.COOKIE))
     token = await svc.create_email_token(db, user, "verify")
     tokens = await svc.issue_session(db, user, user_agent=request.headers.get("user-agent"), ip=client_ip(request))
     db.add(AnalyticsEvent(name="signup", user_id=user.id, props={"method": "password"}))
     await db.commit()
     await mail.send_verification(user.email, user.display_name, token, next_path=_safe_next(body.next))
+    response.delete_cookie(referrals.COOKIE, path="/")
     return await _tokens_response(response, tokens, user)
 
 
@@ -213,7 +216,10 @@ async def verify_email(body: TokenIn, db: DB) -> dict:
     user = await svc.consume_email_token(db, body.token, "verify")
     if user.email_verified_at is None:
         user.email_verified_at = utcnow()
+    outbox = Outbox()
+    await referrals.settle(db, outbox, user)
     await db.commit()
+    await outbox.flush()
     return {"ok": True, "user": me_payload(user)}
 
 
@@ -250,7 +256,10 @@ async def reset_password(body: ResetIn, db: DB) -> dict:
     if user.email_verified_at is None:
         user.email_verified_at = utcnow()  # they proved control of the inbox
     await svc.revoke_all(db, user)
+    outbox = Outbox()
+    await referrals.settle(db, outbox, user)
     await db.commit()
+    await outbox.flush()
     return {"ok": True}
 
 
@@ -336,14 +345,19 @@ async def google_callback(request: Request, db: DB, code: str | None = None, sta
         return fail
     try:
         user = await svc.login_with_google(db, sub=str(claims["sub"]), email=claims["email"],
-                                           name=claims.get("name") or "", picture=claims.get("picture"))
+                                           name=claims.get("name") or "", picture=claims.get("picture"),
+                                           referral_code=request.cookies.get(referrals.COOKIE))
     except (Forbidden, Unauthorized) as exc:
         return RedirectResponse(f"{s.web_url}/login?error={exc.code}", status_code=302)
     tokens = await svc.issue_session(db, user, user_agent=request.headers.get("user-agent"), ip=client_ip(request))
+    outbox = Outbox()
+    await referrals.settle(db, outbox, user)  # Google accounts arrive verified
     await db.commit()
+    await outbox.flush()
     # Straight back to where the user was: the app restores the session from the refresh cookie on every load,
     # so an intermediate /auth/callback page only added a page load.
     resp = RedirectResponse(f"{s.web_url}{_safe_next(st.get('next'))}", status_code=302)
     svc.set_refresh_cookie(resp, tokens.refresh_token)
     resp.delete_cookie("provok_oauth", path=f"{s.api_prefix}/auth/google")
+    resp.delete_cookie(referrals.COOKIE, path="/")
     return resp

@@ -42,7 +42,7 @@ from backend.app.models import (
 from backend.app.services import auth as auth_svc
 from backend.app.services import posts as posts_svc
 from backend.app.services import push as push_svc
-from backend.app.services import storage
+from backend.app.services import referrals, storage
 from backend.app.services.debate_view import build_cards
 from backend.app.services.notify import notify
 from backend.app.services.outbox import Outbox
@@ -388,3 +388,24 @@ async def unsubscribe_push(body: PushEndpointIn, user: CurrentUser, db: DB) -> d
     await push_svc.remove_subscription(db, user.id, body.endpoint)
     await db.commit()
     return {"ok": True}
+
+
+# ── Referrals ──────────────────────────────────────────────────────────────
+
+
+@router.get("/me/referral")
+async def my_referral(user: CurrentUser, db: DB) -> dict:
+    data = await referrals.summary(db, user)
+    await db.commit()  # the code is made on first visit
+    return data
+
+
+@router.get("/referrals/{code}")
+async def referral_inviter(code: str, db: DB) -> dict:
+    """Public: who sent this invite link, for the "X invited you" banner."""
+    inviter = await referrals.inviter_for_code(db, code)
+    if inviter is None or not get_settings().referral_enabled:
+        raise NotFound("This invite link isn't valid.")
+    s = get_settings()
+    return {"username": inviter.username, "display_name": inviter.display_name, "avatar_url": inviter.avatar_url,
+            "invitee_credits": s.referral_invitee_credits}

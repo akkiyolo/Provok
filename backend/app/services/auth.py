@@ -202,7 +202,8 @@ async def consume_email_token(db: AsyncSession, token: str, purpose: str) -> Use
 # ── Google ─────────────────────────────────────────────────────────────────
 
 
-async def login_with_google(db: AsyncSession, *, sub: str, email: str, name: str, picture: str | None) -> User:
+async def login_with_google(db: AsyncSession, *, sub: str, email: str, name: str, picture: str | None,
+                            referral_code: str | None = None) -> User:
     link = await db.scalar(select(OAuthAccount).where(OAuthAccount.provider == "google",
                                                       OAuthAccount.provider_user_id == sub))
     if link is not None:
@@ -217,6 +218,8 @@ async def login_with_google(db: AsyncSession, *, sub: str, email: str, name: str
             username = await generate_username(db, name or email.split("@")[0])
             user = await create_user(db, email=email, username=username, display_name=name or username,
                                      password=None, verified=True, avatar_url=picture)
+            from backend.app.services import referrals
+            await referrals.attach(db, user, referral_code)
         db.add(OAuthAccount(user_id=user.id, provider="google", provider_user_id=sub, email=email))
     if user.email_verified_at is None:
         user.email_verified_at = utcnow()  # Google verified it

@@ -175,7 +175,7 @@ function loadRazorpay(): Promise<RazorpayCtor> {
   });
 }
 
-const REASON: Record<string, string> = { purchase: "Credits purchased", debate: "AI debate", refund: "Refund", grant: "Bonus credits", adjustment: "Adjustment" };
+const REASON: Record<string, string> = { purchase: "Credits purchased", debate: "AI debate", refund: "Refund", grant: "Bonus credits (invites, gifts)", adjustment: "Adjustment" };
 
 export function WalletView() {
   const { status, requireAuth, reloadUser } = useAuth();
@@ -241,6 +241,14 @@ export function WalletView() {
               <p className="mt-2 text-sm text-dim">Human vs human, watching and voting are always free.</p>
             </div>
           </section>
+
+          <Link href="/invite" className="mt-4 flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 transition hover:border-line-strong">
+            <span className="flex-1">
+              <span className="block font-semibold">Invite friends, earn free credits</span>
+              <span className="block text-sm text-dim">You both get credits when a friend joins with your link.</span>
+            </span>
+            <span aria-hidden className="text-xl">→</span>
+          </Link>
 
           {/* Google Play: no purchases (and no pointers to buying elsewhere) inside the Android app. */}
           {!inApp && (

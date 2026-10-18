@@ -25,7 +25,7 @@ frontend, video included, Google + email/password auth (no phone OTP).** Everyth
 
 ## Verified
 
-- **230 backend tests pass** (real Postgres/Redis, 2026-10-17), ruff clean, migrations round-trip with no drift.
+- **236 backend tests pass** (real Postgres/Redis, 2026-10-18), ruff clean, migrations round-trip with no drift.
 - **Frontend**: typecheck, lint (React Compiler rules) and production build all pass.
 - **Live end-to-end run with real models** (Qwen vs GPT-OSS on Groq): a full 10-turn AvA debate ran to
   a judged verdict through the real worker, surviving free-tier rate limits via backoff + auto-resume,
@@ -201,6 +201,22 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - New personal Play accounts need a 12-tester, 14-day closed test before production.
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
+
+### Invite friends: referrals (2026-10-18)
+
+- Every user has an invite link `/r/<code>` (8 chars, made on first visit to `/invite`). The web route leaves a
+  `provok_ref` cookie (30 days) and shows the home page with a "<name> invited you" banner; sign-up by email or
+  Google reads the cookie and records `users.referred_by_id` (migration `0009`).
+- When the newcomer **verifies their email** (or arrives verified through Google), both sides get credits:
+  `REFERRAL_INVITER_CREDITS` / `REFERRAL_INVITEE_CREDITS` (1 each), as idempotent ledger grants. The inviter is paid
+  for at most `REFERRAL_MAX_REWARDS_PER_USER` (20) friends; the newcomer's bonus isn't capped. No reward when both
+  addresses are the same mailbox (Gmail dots/`+tags` ignored). The inviter gets a notification (and a push).
+- `/invite`: link, copy, WhatsApp, native share, credits earned, rewards left, who joined (verified or waiting).
+  Linked from the account menu and the wallet. Kept inside the Android app too (it's not a purchase).
+- Tests: 6 backend (payout once, cap, self-invite, bad codes, Google path) + browser E2E (link → banner → sign-up →
+  inviter sees them), run locally against the full stack on desktop and Pixel 7.
+- Abuse is limited, not prevented: someone with many real inboxes can still farm up to the cap. Watch
+  `credit_ledger` grants with `referral-*` keys; lower the cap or set `REFERRAL_ENABLED=false` if needed.
 
 ### provok.in redirects to staging (2026-10-18)
 

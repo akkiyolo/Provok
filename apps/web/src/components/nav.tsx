@@ -111,6 +111,7 @@ function AccountMenu() {
           <Link role="menuitem" className={item} href={`/u/${user.username}`}>Profile</Link>
           <Link role="menuitem" className={item} href="/bookmarks">Bookmarks</Link>
           <Link role="menuitem" className={item} href="/wallet">Wallet · {user.credits} credits</Link>
+          <Link role="menuitem" className={item} href="/invite">Invite friends · earn credits</Link>
           <Link role="menuitem" className={item} href="/settings">Settings</Link>
           {user.role === "admin" && <Link role="menuitem" className={item} href="/admin">Admin</Link>}
           <div className="my-1 h-px bg-line" />

@@ -147,6 +147,12 @@ class Settings(BaseSettings):
         '{"id":"regular","credits":15,"amount_inr":249,"label":"Regular"},'
         '{"id":"pro","credits":40,"amount_inr":549,"label":"Pro"}]'
     )
+    # Referrals: both sides get credits once the invited person verifies their email.
+    referral_enabled: bool = True
+    referral_inviter_credits: int = 1
+    referral_invitee_credits: int = 1
+    referral_max_rewards_per_user: int = 20  # inviter rewards per account, ever (the invitee bonus is not capped)
+    referral_cookie_days: int = 30
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
     razorpay_webhook_secret: str = ""

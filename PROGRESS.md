@@ -225,8 +225,8 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
   (Gradle can't download on the founder's network).
 - Verified: 7 new tests (allowlist, upsert/ownership, real encryption decrypted on a fake device, 410 cleanup,
   deletion, device cap); a real Chrome subscription → **FCM accepted Provok's signed, encrypted push (201)**, same as
-  pywebpush's reference sender. Display could not be checked in automated Chrome (it doesn't receive FCM traffic):
-  **do one real-device check on staging** (Settings → Notifications → turn on, then have someone follow you).
+  pywebpush's reference sender. **Real-device check passed on staging (2026-10-18):** Android Chrome, push turned on in
+  Settings, a DM from a second account arrived as a notification and tapping it opened the chat.
 - Privacy page lists the browser push services. Play "Data safety" may need "Device or other IDs" (push endpoint)
   when the app is submitted.
 

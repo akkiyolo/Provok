@@ -59,7 +59,7 @@ export function PushSetting() {
         <button type="button" role="switch" aria-checked={on} disabled={busy} onClick={() => void toggle()}
           className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full border transition-colors disabled:opacity-60 ${
             on ? "border-text bg-text" : "border-line bg-surface"}`}>
-          <span className={`absolute top-0.5 size-[22px] rounded-full transition-transform ${
+          <span className={`absolute left-0 top-0.5 size-[22px] rounded-full transition-transform ${
             on ? "translate-x-[22px] bg-surface" : "translate-x-0.5 bg-dim"}`} />
         </button>
       )}

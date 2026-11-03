@@ -121,7 +121,21 @@ def main() -> None:
         "seed-featured": lambda: seed_featured(args.count),
         "daily-debate": daily_debate,
     }[args.cmd]()
-    asyncio.run(coro)
+    asyncio.run(_run(coro))
+
+
+async def _run(coro) -> None:
+    """Run a command, then close the connections it opened while the event loop is still alive (otherwise their
+    finalizers run after the loop has closed and print "Event loop is closed")."""
+    from backend.app.core.redis import close_redis
+    from backend.app.db.session import engine
+    from backend.app.workers.queue import close_pool
+    try:
+        await coro
+    finally:
+        await close_pool()
+        await close_redis()
+        await engine.dispose()
 
 
 if __name__ == "__main__":

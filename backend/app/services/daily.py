@@ -16,6 +16,7 @@ from backend.app.db.session import session_scope
 from backend.app.models import DailyDebate, Debate, Post, User
 from backend.app.services.featured import create_featured, load_questions
 from backend.app.services.outbox import Outbox
+from backend.app.services.seasons import seasonal_first
 
 log = get_logger("provok.daily")
 
@@ -35,10 +36,8 @@ async def official_user(db: AsyncSession) -> User:
     return user
 
 
-def _pick_question(used: set[str]) -> dict[str, Any]:
-    bank = load_questions()
-    fresh = [q for q in bank if q["question"] not in used]
-    return random.choice(fresh or bank)
+def _pick_question(used: set[str], day: date) -> dict[str, Any]:
+    return random.choice(seasonal_first(load_questions(), used, day))
 
 
 async def create_daily(day: date | None = None) -> DailyDebate | None:
@@ -49,7 +48,7 @@ async def create_daily(day: date | None = None) -> DailyDebate | None:
         if await db.get(DailyDebate, day) is not None:
             return None
         used = set((await db.scalars(select(DailyDebate.question))).all())
-        item = _pick_question(used)
+        item = _pick_question(used, day)
         author = await official_user(db)
         outbox = Outbox()
         post = await posts_svc.create_post(

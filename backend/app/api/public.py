@@ -17,7 +17,7 @@ from backend.app.engine.types import Persona, Status, UserStatus
 from backend.app.llm.registry import all_models, selectable_debaters
 from backend.app.models import AnalyticsEvent, Debate, Post, Report, Side, Turn, User, Verdict
 from backend.app.moderation.content import TOPIC_CATEGORIES
-from backend.app.services import flags
+from backend.app.services import flags, seasons
 from backend.app.services import posts as posts_svc
 from backend.app.services.debate_view import build_cards, public_user
 from backend.app.swarm.context import PERSONAS
@@ -54,6 +54,12 @@ async def meta() -> dict:
         "livekit_url": s.livekit_url or None,
         "question_chars": {"min": s.question_min_chars, "max": s.question_max_chars},
     }
+
+
+@router.get("/season")
+async def season() -> dict:
+    """The seasonal moment running now (e.g. Diwali week), for the web app's banner."""
+    return seasons.public_view()
 
 
 # ── Leaderboards ───────────────────────────────────────────────────────────

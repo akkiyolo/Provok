@@ -20,6 +20,7 @@ from backend.app.llm.registry import selectable_debaters
 from backend.app.models import Debate, Side
 from backend.app.services import flags
 from backend.app.services.outbox import Outbox
+from backend.app.services.seasons import seasonal_first
 
 log = get_logger("provok.featured")
 QUESTIONS_PATH = APP_DIR / "services" / "featured_questions.json"
@@ -43,7 +44,7 @@ async def create_featured(count: int = 1, *, items: list[dict] | None = None,
     if items is not None:
         pool = list(items)
     else:
-        pool = [q for q in load_questions() if q["question"] not in used] or load_questions()
+        pool = list(seasonal_first(load_questions(), used))  # a running season's questions go first
         random.shuffle(pool)
     created: list[str] = []
     personas = list(Persona)

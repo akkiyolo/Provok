@@ -1,0 +1,24 @@
+[
+  {
+    "key": "diwali-2026",
+    "label": "Diwali",
+    "start": "2026-11-01",
+    "end": "2026-11-12",
+    "headline": "Diwali week in the arena",
+    "sub": "A festive debate every day. Grab a sweet, pick a side.",
+    "questions": [
+      {"question": "Are experience gifts better than things for Diwali?", "category": "lifestyle"},
+      {"question": "Diwali bonus or an extra week of leave: which is worth more?", "category": "business"},
+      {"question": "Homemade sweets or shop-bought: which wins Diwali?", "category": "food"},
+      {"question": "Should office Diwali parties be optional instead of expected?", "category": "business"},
+      {"question": "Is the big pre-Diwali deep clean worth the effort?", "category": "lifestyle"},
+      {"question": "Is Diwali shopping better online than at the market?", "category": "lifestyle"},
+      {"question": "Should friends agree on a spending limit for Diwali gifts?", "category": "relationships"},
+      {"question": "Are festive season sale discounts real savings or just marketing?", "category": "economics"},
+      {"question": "Is it better to travel during the Diwali holidays or stay home?", "category": "lifestyle"},
+      {"question": "Are dry fruits a better Diwali gift than sweets?", "category": "food"},
+      {"question": "Should families skip gifts and just spend the day together?", "category": "relationships"},
+      {"question": "Is the festive season the best time of year to buy a new phone?", "category": "technology"}
+    ]
+  }
+]

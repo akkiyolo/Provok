@@ -10,6 +10,7 @@ import { InfiniteSentinel } from "@/components/feed";
 import { Composer } from "@/components/posts/composer";
 import { openCompose } from "@/components/posts/compose-store";
 import { PostCard, PostSkeleton } from "@/components/posts/post-card";
+import { useSeason } from "@/components/season";
 import { Button, Empty, ErrorBlock, PageTitle, Tabs } from "@/components/ui";
 import { ApiError, errorMessage, get } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -69,12 +70,15 @@ function Trends() {
 /** Today's question from @provok: vote in the poll, watch the AI debate, or take a side yourself. */
 export function DailyDebateCard() {
   const q = useQuery({ queryKey: ["posts", "daily"], queryFn: () => get<{ daily: DailyDebate | null }>("/daily"), staleTime: 60_000 });
+  const season = useSeason().data;
   const d = q.data?.daily;
   if (!d?.post) return null;
   return (
     <section aria-labelledby="daily-heading" className="stage-duel grain border-b border-line">
       <div className="px-4 pt-4 sm:px-5">
-        <p id="daily-heading" className="font-mono text-[11px] font-bold tracking-[0.2em] text-faint">TODAY&apos;S DEBATE</p>
+        <p id="daily-heading" className={`font-mono text-[11px] font-bold tracking-[0.2em] ${season?.active ? "text-festive" : "text-faint"}`}>
+          {season?.active ? `TODAY'S ${season.label?.toUpperCase()} DEBATE` : "TODAY'S DEBATE"}
+        </p>
         <p className="font-display mt-1 text-[clamp(1.4rem,4vw,1.9rem)] font-extrabold leading-tight">{d.question}</p>
         {d.debate && (
           <Link href={`/d/${d.debate.id}`} className="mt-2 inline-block text-sm font-semibold hover:underline">Watch the AI debate it live →</Link>

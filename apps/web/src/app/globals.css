@@ -27,6 +27,9 @@
   --against-soft: rgba(76, 111, 255, 0.12);
   --live: #ff2e4d;
   --win: #e8c547;
+  /* Seasonal moments only (e.g. Diwali week): marigold, never a side, a score or a verdict. */
+  --festive: #f5b04a;
+  --festive-glow: rgba(245, 176, 74, 0.28);
   --ok: #3ccf8e;
   --danger: #ff4d5e;
   --grain-opacity: 0.06;
@@ -49,6 +52,8 @@
   --grain-opacity: 0.035;
   --spot: rgba(18, 18, 20, 0.04);
   --ok: #138a5a;
+  --festive: #945600; /* 5.3:1 on --bg, 5.0:1 on --surface-2 */
+  --festive-glow: rgba(214, 133, 20, 0.22);
   color-scheme: light;
 }
 
@@ -68,6 +73,7 @@
   --color-against-soft: var(--against-soft);
   --color-live: var(--live);
   --color-win: var(--win);
+  --color-festive: var(--festive);
   --color-ok: var(--ok);
   --color-danger: var(--danger);
   --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
@@ -179,4 +185,18 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Seasonal banner: a string of lights that twinkle in turn (still for reduced motion). */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+.festive-lights > span {
+  background: var(--festive);
+  box-shadow: 0 0 8px 1px var(--festive-glow);
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .festive-lights > span { animation: none; opacity: 0.8; }
 }

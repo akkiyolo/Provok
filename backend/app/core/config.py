@@ -235,6 +235,9 @@ class Settings(BaseSettings):
     # Daily Debate: "H:MM" in UTC (00:30 = 06:00 IST). Empty disables it.
     daily_debate_utc: str = "0:30"
     featured_ava_per_run: int = 1
+    # Seasonal moments (services/seasons.json): local-time offset for their dates, and a key to force one on.
+    season_utc_offset_minutes: int = 330  # IST
+    season_preview: str = ""
     sweeper_interval_seconds: int = 5
     # Debates paused by an AI provider failure retry themselves after this delay (max attempts per day).
     auto_resume_after_seconds: int = 300

@@ -1,6 +1,6 @@
 # PROGRESS
 
-_Last updated: 2026-10-17_
+_Last updated: 2026-11-03_
 
 The v1 codebase (FastAPI + vanilla JS, preserved in `legacy/`) was rebuilt into a production
 architecture. The stack choices were made with the founder: **FastAPI backend (no Supabase) + Next.js
@@ -25,7 +25,7 @@ frontend, video included, Google + email/password auth (no phone OTP).** Everyth
 
 ## Verified
 
-- **236 backend tests pass** (real Postgres/Redis, 2026-10-18), ruff clean, migrations round-trip with no drift.
+- **242 backend tests pass** (real Postgres/Redis, 2026-11-03); 48 browser E2E pass locally (desktop + Pixel 7), ruff clean, migrations round-trip with no drift.
 - **Frontend**: typecheck, lint (React Compiler rules) and production build all pass.
 - **Live end-to-end run with real models** (Qwen vs GPT-OSS on Groq): a full 10-turn AvA debate ran to
   a judged verdict through the real worker, surviving free-tier rate limits via backoff + auto-resume,
@@ -201,6 +201,26 @@ deploy.yml` builds both images, pushes them and deploys over SSM after CI passes
 - New personal Play accounts need a 12-tester, 14-day closed test before production.
 - Local build note: on the founder's network Java could not reach Gradle's download mirror, so the wrapper was
   generated with `--no-validate-url`; `./gradlew` downloads Gradle normally elsewhere (CI).
+
+### Diwali week + Next.js security fix (2026-11-03)
+
+- **Seasonal moments** (`backend/app/services/seasons.json` + `seasons.py`): a date window (inclusive, IST via
+  `SEASON_UTC_OFFSET_MINUTES`) with a headline and its own question bank. While one runs, the Daily Debate and the
+  featured AI-vs-AI debates take its unused questions first, then fall back to the regular bank. `GET /season` feeds
+  the web banner. `SEASON_PREVIEW=<key>` forces a season on (for checking the look early).
+- **Diwali 2026: 1–12 November**, 12 festive questions (gifts, sweets, bonus vs leave, office parties, sales, travel).
+  Kept to lifestyle/food/business so they stay clear of the blocked religion/politics topics; a test runs every
+  canned question (regular + seasonal) through the topic blocklist and category rules.
+- Web: a festive banner on the Arena home (diya, a twinkling string of lights that stays still under reduced motion,
+  today's festive debate) and a "TODAY'S DIWALI DEBATE" label on the Home feed's daily card. New `--festive` marigold
+  token, used only for seasonal UI, so Ember/Volt still only ever mean a side (light theme value passes AA: 5.3:1).
+  Checked by screenshot on desktop, Pixel 7 (dark + light) and 360px.
+- **Security:** `next build` refused to build: Next.js 16.0.0–16.4.0 has critical advisories (two unauthenticated
+  RCEs: image optimisation with SVG, `use cache` returning typed arrays; plus a Server Actions DoS). Upgraded to
+  **16.4.4** (patch release; `eslint-config-next` too) and `@sentry/nextjs` 10.78.0; `npm audit fix` bumped
+  `fast-uri`. Staging ran the vulnerable version until this deploy. 5 moderate advisories remain, all inside Sentry's
+  build-time webpack plugin (glob/minimatch); npm's only "fix" is a Sentry downgrade, so they're left.
+- CLI commands now close the queue/Redis/DB connections before exiting (`daily-debate` printed "Event loop is closed").
 
 ### Invite friends: referrals (2026-10-18)
 
